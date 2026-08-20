@@ -1,37 +1,27 @@
 const express = require("express");
 const axios = require("axios");
+const XLSX = require("xlsx");
 
 const app = express();
-
 app.use(express.json());
-
-// ===============================
-// ENVIRONMENT VARIABLES
-// ===============================
 
 const VERIFY_TOKEN = process.env.VERIFY_TOKEN;
 const WHATSAPP_TOKEN = process.env.WHATSAPP_TOKEN;
 const PHONE_NUMBER_ID = process.env.PHONE_NUMBER_ID;
 
-// URL ya picha ya kadi.
-// WEKA URL YA PICHA YAKO KWENYE RENDER ENVIRONMENT VARIABLES
-const INVITE_IMAGE_URL = process.env.INVITE_IMAGE_URL;
+const PORT = process.env.PORT || 10000;
 
-// WhatsApp Cloud API
-const WHATSAPP_API_URL =
-  `https://graph.facebook.com/v23.0/${PHONE_NUMBER_ID}/messages`;
-
-// ===============================
+// ----------------------------------------------------
 // HOME
-// ===============================
+// ----------------------------------------------------
 
 app.get("/", (req, res) => {
-  res.send("WhatsApp Webhook is running!");
+  res.send("WhatsApp Webhook ya GeitaCard iko running!");
 });
 
-// ===============================
+// ----------------------------------------------------
 // WHATSAPP WEBHOOK VERIFICATION
-// ===============================
+// ----------------------------------------------------
 
 app.get("/webhook", (req, res) => {
   const mode = req.query["hub.mode"];
@@ -39,230 +29,113 @@ app.get("/webhook", (req, res) => {
   const challenge = req.query["hub.challenge"];
 
   if (mode === "subscribe" && token === VERIFY_TOKEN) {
-    console.log("Webhook verified successfully!");
+    console.log("Webhook verified successfully");
     return res.status(200).send(challenge);
   }
 
-  console.log("Webhook verification failed.");
   return res.sendStatus(403);
 });
 
-// ===============================
-// SEND MESSAGE FUNCTION
-// ===============================
-
-async function sendWhatsAppMessage(to, message) {
-  try {
-    const response = await axios.post(
-      WHATSAPP_API_URL,
-      message,
-      {
-        headers: {
-          Authorization: `Bearer ${WHATSAPP_TOKEN}`,
-          "Content-Type": "application/json"
-        }
-      }
-    );
-
-    console.log("WhatsApp message sent:", response.data);
-
-  } catch (error) {
-    console.error(
-      "WhatsApp send error:",
-      error.response?.data || error.message
-    );
-  }
-}
-
-// ===============================
-// SEND INVITATION
-// ===============================
-
-async function sendInvitation(to) {
-  const message = {
-    messaging_product: "whatsapp",
-    to: to,
-    type: "interactive",
-    interactive: {
-      type: "button",
-
-      header: {
-        type: "image",
-        image: {
-          link: INVITE_IMAGE_URL
-        }
-      },
-
-      body: {
-        text:
-          "KADI YA MWALIKO\n\n" +
-          "Code: 9749-KAMATI\n\n" +
-          "Tafadhali kumbuka kufika na kadi hii ukumbini.\n" +
-          "Karibu sana.\n\n" +
-          "Tafadhali thibitisha ushiriki wako:"
-      },
-
-      action: {
-        buttons: [
-          {
-            type: "reply",
-            reply: {
-              id: "NITASHIRIKI",
-              title: "Nitashiriki"
-            }
-          },
-          {
-            type: "reply",
-            reply: {
-              id: "SITASHIRIKI",
-              title: "Sitashiriki"
-            }
-          },
-          {
-            type: "reply",
-            reply: {
-              id: "SINA_UHAKIKA",
-              title: "Sina uhakika"
-            }
-          }
-        ]
-      }
-    }
-  };
-
-  await sendWhatsAppMessage(to, message);
-}
-
-// ===============================
-// SEND RESPONSE AFTER BUTTON
-// ===============================
-
-async function sendParticipationResponse(to, responseText) {
-  const message = {
-    messaging_product: "whatsapp",
-    to: to,
-    type: "text",
-    text: {
-      body: responseText
-    }
-  };
-
-  await sendWhatsAppMessage(to, message);
-}
-
-// ===============================
+// ----------------------------------------------------
 // RECEIVE WHATSAPP MESSAGES
-// ===============================
+// ----------------------------------------------------
 
 app.post("/webhook", async (req, res) => {
   try {
     const body = req.body;
 
-    console.log(
-      "Incoming WhatsApp message:",
-      JSON.stringify(body, null, 2)
-    );
+    console.log("Incoming WhatsApp message:");
+    console.log(JSON.stringify(body, null, 2));
 
-    // Hakikisha ni WhatsApp message
     if (
-      body.object &&
-      body.entry &&
-      body.entry[0]?.changes &&
-      body.entry[0].changes[0]?.value
+      body.object !== "whatsapp_business_account" ||
+      !body.entry ||
+      !body.entry[0]
     ) {
-      const value = body.entry[0].changes[0].value;
+      return res.sendStatus(200);
+    }
 
-      const message = value.messages?.[0];
+    const changes = body.entry[0].changes;
 
-      // Hakuna message, labda ni status update
-      if (!message) {
-        return res.sendStatus(200);
-      }
+    if (!changes || !changes[0]) {
+      return res.sendStatus(200);
+    }
 
-      const from = message.from;
+    const value = changes[0].value;
 
-      // ==========================================
-      // MTU AKITUMA UJUMBE WA KAWAIDA
-      // ==========================================
+    if (!value.messages || !value.messages[0]) {
+      return res.sendStatus(200);
+    }
 
-      if (message.type === "text") {
-        const text = message.text?.body?.trim().toLowerCase();
+    const message = value.messages[0];
+    const from = message.from;
 
-        console.log(`Message from ${from}: ${text}`);
+    // ------------------------------------------------
+    // TEXT MESSAGE
+    // ------------------------------------------------
 
-        // Maneno yanayoweza kuanzisha kadi
-        if (
-          text === "habari" ||
-          text === "hi" ||
-          text === "hello" ||
-          text === "mwaliko" ||
-          text === "kadi" ||
-          text === "karibu"
-        ) {
-          await sendInvitation(from);
-        } else {
-          await sendParticipationResponse(
-            from,
-            "Habari 👋 Karibu GeitaCard.\n\n" +
-            "Tafadhali andika *MWALIKO* kupata kadi ya mwaliko."
-          );
-        }
-      }
+    if (message.type === "text") {
+      const text = message.text.body.trim().toLowerCase();
 
-      // ==========================================
-      // MTU AKIBONYEZA BUTTON
-      // ==========================================
+      console.log("Text received:", text);
 
-      if (message.type === "interactive") {
-        const interactive = message.interactive;
-
-        // Button reply
-        if (interactive?.type === "button_reply") {
-          const buttonId = interactive.button_reply?.id;
-
-          console.log(
-            `Button selected by ${from}: ${buttonId}`
-          );
-
-          // ------------------------------
-          // NITASHIRIKI
-          // ------------------------------
-
-          if (buttonId === "NITASHIRIKI") {
-            await sendParticipationResponse(
-              from,
-              "Asante kwa jibu lako 🙏, Karibu sana GeitaCard."
-            );
-          }
-
-          // ------------------------------
-          // SITASHIRIKI
-          // ------------------------------
-
-          else if (buttonId === "SITASHIRIKI") {
-            await sendParticipationResponse(
-              from,
-              "Asante kwa kutujulisha 🙏.\n" +
-              "Tunakushukuru kwa muda wako. Karibu sana GeitaCard."
-            );
-          }
-
-          // ------------------------------
-          // SINA UHAKIKA
-          // ------------------------------
-
-          else if (buttonId === "SINA_UHAKIKA") {
-            await sendParticipationResponse(
-              from,
-              "Asante kwa taarifa yako 🙏.\n" +
-              "Ukishapata uhakika, tafadhali tujulishe."
-            );
-          }
-        }
+      if (
+        text.includes("nitashiriki") ||
+        text.includes("nitashiriki")
+      ) {
+        await sendText(
+          from,
+          "Asante kwa jibu lako, Karibu sana GeitaCard."
+        );
+      } else if (
+        text.includes("sitashiriki")
+      ) {
+        await sendText(
+          from,
+          "Asante kwa kutujulisha. Tunakushukuru kwa muda wako."
+        );
+      } else if (
+        text.includes("sina uhakika")
+      ) {
+        await sendText(
+          from,
+          "Asante kwa jibu lako. Tutafurahi kukupokea utakapokuwa tayari."
+        );
       }
     }
 
-    // WhatsApp inahitaji 200
+    // ------------------------------------------------
+    // BUTTON REPLY
+    // ------------------------------------------------
+
+    if (message.type === "button") {
+      const buttonText = message.button.text;
+      const buttonId = message.button.payload;
+
+      console.log("Button clicked:", buttonText);
+      console.log("Button ID:", buttonId);
+
+      await handleReply(from, buttonId, buttonText);
+    }
+
+    // ------------------------------------------------
+    // INTERACTIVE REPLY
+    // ------------------------------------------------
+
+    if (message.type === "interactive") {
+      const interactive = message.interactive;
+
+      if (interactive.type === "button_reply") {
+        const buttonId = interactive.button_reply.id;
+        const buttonTitle = interactive.button_reply.title;
+
+        console.log("Interactive button:", buttonTitle);
+        console.log("Button ID:", buttonId);
+
+        await handleReply(from, buttonId, buttonTitle);
+      }
+    }
+
     return res.sendStatus(200);
 
   } catch (error) {
@@ -275,12 +148,402 @@ app.post("/webhook", async (req, res) => {
   }
 });
 
-// ===============================
-// START SERVER
-// ===============================
+// ----------------------------------------------------
+// HANDLE OPTIONS
+// ----------------------------------------------------
 
-const PORT = process.env.PORT || 3000;
+async function handleReply(from, buttonId, buttonText) {
+
+  // NITASHIRIKI
+  if (
+    buttonId === "NITASHIRIKI" ||
+    buttonText.toLowerCase().includes("nitashiriki")
+  ) {
+    await sendText(
+      from,
+      "Asante kwa jibu lako, Karibu sana GeitaCard."
+    );
+
+    console.log(`${from} amechagua NITASHIRIKI`);
+
+    return;
+  }
+
+  // SITASHIRIKI
+  if (
+    buttonId === "SITASHIRIKI" ||
+    buttonText.toLowerCase().includes("sitashiriki")
+  ) {
+    await sendText(
+      from,
+      "Asante kwa kutujulisha. Tunakushukuru kwa muda wako."
+    );
+
+    console.log(`${from} amechagua SITASHIRIKI`);
+
+    return;
+  }
+
+  // SINA UHAKIKA
+  if (
+    buttonId === "SINA_UHAKIKA" ||
+    buttonText.toLowerCase().includes("sina uhakika")
+  ) {
+    await sendText(
+      from,
+      "Asante kwa jibu lako. Tutafurahi kukupokea utakapokuwa tayari."
+    );
+
+    console.log(`${from} amechagua SINA UHAKIKA`);
+
+    return;
+  }
+
+  console.log("Unknown button:", buttonId);
+}
+
+// ----------------------------------------------------
+// SEND TEXT MESSAGE
+// ----------------------------------------------------
+
+async function sendText(to, message) {
+
+  const url =
+    `https://graph.facebook.com/v23.0/${PHONE_NUMBER_ID}/messages`;
+
+  await axios.post(
+    url,
+    {
+      messaging_product: "whatsapp",
+      recipient_type: "individual",
+      to: to,
+      type: "text",
+      text: {
+        body: message
+      }
+    },
+    {
+      headers: {
+        Authorization: `Bearer ${WHATSAPP_TOKEN}`,
+        "Content-Type": "application/json"
+      }
+    }
+  );
+}
+
+// ----------------------------------------------------
+// SEND TEMPLATE MESSAGE
+// ----------------------------------------------------
+
+async function sendInvitation(person) {
+
+  const url =
+    `https://graph.facebook.com/v23.0/${PHONE_NUMBER_ID}/messages`;
+
+  /*
+    TEMPLATE NAME:
+    geitacard_invitation
+
+    Badilisha jina hili liwe jina halisi la
+    WhatsApp approved template yako.
+  */
+
+  const payload = {
+    messaging_product: "whatsapp",
+    recipient_type: "individual",
+    to: person.phone,
+
+    type: "template",
+
+    template: {
+      name: "geitacard_invitation",
+
+      language: {
+        code: "sw"
+      },
+
+      components: [
+
+        // --------------------------------------------
+        // HEADER - IMAGE
+        // --------------------------------------------
+
+        {
+          type: "header",
+
+          parameters: [
+            {
+              type: "image",
+
+              image: {
+                link: process.env.CARD_IMAGE_URL
+              }
+            }
+          ]
+        },
+
+        // --------------------------------------------
+        // BODY
+        // --------------------------------------------
+
+        {
+          type: "body",
+
+          parameters: [
+            {
+              type: "text",
+              text: person.name
+            },
+            {
+              type: "text",
+              text: person.code
+            }
+          ]
+        },
+
+        // --------------------------------------------
+        // BUTTON 1
+        // --------------------------------------------
+
+        {
+          type: "button",
+
+          sub_type: "quick_reply",
+
+          index: "0",
+
+          parameters: [
+            {
+              type: "payload",
+              payload: "NITASHIRIKI"
+            }
+          ]
+        },
+
+        // --------------------------------------------
+        // BUTTON 2
+        // --------------------------------------------
+
+        {
+          type: "button",
+
+          sub_type: "quick_reply",
+
+          index: "1",
+
+          parameters: [
+            {
+              type: "payload",
+              payload: "SITASHIRIKI"
+            }
+          ]
+        },
+
+        // --------------------------------------------
+        // BUTTON 3
+        // --------------------------------------------
+
+        {
+          type: "button",
+
+          sub_type: "quick_reply",
+
+          index: "2",
+
+          parameters: [
+            {
+              type: "payload",
+              payload: "SINA_UHAKIKA"
+            }
+          ]
+        }
+      ]
+    }
+  };
+
+  const response = await axios.post(
+    url,
+    payload,
+    {
+      headers: {
+        Authorization: `Bearer ${WHATSAPP_TOKEN}`,
+        "Content-Type": "application/json"
+      }
+    }
+  );
+
+  return response.data;
+}
+
+// ----------------------------------------------------
+// READ EXCEL FILE
+// ----------------------------------------------------
+
+function readExcel() {
+
+  const workbook = XLSX.readFile("contacts.xlsx");
+
+  const sheetName = workbook.SheetNames[0];
+
+  const sheet = workbook.Sheets[sheetName];
+
+  const rows = XLSX.utils.sheet_to_json(sheet);
+
+  return rows;
+}
+
+// ----------------------------------------------------
+// SEND BULK FROM EXCEL
+// ----------------------------------------------------
+
+app.get("/send-bulk", async (req, res) => {
+
+  try {
+
+    const people = readExcel();
+
+    if (!people.length) {
+      return res.status(400).json({
+        success: false,
+        message: "contacts.xlsx haina watu."
+      });
+    }
+
+    const results = [];
+
+    for (const person of people) {
+
+      if (!person.phone) {
+        results.push({
+          name: person.name || "",
+          status: "FAILED",
+          reason: "Phone number haipo"
+        });
+
+        continue;
+      }
+
+      try {
+
+        const result = await sendInvitation({
+          name: person.name,
+          code: person.code,
+          phone: person.phone
+        });
+
+        results.push({
+          name: person.name,
+          phone: person.phone,
+          code: person.code,
+          status: "SENT",
+          result
+        });
+
+        console.log(
+          `Sent to ${person.name} - ${person.phone}`
+        );
+
+        // --------------------------------------------
+        // PAUSE KIDOGO KUEPUKA KUTUMA HARAKA SANA
+        // --------------------------------------------
+
+        await sleep(1500);
+
+      } catch (error) {
+
+        console.error(
+          `Failed ${person.name}:`,
+          error.response?.data || error.message
+        );
+
+        results.push({
+          name: person.name,
+          phone: person.phone,
+          code: person.code,
+          status: "FAILED",
+          error:
+            error.response?.data || error.message
+        });
+      }
+    }
+
+    return res.json({
+      success: true,
+      total: people.length,
+      results
+    });
+
+  } catch (error) {
+
+    console.error(error);
+
+    return res.status(500).json({
+      success: false,
+      error: error.message
+    });
+  }
+});
+
+// ----------------------------------------------------
+// TEST SINGLE PERSON
+// ----------------------------------------------------
+
+app.get("/send-test", async (req, res) => {
+
+  try {
+
+    const person = {
+      name: req.query.name || "Twaiwa Swaibu",
+      code: req.query.code || "9749-KAMATI",
+      phone: req.query.phone
+    };
+
+    if (!person.phone) {
+      return res.status(400).json({
+        success: false,
+        message:
+          "Weka phone kwenye URL. Mfano /send-test?phone=2557XXXXXXXX"
+      });
+    }
+
+    const result = await sendInvitation(person);
+
+    return res.json({
+      success: true,
+      message: "Invitation imetumwa.",
+      result
+    });
+
+  } catch (error) {
+
+    console.error(
+      error.response?.data || error.message
+    );
+
+    return res.status(500).json({
+      success: false,
+      error:
+        error.response?.data || error.message
+    });
+  }
+});
+
+// ----------------------------------------------------
+// SLEEP FUNCTION
+// ----------------------------------------------------
+
+function sleep(ms) {
+  return new Promise(resolve => setTimeout(resolve, ms));
+}
+
+// ----------------------------------------------------
+// START SERVER
+// ----------------------------------------------------
 
 app.listen(PORT, () => {
-  console.log(`Server running on port ${PORT}`);
+
+  console.log(
+    `Server running on port ${PORT}`
+  );
+
 });
