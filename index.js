@@ -3,7 +3,9 @@ const axios = require("axios");
 const XLSX = require("xlsx");
 
 const app = express();
+
 app.use(express.json());
+app.use(express.static("public"));
 
 /* =========================================================
    ENVIRONMENT VARIABLES
