@@ -183,9 +183,27 @@ app.post("/webhook", async (req, res) => {
 
     const value = changes[0].value;
 
-    if (!value.messages || !value.messages[0]) {
-      return res.sendStatus(200);
-    }
+// CHECK WHATSAPP MESSAGE STATUS
+if (value.statuses && value.statuses.length > 0) {
+  const status = value.statuses[0];
+
+  console.log("========== WHATSAPP STATUS ==========");
+  console.log("Message ID:", status.id);
+  console.log("Status:", status.status);
+  console.log("Recipient:", status.recipient_id);
+
+  if (status.errors) {
+    console.log("STATUS ERROR:", JSON.stringify(status.errors, null, 2));
+  }
+
+  console.log("====================================");
+
+  return res.sendStatus(200);
+}
+
+if (!value.messages || !value.messages[0]) {
+  return res.sendStatus(200);
+}
 
     const message = value.messages[0];
     const from = message.from;
