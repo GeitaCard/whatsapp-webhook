@@ -1,0 +1,468 @@
+<!DOCTYPE html>
+<html lang="sw">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+  <title>GeitaCard Admin</title>
+
+  <style>
+    body {
+      font-family: Arial, sans-serif;
+      margin: 0;
+      padding: 20px;
+      background: #f5f5f5;
+    }
+
+    .container {
+      max-width: 900px;
+      margin: auto;
+      background: white;
+      padding: 20px;
+      border-radius: 12px;
+    }
+
+    h1 {
+      margin-top: 0;
+    }
+
+    input,
+    button {
+      width: 100%;
+      padding: 12px;
+      margin-top: 10px;
+      box-sizing: border-box;
+    }
+
+    button {
+      cursor: pointer;
+      border: 0;
+      border-radius: 8px;
+      font-weight: bold;
+    }
+
+    #sendBtn {
+      margin-top: 20px;
+    }
+
+    table {
+      width: 100%;
+      border-collapse: collapse;
+      margin-top: 20px;
+    }
+
+    th,
+    td {
+      border: 1px solid #ddd;
+      padding: 8px;
+      text-align: left;
+    }
+
+    .status {
+      margin-top: 20px;
+      padding: 12px;
+      background: #eee;
+      border-radius: 8px;
+    }
+  </style>
+</head>
+
+<body>
+
+<div class="container">
+
+  <h1>GeitaCard Admin</h1>
+
+  <p>
+    Upload Excel/CSV yenye:
+    <strong>Jina, Namba, Code</strong>
+  </p>
+
+  <input
+    type="file"
+    id="fileInput"
+    accept=".xlsx,.xls,.csv"
+  >
+
+  <div id="preview"></div>
+
+  <button
+    id="sendBtn"
+    onclick="sendAll()"
+    disabled
+  >
+    TUMA KADI ZOTE
+  </button>
+
+  <div
+    id="status"
+    class="status"
+  >
+    Hakuna file iliyopakiwa.
+  </div>
+
+</div>
+
+
+<script src="https://cdn.jsdelivr.net/npm/xlsx/dist/xlsx.full.min.js"></script>
+
+<script>
+
+let contacts = [];
+
+
+/* =====================================================
+   READ EXCEL / CSV
+===================================================== */
+
+document
+  .getElementById("fileInput")
+  .addEventListener("change", function(event) {
+
+    const file = event.target.files[0];
+
+    if (!file) {
+      return;
+    }
+
+    const reader = new FileReader();
+
+    reader.onload = function(e) {
+
+      try {
+
+        const data =
+          new Uint8Array(e.target.result);
+
+        const workbook =
+          XLSX.read(data, {
+            type: "array"
+          });
+
+        const sheet =
+          workbook.Sheets[
+            workbook.SheetNames[0]
+          ];
+
+        const rows =
+          XLSX.utils.sheet_to_json(sheet);
+
+        contacts = rows.map(row => {
+
+          return {
+            name:
+              row.Jina ||
+              row.name ||
+              "",
+
+            to:
+              String(
+                row.Namba ||
+                row.phone ||
+                row.to ||
+                ""
+              ).trim(),
+
+            code:
+              row.Code ||
+              row.code ||
+              ""
+          };
+
+        }).filter(person => {
+
+          return (
+            person.name &&
+            person.to &&
+            person.code
+          );
+
+        });
+
+        showPreview();
+
+      } catch (error) {
+
+        console.error(error);
+
+        document
+          .getElementById("status")
+          .innerText =
+            "Imeshindikana kusoma Excel/CSV.";
+
+      }
+
+    };
+
+    reader.readAsArrayBuffer(file);
+
+  });
+
+
+/* =====================================================
+   SHOW PREVIEW
+===================================================== */
+
+function showPreview() {
+
+  const preview =
+    document.getElementById("preview");
+
+  if (!contacts.length) {
+
+    preview.innerHTML = "";
+
+    document
+      .getElementById("status")
+      .innerText =
+        "Hakuna records sahihi zilizopatikana.";
+
+    document
+      .getElementById("sendBtn")
+      .disabled = true;
+
+    return;
+  }
+
+
+  let html = `
+
+    <h3>
+      Watu waliopatikana:
+      ${contacts.length}
+    </h3>
+
+    <table>
+
+      <thead>
+
+        <tr>
+          <th>#</th>
+          <th>Jina</th>
+          <th>Namba</th>
+          <th>Code</th>
+        </tr>
+
+      </thead>
+
+      <tbody>
+  `;
+
+
+  contacts.forEach((person, index) => {
+
+    html += `
+
+      <tr>
+
+        <td>
+          ${index + 1}
+        </td>
+
+        <td>
+          ${escapeHtml(person.name)}
+        </td>
+
+        <td>
+          ${escapeHtml(person.to)}
+        </td>
+
+        <td>
+          ${escapeHtml(person.code)}
+        </td>
+
+      </tr>
+
+    `;
+
+  });
+
+
+  html += `
+
+      </tbody>
+
+    </table>
+  `;
+
+
+  preview.innerHTML = html;
+
+
+  document
+    .getElementById("status")
+    .innerText =
+      `${contacts.length} watu tayari kutumwa.`;
+
+  document
+    .getElementById("sendBtn")
+    .disabled = false;
+
+}
+
+
+/* =====================================================
+   SEND ALL
+===================================================== */
+
+async function sendAll() {
+
+  if (!contacts.length) {
+
+    alert(
+      "Upload Excel/CSV kwanza."
+    );
+
+    return;
+  }
+
+
+  const confirmSend =
+    confirm(
+      `Unataka kutuma kadi kwa watu ${contacts.length}?`
+    );
+
+
+  if (!confirmSend) {
+    return;
+  }
+
+
+  const button =
+    document.getElementById("sendBtn");
+
+  button.disabled = true;
+
+  button.innerText =
+    "INATUMA...";
+
+
+  document
+    .getElementById("status")
+    .innerText =
+      "Inaanza kutuma kadi...";
+
+
+  try {
+
+    const response =
+      await fetch(
+        "/send-bulk",
+        {
+
+          method: "POST",
+
+          headers: {
+            "Content-Type":
+              "application/json"
+          },
+
+          body: JSON.stringify({
+            contacts: contacts
+          })
+
+        }
+      );
+
+
+    const result =
+      await response.json();
+
+
+    if (!response.ok) {
+
+      throw new Error(
+        result.message ||
+        result.error ||
+        "Bulk sending failed"
+      );
+
+    }
+
+
+    const successCount =
+      result.results.filter(
+        item => item.success
+      ).length;
+
+
+    const failedCount =
+      result.results.length -
+      successCount;
+
+
+    document
+      .getElementById("status")
+      .innerText =
+        `Imemaliza. Zimetumwa: ${successCount}. Zimeshindwa: ${failedCount}.`;
+
+
+    button.innerText =
+      "IMEMALIZA";
+
+
+    console.log(
+      "Bulk results:",
+      result
+    );
+
+
+  } catch (error) {
+
+    console.error(error);
+
+    document
+      .getElementById("status")
+      .innerText =
+        "Kuna tatizo: " +
+        error.message;
+
+    button.disabled = false;
+
+    button.innerText =
+      "JARIBU TENA";
+
+  }
+
+}
+
+
+/* =====================================================
+   ESCAPE HTML
+===================================================== */
+
+function escapeHtml(value) {
+
+  return String(value)
+
+    .replace(
+      /&/g,
+      "&amp;"
+    )
+
+    .replace(
+      /</g,
+      "&lt;"
+    )
+
+    .replace(
+      />/g,
+      "&gt;"
+    )
+
+    .replace(
+      /"/g,
+      "&quot;"
+    )
+
+    .replace(
+      /'/g,
+      "&#039;"
+    );
+
+}
+
+</script>
+
+</body>
+</html>
