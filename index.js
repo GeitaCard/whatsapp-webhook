@@ -580,49 +580,61 @@ app.post("/webhook", async (req, res) => {
 
 
       if (
-        normalizedId === "nitashiriki" ||
-        normalizedTitle === "nitashiriki"
-      ) {
+  normalizedId === "nitashiriki" ||
+  normalizedTitle === "nitashiriki"
+) {
 
-        await sendText(
-          from,
-          "Asante kwa jibu lako. Karibu sana GeitaCard! Tunafurahi kuthibitisha kuwa utashiriki."
-        );
+  await updateAttendance(
+    from,
+    "confirmed"
+  );
 
-        return res.sendStatus(200);
+  await sendText(
+    from,
+    "Asante kwa jibu lako. Karibu sana GeitaCard! Tunafurahi kuthibitisha kuwa utashiriki."
+  );
+
+  return res.sendStatus(200);
       }
 
 
       if (
-        normalizedId === "sitashiriki" ||
-        normalizedTitle === "sitashiriki"
-      ) {
+  normalizedId === "sitashiriki" ||
+  normalizedTitle === "sitashiriki"
+) {
 
-        await sendText(
-          from,
-          "Asante kwa taarifa yako. Tumejua kuwa hutashiriki. Karibu tena wakati mwingine. GeitaCard."
-        );
+  await updateAttendance(
+    from,
+    "declined"
+  );
 
-        return res.sendStatus(200);
+  await sendText(
+    from,
+    "Asante kwa taarifa yako. Tumejua kuwa hutashiriki. Karibu tena wakati mwingine. GeitaCard."
+  );
+
+  return res.sendStatus(200);
       }
 
 
       if (
-        normalizedId === "sina_uhakika" ||
-        normalizedId === "sinauhakika" ||
-        normalizedTitle === "sina uhakika"
-      ) {
+  normalizedId === "sina_uhakika" ||
+  normalizedId === "sinauhakika" ||
+  normalizedTitle === "sina uhakika"
+) {
 
-        await sendText(
-          from,
-          "Asante kwa taarifa yako. Tafadhali tupatie jibu lako litakapokuwa tayari. Karibu sana GeitaCard."
-        );
+  await updateAttendance(
+    from,
+    "maybe"
+  );
 
-        return res.sendStatus(200);
+  await sendText(
+    from,
+    "Asante kwa taarifa yako. Tafadhali tupatie jibu lako litakapokuwa tayari. Karibu sana GeitaCard."
+  );
+
+  return res.sendStatus(200);
       }
-
-      return res.sendStatus(200);
-    }
 
 
     /* =====================================================
