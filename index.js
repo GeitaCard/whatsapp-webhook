@@ -642,23 +642,11 @@ app.post("/webhook", async (req, res) => {
     ===================================================== */
 
     console.log(
-      "Unhandled message type:",
-      message.type
-    );
+  "Unhandled message type:",
+  message.type
+);
 
-} catch (error) {
-    console.error(
-      "Webhook error:",
-      error.response?.data || error.message
-    );
-
-    /*
-      WhatsApp inahitaji HTTP 200 ili isijaribu
-      kurudia webhook mara nyingi.
-    */
-
-    return res.sendStatus(200);
-  }
+return res.sendStatus(200);
 });
 
 
