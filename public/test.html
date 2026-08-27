@@ -1,0 +1,192 @@
+<!DOCTYPE html>
+<html lang="sw">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>GeitaCard - Test Invitation</title>
+
+  <style>
+    body {
+      font-family: Arial, sans-serif;
+      background: #f2f5f7;
+      padding: 20px;
+      margin: 0;
+    }
+
+    .box {
+      max-width: 500px;
+      margin: 30px auto;
+      background: white;
+      padding: 25px;
+      border-radius: 15px;
+      box-shadow: 0 4px 15px rgba(0,0,0,0.1);
+    }
+
+    h2 {
+      text-align: center;
+      margin-bottom: 25px;
+    }
+
+    label {
+      display: block;
+      margin-top: 15px;
+      margin-bottom: 6px;
+      font-weight: bold;
+    }
+
+    input {
+      width: 100%;
+      box-sizing: border-box;
+      padding: 13px;
+      border: 1px solid #ccc;
+      border-radius: 8px;
+      font-size: 16px;
+    }
+
+    button {
+      width: 100%;
+      margin-top: 25px;
+      padding: 14px;
+      border: none;
+      border-radius: 8px;
+      background: #168a45;
+      color: white;
+      font-size: 17px;
+      font-weight: bold;
+      cursor: pointer;
+    }
+
+    button:disabled {
+      background: #999;
+    }
+
+    #result {
+      margin-top: 20px;
+      padding: 12px;
+      border-radius: 8px;
+      white-space: pre-wrap;
+      word-break: break-word;
+    }
+  </style>
+</head>
+
+<body>
+
+  <div class="box">
+
+    <h2>📨 GeitaCard Test Invitation</h2>
+
+    <form id="inviteForm">
+
+      <label>Namba ya WhatsApp</label>
+      <input
+        type="text"
+        id="to"
+        placeholder="2557XXXXXXXX"
+        required
+      >
+
+      <label>Jina la Mualikwa</label>
+      <input
+        type="text"
+        id="name"
+        placeholder="Rajabu"
+        required
+      >
+
+      <label>Code ya Mualikwa</label>
+      <input
+        type="text"
+        id="code"
+        placeholder="9749-KAMATI"
+        required
+      >
+
+      <button type="submit" id="sendBtn">
+        📨 TUMA INVITATION
+      </button>
+
+    </form>
+
+    <div id="result"></div>
+
+  </div>
+
+  <script>
+
+    const form = document.getElementById("inviteForm");
+    const button = document.getElementById("sendBtn");
+    const result = document.getElementById("result");
+
+    form.addEventListener("submit", async function(event) {
+
+      event.preventDefault();
+
+      const to = document.getElementById("to").value.trim();
+      const name = document.getElementById("name").value.trim();
+      const code = document.getElementById("code").value.trim();
+
+      button.disabled = true;
+      button.textContent = "⏳ Inatuma...";
+
+      result.textContent = "";
+
+      try {
+
+        const response = await fetch("/send-invitation", {
+
+          method: "POST",
+
+          headers: {
+            "Content-Type": "application/json"
+          },
+
+          body: JSON.stringify({
+            to: to,
+            name: name,
+            code: code
+          })
+
+        });
+
+        const data = await response.json();
+
+        if (response.ok) {
+
+          result.style.background = "#dff5e5";
+          result.style.color = "#126b35";
+
+          result.textContent =
+            "✅ INVITATION IMETUMWA!\n\n" +
+            JSON.stringify(data, null, 2);
+
+        } else {
+
+          result.style.background = "#ffe1e1";
+          result.style.color = "#9b0000";
+
+          result.textContent =
+            "❌ KUMETOKEA TATIZO\n\n" +
+            JSON.stringify(data, null, 2);
+        }
+
+      } catch (error) {
+
+        result.style.background = "#ffe1e1";
+        result.style.color = "#9b0000";
+
+        result.textContent =
+          "❌ SERVER ERROR\n\n" +
+          error.message;
+
+      }
+
+      button.disabled = false;
+      button.textContent = "📨 TUMA INVITATION";
+
+    });
+
+  </script>
+
+</body>
+</html>
