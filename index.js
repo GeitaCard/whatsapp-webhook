@@ -1,6 +1,7 @@
 const express = require("express");
 const axios = require("axios");
 const XLSX = require("xlsx");
+const crypto = require("crypto");
 const { createClient } = require("@supabase/supabase-js");
 
 const app = express();
@@ -41,7 +42,46 @@ const GRAPH_VERSION =
 
 const PORT = process.env.PORT || 10000;
 
+/* =========================================================
+   SUPABASE - SAVE GUEST
+========================================================= */
 
+async function saveGuest(to, name, code) {
+  const phone = String(to).replace(/\D/g, "");
+
+  const qrToken = crypto.randomUUID();
+
+  const invitationType =
+    process.env.INVITATION_TYPE || "premium";
+
+  const { data, error } = await supabase
+    .from("guests")
+    .insert([
+      {
+        full_name: name,
+        phone: phone,
+        guest_code: code,
+        qr_token: qrToken,
+        invitation_type: invitationType,
+        attendance_status: "pending"
+      }
+    ])
+    .select()
+    .single();
+
+  if (error) {
+    console.error(
+      "Supabase save guest error:",
+      error.message
+    );
+
+    throw error;
+  }
+
+  console.log("Guest saved to Supabase:", data);
+
+  return data;
+}
 /* =========================================================
    BASIC CHECK
 ========================================================= */
@@ -234,7 +274,63 @@ async function sendInvitation(to, name, code) {
 /* =========================================================
    WHATSAPP WEBHOOK - RECEIVE MESSAGES
 ========================================================= */
+/* =========================================================
+   SUPABASE - UPDATE ATTENDANCE
+========================================================= */
 
+async function updateAttendance(phone, status) {
+  const normalizedPhone = String(phone).replace(/\D/g, "");
+
+  // Tafuta mwalikwa wa mwisho mwenye namba hii
+  const { data: guest, error: findError } = await supabase
+    .from("guests")
+    .select("id, full_name, phone, guest_code")
+    .eq("phone", normalizedPhone)
+    .order("created_at", { ascending: false })
+    .limit(1)
+    .maybeSingle();
+
+  if (findError) {
+    console.error(
+      "Find guest error:",
+      findError.message
+    );
+    return null;
+  }
+
+  if (!guest) {
+    console.log(
+      "Guest not found for phone:",
+      normalizedPhone
+    );
+    return null;
+  }
+
+  const { data, error } = await supabase
+    .from("guests")
+    .update({
+      attendance_status: status
+    })
+    .eq("id", guest.id)
+    .select()
+    .single();
+
+  if (error) {
+    console.error(
+      "Attendance update error:",
+      error.message
+    );
+    return null;
+  }
+
+  console.log(
+    "Attendance updated:",
+    guest.full_name,
+    status
+  );
+
+  return data;
+}
 app.post("/webhook", async (req, res) => {
 
   try {
@@ -374,7 +470,10 @@ app.post("/webhook", async (req, res) => {
         normalizedId === "nitashiriki" ||
         normalizedTitle === "nitashiriki"
       ) {
-
+        await updateAttendance(
+          from,
+          "confirmed"
+        );
         await sendText(
           from,
           "Asante kwa jibu lako. Karibu sana GeitaCard! Tunafurahi kuthibitisha kuwa utashiriki."
@@ -394,7 +493,10 @@ app.post("/webhook", async (req, res) => {
         normalizedId === "sitashiriki" ||
         normalizedTitle === "sitashiriki"
       ) {
-
+        await updateAttendance(
+          from,
+          "declined"
+        );        
         await sendText(
           from,
           "Asante kwa taarifa yako. Tumejua kuwa hutashiriki. Karibu tena wakati mwingine. GeitaCard."
@@ -415,6 +517,10 @@ app.post("/webhook", async (req, res) => {
         normalizedId === "sinauhakika" ||
         normalizedTitle === "sina uhakika"
       ) {
+        await updateAttendance(
+          from,
+          "maybe"
+        );
 
         await sendText(
           from,
@@ -597,17 +703,24 @@ app.post("/send-invitation", async (req, res) => {
 
 
     const result =
-      await sendInvitation(
-        to,
-        name,
-        code
-      );
+  await sendInvitation(
+    to,
+    name,
+    code
+  );
+
+const guest = await saveGuest(
+  to,
+  name,
+  code
+);
 
 
     return res.status(200).json({
-      success: true,
-      result: result
-    });
+  success: true,
+  result: result,
+  guest: guest
+});
 
 
   } catch (error) {
