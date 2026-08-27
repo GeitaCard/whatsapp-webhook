@@ -646,9 +646,6 @@ app.post("/webhook", async (req, res) => {
       message.type
     );
 
-    return res.sendStatus(200);
-
-  } catch (error) {
 
     console.error(
       "Webhook error:",
