@@ -3,6 +3,11 @@ const axios = require("axios");
 const XLSX = require("xlsx");
 const { createClient } = require("@supabase/supabase-js");
 
+const app = express();
+
+app.use(express.json());
+app.use(express.static("public"));
+
 const SUPABASE_URL = process.env.SUPABASE_URL;
 const SUPABASE_SERVICE_ROLE_KEY =
   process.env.SUPABASE_SERVICE_ROLE_KEY;
