@@ -1,6 +1,8 @@
 <!DOCTYPE html>
 <html lang="sw">
+
 <head>
+
   <meta charset="UTF-8">
 
   <meta
@@ -8,9 +10,10 @@
     content="width=device-width, initial-scale=1.0"
   >
 
-  <title>GeitaCard - Wahudhuriaji</title>
+  <title>GeitaCard - Dashboard</title>
 
   <style>
+
     * {
       box-sizing: border-box;
       margin: 0;
@@ -44,10 +47,14 @@
       padding: 20px;
     }
 
+    /* ==============================
+       STATISTICS
+    ============================== */
+
     .stats {
       display: grid;
       grid-template-columns:
-        repeat(auto-fit, minmax(180px, 1fr));
+        repeat(auto-fit, minmax(170px, 1fr));
 
       gap: 15px;
       margin-bottom: 20px;
@@ -57,11 +64,13 @@
       background: white;
       padding: 20px;
       border-radius: 12px;
-      box-shadow: 0 2px 8px rgba(0,0,0,0.08);
+
+      box-shadow:
+        0 2px 8px rgba(0,0,0,0.08);
     }
 
     .card h3 {
-      font-size: 15px;
+      font-size: 14px;
       color: #666;
       margin-bottom: 10px;
     }
@@ -71,106 +80,259 @@
       font-weight: bold;
     }
 
-    .controls {
+    /* ==============================
+       CHECK-IN
+    ============================== */
+
+    .checkin-box {
       background: white;
-      padding: 15px;
+      padding: 20px;
       border-radius: 12px;
       margin-bottom: 20px;
 
+      box-shadow:
+        0 2px 8px rgba(0,0,0,0.08);
+    }
+
+    .checkin-box h2 {
+      margin-bottom: 8px;
+      font-size: 20px;
+    }
+
+    .checkin-box p {
+      color: #666;
+      margin-bottom: 15px;
+    }
+
+    .checkin-form {
       display: flex;
       gap: 10px;
       flex-wrap: wrap;
     }
 
-    input,
-    select,
-    button {
+    .checkin-form input {
+      flex: 1;
+      min-width: 220px;
+
+      padding: 14px;
+
+      border: 1px solid #ddd;
+      border-radius: 8px;
+
+      font-size: 16px;
+    }
+
+    .checkin-button {
+      background: #111827;
+      color: white;
+
+      border: none;
+      border-radius: 8px;
+
+      padding: 14px 22px;
+
+      font-size: 16px;
+      font-weight: bold;
+
+      cursor: pointer;
+    }
+
+    .checkin-button:disabled {
+      opacity: 0.6;
+      cursor: not-allowed;
+    }
+
+    #checkinMessage {
+      margin-top: 15px;
+      font-weight: bold;
+    }
+
+    .success-message {
+      color: #166534;
+      background: #dcfce7;
+
       padding: 12px;
       border-radius: 8px;
+    }
+
+    .error-message {
+      color: #991b1b;
+      background: #fee2e2;
+
+      padding: 12px;
+      border-radius: 8px;
+    }
+
+    .warning-message {
+      color: #92400e;
+      background: #fef3c7;
+
+      padding: 12px;
+      border-radius: 8px;
+    }
+
+    /* ==============================
+       SEARCH
+    ============================== */
+
+    .controls {
+      background: white;
+
+      padding: 15px;
+
+      border-radius: 12px;
+
+      margin-bottom: 20px;
+
+      display: flex;
+
+      gap: 10px;
+
+      flex-wrap: wrap;
+    }
+
+    .controls input,
+    .controls select,
+    .controls button {
+
+      padding: 12px;
+
+      border-radius: 8px;
+
       border: 1px solid #ddd;
+
       font-size: 15px;
     }
 
-    input {
+    .controls input {
+
       flex: 1;
+
       min-width: 220px;
     }
 
-    button {
+    .controls button {
+
       background: #111827;
+
       color: white;
-      cursor: pointer;
+
       border: none;
+
+      cursor: pointer;
     }
 
-    button:hover {
-      opacity: 0.9;
-    }
+    /* ==============================
+       TABLE
+    ============================== */
 
     .table-container {
+
       background: white;
+
       border-radius: 12px;
+
       overflow-x: auto;
-      box-shadow: 0 2px 8px rgba(0,0,0,0.08);
+
+      box-shadow:
+        0 2px 8px rgba(0,0,0,0.08);
     }
 
     table {
+
       width: 100%;
+
       border-collapse: collapse;
-      min-width: 800px;
+
+      min-width: 850px;
     }
 
     th,
     td {
+
       padding: 14px;
+
       text-align: left;
+
       border-bottom: 1px solid #eee;
     }
 
     th {
+
       background: #f9fafb;
     }
 
     .status {
+
       padding: 6px 10px;
+
       border-radius: 20px;
+
       font-size: 13px;
+
       font-weight: bold;
+
       display: inline-block;
     }
 
     .confirmed {
+
       background: #dcfce7;
+
       color: #166534;
     }
 
     .declined {
+
       background: #fee2e2;
+
       color: #991b1b;
     }
 
     .maybe {
+
       background: #fef3c7;
+
       color: #92400e;
     }
 
     .pending {
+
       background: #e5e7eb;
+
       color: #374151;
     }
 
+    .checked {
+
+      background: #dbeafe;
+
+      color: #1e40af;
+    }
+
+    .not-checked {
+
+      color: #777;
+    }
+
     .loading {
+
       text-align: center;
+
       padding: 30px;
     }
 
     .error {
+
       color: #b91c1c;
+
       padding: 20px;
+
       text-align: center;
     }
 
     @media (max-width: 600px) {
+
       .container {
         padding: 12px;
       }
@@ -186,56 +348,192 @@
       .card {
         padding: 15px;
       }
+
     }
+
   </style>
+
 </head>
+
 
 <body>
 
+
 <header>
+
   <h1>GeitaCard</h1>
-  <p>Dashboard ya Wahudhuriaji</p>
+
+  <p>
+    Dashboard ya Wahudhuriaji
+  </p>
+
 </header>
+
 
 <div class="container">
 
+
+  <!-- ==============================
+       STATISTICS
+  =============================== -->
+
   <div class="stats">
 
-    <div class="card">
-      <h3>Jumla ya Wageni</h3>
-      <div class="number" id="total">0</div>
-    </div>
 
     <div class="card">
-      <h3>Watashiriki</h3>
-      <div class="number" id="confirmed">0</div>
+
+      <h3>
+        Jumla ya Wageni
+      </h3>
+
+      <div
+        class="number"
+        id="total"
+      >
+        0
+      </div>
+
     </div>
 
-    <div class="card">
-      <h3>Hawashiriki</h3>
-      <div class="number" id="declined">0</div>
-    </div>
 
     <div class="card">
-      <h3>Sina Uhakika</h3>
-      <div class="number" id="maybe">0</div>
+
+      <h3>
+        Watashiriki
+      </h3>
+
+      <div
+        class="number"
+        id="confirmed"
+      >
+        0
+      </div>
+
     </div>
 
+
     <div class="card">
-      <h3>Bado Hawajajibu</h3>
-      <div class="number" id="pending">0</div>
+
+      <h3>
+        Hawashiriki
+      </h3>
+
+      <div
+        class="number"
+        id="declined"
+      >
+        0
+      </div>
+
     </div>
+
+
+    <div class="card">
+
+      <h3>
+        Sina Uhakika
+      </h3>
+
+      <div
+        class="number"
+        id="maybe"
+      >
+        0
+      </div>
+
+    </div>
+
+
+    <div class="card">
+
+      <h3>
+        Bado Hawajajibu
+      </h3>
+
+      <div
+        class="number"
+        id="pending"
+      >
+        0
+      </div>
+
+    </div>
+
+
+    <div class="card">
+
+      <h3>
+        Wameingia Ukumbini
+      </h3>
+
+      <div
+        class="number"
+        id="checkedIn"
+      >
+        0
+      </div>
+
+    </div>
+
 
   </div>
 
 
+  <!-- ==============================
+       CHECK-IN
+  =============================== -->
+
+  <div class="checkin-box">
+
+    <h2>
+      🎟️ CHECK-IN YA MGENI
+    </h2>
+
+    <p>
+      Andika Code ya mgeni kisha bonyeza CHECK-IN.
+      Hakuna QR scan inayohitajika.
+    </p>
+
+
+    <div class="checkin-form">
+
+      <input
+        type="text"
+        id="checkinCode"
+        placeholder="Mfano: 9749-KAMATI"
+        autocomplete="off"
+      >
+
+
+      <button
+        class="checkin-button"
+        id="checkinButton"
+        onclick="checkInGuest()"
+      >
+        CHECK-IN
+      </button>
+
+    </div>
+
+
+    <div id="checkinMessage"></div>
+
+  </div>
+
+
+  <!-- ==============================
+       SEARCH & FILTER
+  =============================== -->
+
   <div class="controls">
+
 
     <input
       type="text"
       id="search"
       placeholder="Tafuta jina, simu au code..."
     >
+
 
     <select id="statusFilter">
 
@@ -261,73 +559,141 @@
 
     </select>
 
+
+    <select id="checkinFilter">
+
+      <option value="all">
+        Check-in zote
+      </option>
+
+      <option value="checked">
+        Wameingia
+      </option>
+
+      <option value="not_checked">
+        Hawajaingia
+      </option>
+
+    </select>
+
+
     <button onclick="loadGuests()">
+
       🔄 Refresh
+
     </button>
+
 
   </div>
 
 
+  <!-- ==============================
+       TABLE
+  =============================== -->
+
   <div class="table-container">
 
-    <div id="loading" class="loading">
+
+    <div
+      id="loading"
+      class="loading"
+    >
       Inapakia wageni...
     </div>
 
-    <div id="error" class="error"></div>
 
-    <table id="guestTable" style="display:none">
+    <div
+      id="error"
+      class="error"
+    ></div>
+
+
+    <table
+      id="guestTable"
+      style="display:none"
+    >
 
       <thead>
 
         <tr>
+
           <th>#</th>
+
           <th>Jina</th>
+
           <th>Simu</th>
+
           <th>Code</th>
+
           <th>Aina</th>
+
           <th>Ushiriki</th>
+
           <th>Check-in</th>
+
         </tr>
 
       </thead>
 
-      <tbody id="guestBody"></tbody>
+
+      <tbody
+        id="guestBody"
+      ></tbody>
+
 
     </table>
 
+
   </div>
+
 
 </div>
 
 
 <script>
 
+
   let guests = [];
 
+
+  /* ======================================================
+     LOAD GUESTS
+  ====================================================== */
 
   async function loadGuests() {
 
     const loading =
-      document.getElementById("loading");
+      document.getElementById(
+        "loading"
+      );
 
     const error =
-      document.getElementById("error");
+      document.getElementById(
+        "error"
+      );
 
     const table =
-      document.getElementById("guestTable");
+      document.getElementById(
+        "guestTable"
+      );
 
-    loading.style.display = "block";
+
+    loading.style.display =
+      "block";
 
     error.innerText = "";
 
-    table.style.display = "none";
+    table.style.display =
+      "none";
 
 
     try {
 
       const response =
-        await fetch("/api/attendance");
+        await fetch(
+          "/api/attendance"
+        );
+
 
       const result =
         await response.json();
@@ -336,13 +702,15 @@
       if (!result.success) {
 
         throw new Error(
-          result.error || "Imeshindikana kupakia data"
+          result.error ||
+          "Imeshindikana kupakia data."
         );
 
       }
 
 
-      guests = result.guests || [];
+      guests =
+        result.guests || [];
 
 
       updateStats();
@@ -350,14 +718,18 @@
       renderGuests();
 
 
-      loading.style.display = "none";
+      loading.style.display =
+        "none";
 
-      table.style.display = "table";
+      table.style.display =
+        "table";
 
 
     } catch (err) {
 
-      loading.style.display = "none";
+      loading.style.display =
+        "none";
+
 
       error.innerText =
         "❌ Imeshindikana kupakia wageni: "
@@ -368,115 +740,265 @@
   }
 
 
+  /* ======================================================
+     UPDATE STATISTICS
+  ====================================================== */
+
   function updateStats() {
 
-    document.getElementById("total").innerText =
+    document.getElementById(
+      "total"
+    ).innerText =
       guests.length;
 
-    document.getElementById("confirmed").innerText =
+
+    document.getElementById(
+      "confirmed"
+    ).innerText =
       guests.filter(
-        g => g.attendance_status === "confirmed"
+        guest =>
+          guest.attendance_status ===
+          "confirmed"
       ).length;
 
-    document.getElementById("declined").innerText =
+
+    document.getElementById(
+      "declined"
+    ).innerText =
       guests.filter(
-        g => g.attendance_status === "declined"
+        guest =>
+          guest.attendance_status ===
+          "declined"
       ).length;
 
-    document.getElementById("maybe").innerText =
+
+    document.getElementById(
+      "maybe"
+    ).innerText =
       guests.filter(
-        g => g.attendance_status === "maybe"
+        guest =>
+          guest.attendance_status ===
+          "maybe"
       ).length;
 
-    document.getElementById("pending").innerText =
+
+    document.getElementById(
+      "pending"
+    ).innerText =
       guests.filter(
-        g => g.attendance_status === "pending"
+        guest =>
+          guest.attendance_status ===
+          "pending"
+      ).length;
+
+
+    document.getElementById(
+      "checkedIn"
+    ).innerText =
+      guests.filter(
+        guest =>
+          guest.scanned_at
       ).length;
 
   }
 
 
+  /* ======================================================
+     RENDER GUESTS
+  ====================================================== */
+
   function renderGuests() {
+
 
     const search =
       document
-        .getElementById("search")
+        .getElementById(
+          "search"
+        )
         .value
         .toLowerCase()
         .trim();
 
 
-    const filter =
-      document.getElementById("statusFilter")
-        .value;
+    const statusFilter =
+      document.getElementById(
+        "statusFilter"
+      ).value;
+
+
+    const checkinFilter =
+      document.getElementById(
+        "checkinFilter"
+      ).value;
 
 
     const filtered =
-      guests.filter(guest => {
-
-        const text =
-          (
-            guest.full_name || ""
-          ).toLowerCase()
-          + " "
-          + (
-            guest.phone || ""
-          ).toLowerCase()
-          + " "
-          + (
-            guest.guest_code || ""
-          ).toLowerCase();
+      guests.filter(
+        guest => {
 
 
-        const matchesSearch =
-          text.includes(search);
+          const searchableText =
+
+            (
+              guest.full_name ||
+              ""
+            ).toLowerCase()
+
+            + " "
+
+            + (
+              guest.phone ||
+              ""
+            ).toLowerCase()
+
+            + " "
+
+            + (
+              guest.guest_code ||
+              ""
+            ).toLowerCase();
 
 
-        const matchesStatus =
-          filter === "all"
-          || guest.attendance_status === filter;
+          const matchesSearch =
+            searchableText.includes(
+              search
+            );
 
 
-        return (
-          matchesSearch
-          && matchesStatus
-        );
+          const matchesStatus =
 
-      });
+            statusFilter ===
+            "all"
+
+            ||
+
+            guest.attendance_status ===
+            statusFilter;
+
+
+          const isChecked =
+            Boolean(
+              guest.scanned_at
+            );
+
+
+          const matchesCheckin =
+
+            checkinFilter ===
+            "all"
+
+            ||
+
+            (
+              checkinFilter ===
+              "checked"
+              &&
+              isChecked
+            )
+
+            ||
+
+            (
+              checkinFilter ===
+              "not_checked"
+              &&
+              !isChecked
+            );
+
+
+          return (
+
+            matchesSearch
+
+            &&
+
+            matchesStatus
+
+            &&
+
+            matchesCheckin
+
+          );
+
+        }
+      );
 
 
     const body =
-      document.getElementById("guestBody");
+      document.getElementById(
+        "guestBody"
+      );
+
 
     body.innerHTML = "";
+
+
+    if (filtered.length === 0) {
+
+      body.innerHTML = `
+
+        <tr>
+
+          <td
+            colspan="7"
+            style="text-align:center;padding:30px"
+          >
+            Hakuna mgeni aliyepatikana.
+          </td>
+
+        </tr>
+
+      `;
+
+      return;
+
+    }
 
 
     filtered.forEach(
       (guest, index) => {
 
+
         const row =
-          document.createElement("tr");
+          document.createElement(
+            "tr"
+          );
 
 
         row.innerHTML = `
 
-          <td>${index + 1}</td>
-
           <td>
-            ${guest.full_name || "-"}
+            ${index + 1}
           </td>
 
-          <td>
-            ${guest.phone || "-"}
-          </td>
 
           <td>
-            ${guest.guest_code || "-"}
+            ${escapeHtml(
+              guest.full_name || "-"
+            )}
           </td>
 
+
           <td>
-            ${guest.invitation_type || "-"}
+            ${escapeHtml(
+              guest.phone || "-"
+            )}
           </td>
+
+
+          <td>
+            ${escapeHtml(
+              guest.guest_code || "-"
+            )}
+          </td>
+
+
+          <td>
+            ${escapeHtml(
+              guest.invitation_type || "-"
+            )}
+          </td>
+
 
           <td>
             ${statusLabel(
@@ -484,18 +1006,19 @@
             )}
           </td>
 
+
           <td>
-            ${
+            ${checkinLabel(
               guest.scanned_at
-                ? "✅ Checked-in"
-                : "—"
-            }
+            )}
           </td>
 
         `;
 
 
-        body.appendChild(row);
+        body.appendChild(
+          row
+        );
 
       }
     );
@@ -503,52 +1026,495 @@
   }
 
 
-  function statusLabel(status) {
+  /* ======================================================
+     CHECK-IN GUEST
+  ====================================================== */
 
-    if (status === "confirmed") {
+  async function checkInGuest() {
+
+
+    const input =
+      document.getElementById(
+        "checkinCode"
+      );
+
+
+    const button =
+      document.getElementById(
+        "checkinButton"
+      );
+
+
+    const message =
+      document.getElementById(
+        "checkinMessage"
+      );
+
+
+    const code =
+      input.value.trim();
+
+
+    message.innerHTML =
+      "";
+
+
+    if (!code) {
+
+      message.innerHTML = `
+
+        <div class="error-message">
+
+          ⚠️ Tafadhali andika Code ya mgeni.
+
+        </div>
+
+      `;
+
+      input.focus();
+
+      return;
+
+    }
+
+
+    button.disabled =
+      true;
+
+    button.innerText =
+      "Inachakata...";
+
+
+    try {
+
+
+      const response =
+        await fetch(
+          "/api/check-in",
+          {
+            method: "POST",
+
+            headers: {
+              "Content-Type":
+                "application/json"
+            },
+
+            body:
+              JSON.stringify({
+                code: code
+              })
+          }
+        );
+
+
+      const result =
+        await response.json();
+
+
+      /* ==========================
+         SUCCESS
+      ========================== */
+
+      if (response.ok &&
+          result.success) {
+
+
+        const guest =
+          result.guest;
+
+
+        message.innerHTML = `
+
+          <div class="success-message">
+
+            ✅ <strong>
+              CHECK-IN IMEFANIKIWA!
+            </strong>
+
+            <br><br>
+
+            Jina:
+            <strong>
+              ${escapeHtml(
+                guest.full_name
+              )}
+            </strong>
+
+            <br>
+
+            Code:
+            <strong>
+              ${escapeHtml(
+                guest.guest_code
+              )}
+            </strong>
+
+            <br>
+
+            Muda:
+            ${formatDate(
+              guest.scanned_at
+            )}
+
+          </div>
+
+        `;
+
+
+        input.value =
+          "";
+
+
+        await loadGuests();
+
+
+        return;
+
+      }
+
+
+      /* ==========================
+         ALREADY CHECKED IN
+      ========================== */
+
+      if (
+        response.status ===
+        409
+      ) {
+
+
+        const guest =
+          result.guest;
+
+
+        message.innerHTML = `
+
+          <div class="warning-message">
+
+            ⚠️ <strong>
+              MGENI HUYU AMESHA-CHECK-IN!
+            </strong>
+
+            <br><br>
+
+            Jina:
+            <strong>
+              ${escapeHtml(
+                guest?.full_name ||
+                "-"
+              )}
+            </strong>
+
+            <br>
+
+            Code:
+            <strong>
+              ${escapeHtml(
+                guest?.guest_code ||
+                code
+              )}
+            </strong>
+
+            <br>
+
+            Aliingia:
+            ${formatDate(
+              guest?.scanned_at
+            )}
+
+          </div>
+
+        `;
+
+
+        input.value =
+          "";
+
+
+        return;
+
+      }
+
+
+      /* ==========================
+         GUEST NOT FOUND
+      ========================== */
+
+      message.innerHTML = `
+
+        <div class="error-message">
+
+          ❌ ${
+            result.message ||
+            "Mgeni hakupatikana."
+          }
+
+        </div>
+
+      `;
+
+
+    } catch (error) {
+
+
+      message.innerHTML = `
+
+        <div class="error-message">
+
+          ❌ Kuna tatizo la kuwasiliana
+          na server.
+
+          <br>
+
+          ${escapeHtml(
+            error.message
+          )}
+
+        </div>
+
+      `;
+
+    }
+
+
+    finally {
+
+      button.disabled =
+        false;
+
+      button.innerText =
+        "CHECK-IN";
+
+    }
+
+  }
+
+
+  /* ======================================================
+     STATUS LABEL
+  ====================================================== */
+
+  function statusLabel(
+    status
+  ) {
+
+
+    if (
+      status ===
+      "confirmed"
+    ) {
 
       return `
-        <span class="status confirmed">
+
+        <span
+          class="status confirmed"
+        >
           Nitashiriki
         </span>
+
       `;
 
     }
 
 
-    if (status === "declined") {
+    if (
+      status ===
+      "declined"
+    ) {
 
       return `
-        <span class="status declined">
+
+        <span
+          class="status declined"
+        >
           Sitashiriki
         </span>
+
       `;
 
     }
 
 
-    if (status === "maybe") {
+    if (
+      status ===
+      "maybe"
+    ) {
 
       return `
-        <span class="status maybe">
+
+        <span
+          class="status maybe"
+        >
           Sina uhakika
         </span>
+
       `;
 
     }
 
 
     return `
-      <span class="status pending">
+
+      <span
+        class="status pending"
+      >
         Pending
       </span>
+
     `;
 
   }
 
 
+  /* ======================================================
+     CHECK-IN LABEL
+  ====================================================== */
+
+  function checkinLabel(
+    scannedAt
+  ) {
+
+
+    if (scannedAt) {
+
+      return `
+
+        <span
+          class="status checked"
+        >
+          ✅ Checked-in
+        </span>
+
+      `;
+
+    }
+
+
+    return `
+
+      <span
+        class="not-checked"
+      >
+        —
+      </span>
+
+    `;
+
+  }
+
+
+  /* ======================================================
+     FORMAT DATE
+  ====================================================== */
+
+  function formatDate(
+    value
+  ) {
+
+
+    if (!value) {
+      return "-";
+    }
+
+
+    try {
+
+      return new Date(
+        value
+      ).toLocaleString(
+        "sw-TZ",
+        {
+          dateStyle:
+            "medium",
+
+          timeStyle:
+            "short"
+        }
+      );
+
+    } catch {
+
+      return value;
+
+    }
+
+  }
+
+
+  /* ======================================================
+     SECURITY
+  ====================================================== */
+
+  function escapeHtml(
+    value
+  ) {
+
+
+    return String(
+      value
+    )
+
+      .replace(
+        /&/g,
+        "&amp;"
+      )
+
+      .replace(
+        /</g,
+        "&lt;"
+      )
+
+      .replace(
+        />/g,
+        "&gt;"
+      )
+
+      .replace(
+        /"/g,
+        "&quot;"
+      )
+
+      .replace(
+        /'/g,
+        "&#039;"
+      );
+
+  }
+
+
+  /* ======================================================
+     ENTER KEY
+  ====================================================== */
+
   document
-    .getElementById("search")
+    .getElementById(
+      "checkinCode"
+    )
+    .addEventListener(
+      "keydown",
+      function(event) {
+
+        if (
+          event.key ===
+          "Enter"
+        ) {
+
+          checkInGuest();
+
+        }
+
+      }
+    );
+
+
+  /* ======================================================
+     SEARCH EVENTS
+  ====================================================== */
+
+  document
+    .getElementById(
+      "search"
+    )
     .addEventListener(
       "input",
       renderGuests
@@ -556,16 +1522,35 @@
 
 
   document
-    .getElementById("statusFilter")
+    .getElementById(
+      "statusFilter"
+    )
     .addEventListener(
       "change",
       renderGuests
     );
 
 
+  document
+    .getElementById(
+      "checkinFilter"
+    )
+    .addEventListener(
+      "change",
+      renderGuests
+    );
+
+
+  /* ======================================================
+     START
+  ====================================================== */
+
   loadGuests();
+
 
 </script>
 
+
 </body>
+
 </html>
