@@ -824,6 +824,122 @@ app.get("/api/attendance", async (req, res) => {
   }
 });
 /* =========================================================
+   CHECK-IN GUEST API
+========================================================= */
+
+app.post("/api/check-in", async (req, res) => {
+  try {
+    const { code } = req.body;
+
+    if (!code) {
+      return res.status(400).json({
+        success: false,
+        message: "Code ya mgeni inahitajika."
+      });
+    }
+
+    const guestCode = String(code).trim();
+
+    /* -----------------------------------------------------
+       TAFUTA MGENI KWA CODE
+    ----------------------------------------------------- */
+
+    const { data: guest, error: findError } = await supabase
+      .from("guests")
+      .select("*")
+      .eq("guest_code", guestCode)
+      .order("created_at", { ascending: false })
+      .limit(1)
+      .maybeSingle();
+
+    if (findError) {
+      console.error(
+        "Check-in search error:",
+        findError.message
+      );
+
+      return res.status(500).json({
+        success: false,
+        message: findError.message
+      });
+    }
+
+    /* -----------------------------------------------------
+       MGENI HAKUPATIKANA
+    ----------------------------------------------------- */
+
+    if (!guest) {
+      return res.status(404).json({
+        success: false,
+        message: "Mgeni mwenye code hiyo hakupatikana."
+      });
+    }
+
+    /* -----------------------------------------------------
+       KAMA TAYARI AMEINGIA
+    ----------------------------------------------------- */
+
+    if (guest.scanned_at) {
+      return res.status(409).json({
+        success: false,
+        alreadyCheckedIn: true,
+        message: "Mgeni huyu tayari ameshaingia ukumbini.",
+        guest: guest
+      });
+    }
+
+    /* -----------------------------------------------------
+       CHECK-IN
+    ----------------------------------------------------- */
+
+    const { data: updatedGuest, error: updateError } =
+      await supabase
+        .from("guests")
+        .update({
+          scanned_at: new Date().toISOString()
+        })
+        .eq("id", guest.id)
+        .select()
+        .single();
+
+    if (updateError) {
+      console.error(
+        "Check-in update error:",
+        updateError.message
+      );
+
+      return res.status(500).json({
+        success: false,
+        message: updateError.message
+      });
+    }
+
+    console.log(
+      "Guest checked in:",
+      updatedGuest.full_name,
+      updatedGuest.guest_code
+    );
+
+    return res.status(200).json({
+      success: true,
+      message: "Mgeni ameingia ukumbini.",
+      guest: updatedGuest
+    });
+
+  } catch (error) {
+
+    console.error(
+      "Check-in error:",
+      error.message
+    );
+
+    return res.status(500).json({
+      success: false,
+      message: error.message
+    });
+  }
+  });
+/* =========================================================
    START SERVER
 ========================================================= */
 
