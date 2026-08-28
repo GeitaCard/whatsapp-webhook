@@ -6,9 +6,8 @@ const { createClient } = require("@supabase/supabase-js");
 
 const app = express();
 
-app.use(express.json({ limit: "2mb" }));
+app.use(express.json({ limit: "10mb" }));
 app.use(express.static("public"));
-
 
 /* =========================================================
    SUPABASE
@@ -20,16 +19,11 @@ const SUPABASE_URL =
 const SUPABASE_SERVICE_ROLE_KEY =
   process.env.SUPABASE_SERVICE_ROLE_KEY;
 
-
-if (
-  !SUPABASE_URL ||
-  !SUPABASE_SERVICE_ROLE_KEY
-) {
+if (!SUPABASE_URL || !SUPABASE_SERVICE_ROLE_KEY) {
   console.error(
-    "ERROR: SUPABASE_URL au SUPABASE_SERVICE_ROLE_KEY haijawekwa."
+    "ERROR: SUPABASE_URL au SUPABASE_SERVICE_ROLE_KEY haipo."
   );
 }
-
 
 const supabase =
   createClient(
@@ -70,13 +64,9 @@ const PORT =
   process.env.PORT ||
   10000;
 
-const INVITATION_TYPE =
-  process.env.INVITATION_TYPE ||
-  "premium";
-
 
 /* =========================================================
-   BASIC SERVER CHECK
+   SERVER START MESSAGE
 ========================================================= */
 
 console.log(
@@ -84,7 +74,7 @@ console.log(
 );
 
 console.log(
-  "GeitaCard WhatsApp Webhook starting..."
+  "GeitaCard system starting..."
 );
 
 console.log(
@@ -103,11 +93,6 @@ console.log(
 );
 
 console.log(
-  "Invitation Type:",
-  INVITATION_TYPE
-);
-
-console.log(
   "=============================================="
 );
 
@@ -121,7 +106,7 @@ app.get(
   (req, res) => {
 
     res.send(
-      "WhatsApp Webhook ya GeitaCard iko running!"
+      "GeitaCard system iko running!"
     );
 
   }
@@ -129,7 +114,74 @@ app.get(
 
 
 /* =========================================================
-   SUPABASE - SAVE GUEST
+   WHATSAPP WEBHOOK VERIFICATION
+========================================================= */
+
+app.get(
+  "/webhook",
+  (req, res) => {
+
+    const mode =
+      req.query["hub.mode"];
+
+    const token =
+      req.query["hub.verify_token"];
+
+    const challenge =
+      req.query["hub.challenge"];
+
+
+    console.log(
+      "Webhook verification request received"
+    );
+
+
+    if (
+      mode === "subscribe" &&
+      token === VERIFY_TOKEN
+    ) {
+
+      console.log(
+        "Webhook verified successfully"
+      );
+
+      return res
+        .status(200)
+        .send(challenge);
+
+    }
+
+
+    console.log(
+      "Webhook verification failed"
+    );
+
+
+    return res.sendStatus(403);
+
+  }
+);
+
+
+/* =========================================================
+   NORMALIZE PHONE
+========================================================= */
+
+function normalizePhone(phone) {
+
+  return String(
+    phone || ""
+  )
+    .replace(
+      /\D/g,
+      ""
+    );
+
+}
+
+
+/* =========================================================
+   SAVE GUEST
 ========================================================= */
 
 async function saveGuest(
@@ -139,23 +191,39 @@ async function saveGuest(
 ) {
 
   const phone =
-    String(to)
-      .replace(/\D/g, "");
-
-
-  const guestCode =
-    String(code)
-      .trim();
+    normalizePhone(to);
 
 
   /*
-    Tunatumia qr_token kwa compatibility
-    na database yako ya sasa.
+    QR token inaweza kubaki kwenye database
+    kwa matumizi ya baadaye.
+
+    Lakini CHECK-IN ya sasa inatumia
+    guest_code moja kwa moja.
   */
 
   const qrToken =
     crypto.randomUUID();
 
+
+  const invitationType =
+    code
+      .toUpperCase()
+      .endsWith("-KAMATI")
+      ? "KAMATI"
+      : code
+          .toUpperCase()
+          .endsWith("-SINGLE")
+        ? "SINGLE"
+        : (
+            process.env.INVITATION_TYPE ||
+            "premium"
+          );
+
+
+  /*
+    SAVE GUEST
+  */
 
   const {
     data,
@@ -168,19 +236,19 @@ async function saveGuest(
       {
 
         full_name:
-          String(name).trim(),
+          name,
 
         phone:
           phone,
 
         guest_code:
-          guestCode,
+          code,
 
         qr_token:
           qrToken,
 
         invitation_type:
-          INVITATION_TYPE,
+          invitationType,
 
         attendance_status:
           "pending"
@@ -189,6 +257,7 @@ async function saveGuest(
     ])
 
     .select()
+
     .single();
 
 
@@ -205,7 +274,7 @@ async function saveGuest(
 
 
   console.log(
-    "Guest saved to Supabase:",
+    "Guest saved:",
     data.full_name,
     data.guest_code
   );
@@ -233,7 +302,9 @@ async function sendText(
 
     const response =
       await axios.post(
+
         url,
+
         {
 
           messaging_product:
@@ -243,7 +314,7 @@ async function sendText(
             "individual",
 
           to:
-            to,
+            normalizePhone(to),
 
           type:
             "text",
@@ -259,6 +330,7 @@ async function sendText(
           }
 
         },
+
         {
 
           headers: {
@@ -272,15 +344,18 @@ async function sendText(
           }
 
         }
+
       );
 
 
     console.log(
-      "Text reply sent."
+      "Text reply sent:",
+      response.data
     );
 
 
     return response.data;
+
 
   } catch (error) {
 
@@ -351,10 +426,10 @@ async function sendInvitation(
 
 
   /* -------------------------------------------------------
-     BODY
-     
-     {{1}} = jina
-     {{2}} = code
+     BODY VARIABLES
+
+     {{1}} = Jina
+     {{2}} = Code
   ------------------------------------------------------- */
 
   components.push({
@@ -379,6 +454,11 @@ async function sendInvitation(
         type:
           "text",
 
+        /*
+          CODE INATUMWA EXACTLY
+          KAMA ILIVYO.
+        */
+
         text:
           String(code)
 
@@ -393,7 +473,9 @@ async function sendInvitation(
 
     const response =
       await axios.post(
+
         url,
+
         {
 
           messaging_product:
@@ -403,7 +485,7 @@ async function sendInvitation(
             "individual",
 
           to:
-            to,
+            normalizePhone(to),
 
           type:
             "template",
@@ -426,6 +508,7 @@ async function sendInvitation(
           }
 
         },
+
         {
 
           headers: {
@@ -439,18 +522,18 @@ async function sendInvitation(
           }
 
         }
+
       );
 
 
     console.log(
       "Invitation sent:",
-      to,
-      name,
-      code
+      response.data
     );
 
 
     return response.data;
+
 
   } catch (error) {
 
@@ -473,7 +556,7 @@ async function sendInvitation(
 
 
 /* =========================================================
-   SUPABASE - UPDATE ATTENDANCE
+   UPDATE ATTENDANCE
 ========================================================= */
 
 async function updateAttendance(
@@ -482,8 +565,7 @@ async function updateAttendance(
 ) {
 
   const normalizedPhone =
-    String(phone)
-      .replace(/\D/g, "");
+    normalizePhone(phone);
 
 
   const {
@@ -530,7 +612,7 @@ async function updateAttendance(
   if (!guest) {
 
     console.log(
-      "Guest not found for phone:",
+      "Guest not found:",
       normalizedPhone
     );
 
@@ -559,6 +641,7 @@ async function updateAttendance(
     )
 
     .select()
+
     .single();
 
 
@@ -587,54 +670,120 @@ async function updateAttendance(
 
 
 /* =========================================================
-   WHATSAPP WEBHOOK VERIFICATION
+   PROCESS BUTTON REPLY
 ========================================================= */
 
-app.get(
-  "/webhook",
-  (req, res) => {
+async function processAttendanceReply(
+  from,
+  buttonId,
+  buttonTitle
+) {
 
-    const mode =
-      req.query["hub.mode"];
-
-    const token =
-      req.query["hub.verify_token"];
-
-    const challenge =
-      req.query["hub.challenge"];
+  const normalizedId =
+    String(
+      buttonId || ""
+    )
+      .toLowerCase()
+      .trim();
 
 
-    console.log(
-      "Webhook verification request received"
+  const normalizedTitle =
+    String(
+      buttonTitle || ""
+    )
+      .toLowerCase()
+      .trim();
+
+
+  /* -------------------------------------------------------
+     NITASHIRIKI
+  ------------------------------------------------------- */
+
+  if (
+    normalizedId ===
+      "nitashiriki" ||
+    normalizedTitle ===
+      "nitashiriki"
+  ) {
+
+    await updateAttendance(
+      from,
+      "confirmed"
     );
 
 
-    if (
-      mode === "subscribe" &&
-      token === VERIFY_TOKEN
-    ) {
-
-      console.log(
-        "Webhook verified successfully"
-      );
-
-
-      return res
-        .status(200)
-        .send(challenge);
-
-    }
-
-
-    console.log(
-      "Webhook verification failed"
+    await sendText(
+      from,
+      "Asante kwa jibu lako. Karibu sana GeitaCard! Tunafurahi kuthibitisha kuwa utashiriki."
     );
 
 
-    return res.sendStatus(403);
+    return true;
 
   }
-);
+
+
+  /* -------------------------------------------------------
+     SITASHIRIKI
+  ------------------------------------------------------- */
+
+  if (
+    normalizedId ===
+      "sitashiriki" ||
+    normalizedTitle ===
+      "sitashiriki"
+  ) {
+
+    await updateAttendance(
+      from,
+      "declined"
+    );
+
+
+    await sendText(
+      from,
+      "Asante kwa taarifa yako. Tumejua kuwa hutashiriki. Karibu tena wakati mwingine. GeitaCard."
+    );
+
+
+    return true;
+
+  }
+
+
+  /* -------------------------------------------------------
+     SINA UHAKIKA
+  ------------------------------------------------------- */
+
+  if (
+    normalizedId ===
+      "sina_uhakika" ||
+    normalizedId ===
+      "sinauhakika" ||
+    normalizedTitle ===
+      "sina uhakika"
+  ) {
+
+    await updateAttendance(
+      from,
+      "maybe"
+    );
+
+
+    await sendText(
+      from,
+      "Asante kwa taarifa yako. Tafadhali tupatie jibu lako litakapokuwa tayari. Karibu sana GeitaCard."
+    );
+
+
+    return true;
+
+  }
+
+
+  return false;
+
+}
 
 
 /* =========================================================
@@ -656,7 +805,7 @@ app.post(
       );
 
       console.log(
-        "Incoming WhatsApp webhook:"
+        "Incoming WhatsApp webhook"
       );
 
       console.log(
@@ -672,9 +821,9 @@ app.post(
       );
 
 
-      /* -----------------------------------------------------
+      /* ---------------------------------------------------
          BASIC CHECK
-      ----------------------------------------------------- */
+      --------------------------------------------------- */
 
       if (
         body.object !==
@@ -706,9 +855,9 @@ app.post(
         changes[0].value;
 
 
-      /* -----------------------------------------------------
-         MESSAGE STATUS
-      ----------------------------------------------------- */
+      /* ---------------------------------------------------
+         STATUS
+      --------------------------------------------------- */
 
       if (
         value.statuses &&
@@ -730,7 +879,7 @@ app.post(
         ) {
 
           console.log(
-            "WhatsApp status error:",
+            "Status errors:",
             JSON.stringify(
               status.errors,
               null,
@@ -746,9 +895,9 @@ app.post(
       }
 
 
-      /* -----------------------------------------------------
-         NO MESSAGE
-      ----------------------------------------------------- */
+      /* ---------------------------------------------------
+         MESSAGE
+      --------------------------------------------------- */
 
       if (
         !value.messages ||
@@ -779,12 +928,13 @@ app.post(
       );
 
 
-      /* =====================================================
-         NORMAL TEXT
-      ===================================================== */
+      /* ---------------------------------------------------
+         TEXT
+      --------------------------------------------------- */
 
       if (
-        message.type === "text"
+        message.type ===
+        "text"
       ) {
 
         const text =
@@ -803,12 +953,13 @@ app.post(
       }
 
 
-      /* =====================================================
-         OLD STYLE BUTTON
-      ===================================================== */
+      /* ---------------------------------------------------
+         OLD BUTTON FORMAT
+      --------------------------------------------------- */
 
       if (
-        message.type === "button"
+        message.type ===
+        "button"
       ) {
 
         const buttonId =
@@ -821,100 +972,11 @@ app.post(
           "";
 
 
-        const normalizedId =
-          buttonId
-            .toLowerCase()
-            .trim();
-
-
-        const normalizedTitle =
+        await processAttendanceReply(
+          from,
+          buttonId,
           buttonTitle
-            .toLowerCase()
-            .trim();
-
-
-        /* NITASHIRIKI */
-
-        if (
-          normalizedId ===
-            "nitashiriki" ||
-
-          normalizedTitle ===
-            "nitashiriki"
-        ) {
-
-          await updateAttendance(
-            from,
-            "confirmed"
-          );
-
-
-          await sendText(
-            from,
-            "Asante kwa jibu lako. Karibu sana GeitaCard! Tunafurahi kuthibitisha kuwa utashiriki."
-          );
-
-
-          return res.sendStatus(200);
-
-        }
-
-
-        /* SITASHIRIKI */
-
-        if (
-          normalizedId ===
-            "sitashiriki" ||
-
-          normalizedTitle ===
-            "sitashiriki"
-        ) {
-
-          await updateAttendance(
-            from,
-            "declined"
-          );
-
-
-          await sendText(
-            from,
-            "Asante kwa taarifa yako. Tumejua kuwa hutashiriki. Karibu tena wakati mwingine. GeitaCard."
-          );
-
-
-          return res.sendStatus(200);
-
-        }
-
-
-        /* SINA UHAKIKA */
-
-        if (
-          normalizedId ===
-            "sina_uhakika" ||
-
-          normalizedId ===
-            "sinauhakika" ||
-
-          normalizedTitle ===
-            "sina uhakika"
-        ) {
-
-          await updateAttendance(
-            from,
-            "maybe"
-          );
-
-
-          await sendText(
-            from,
-            "Asante kwa taarifa yako. Tafadhali tupatie jibu lako litakapokuwa tayari. Karibu sana GeitaCard."
-          );
-
-
-          return res.sendStatus(200);
-
-        }
+        );
 
 
         return res.sendStatus(200);
@@ -922,12 +984,13 @@ app.post(
       }
 
 
-      /* =====================================================
+      /* ---------------------------------------------------
          INTERACTIVE BUTTON
-      ===================================================== */
+      --------------------------------------------------- */
 
       if (
-        message.type === "interactive" &&
+        message.type ===
+          "interactive" &&
         message.interactive?.type ===
           "button_reply"
       ) {
@@ -946,106 +1009,21 @@ app.post(
           "";
 
 
-        const normalizedId =
-          buttonId
-            .toLowerCase()
-            .trim();
-
-
-        const normalizedTitle =
+        await processAttendanceReply(
+          from,
+          buttonId,
           buttonTitle
-            .toLowerCase()
-            .trim();
-
-
-        /* NITASHIRIKI */
-
-        if (
-          normalizedId ===
-            "nitashiriki" ||
-
-          normalizedTitle ===
-            "nitashiriki"
-        ) {
-
-          await updateAttendance(
-            from,
-            "confirmed"
-          );
-
-
-          await sendText(
-            from,
-            "Asante kwa jibu lako. Karibu sana GeitaCard! Tunafurahi kuthibitisha kuwa utashiriki."
-          );
-
-
-          return res.sendStatus(200);
-
-        }
-
-
-        /* SITASHIRIKI */
-
-        if (
-          normalizedId ===
-            "sitashiriki" ||
-
-          normalizedTitle ===
-            "sitashiriki"
-        ) {
-
-          await updateAttendance(
-            from,
-            "declined"
-          );
-
-
-          await sendText(
-            from,
-            "Asante kwa taarifa yako. Tumejua kuwa hutashiriki. Karibu tena wakati mwingine. GeitaCard."
-          );
-
-
-          return res.sendStatus(200);
-
-        }
-
-
-        /* SINA UHAKIKA */
-
-        if (
-          normalizedId ===
-            "sina_uhakika" ||
-
-          normalizedId ===
-            "sinauhakika" ||
-
-          normalizedTitle ===
-            "sina uhakika"
-        ) {
-
-          await updateAttendance(
-            from,
-            "maybe"
-          );
-
-
-          await sendText(
-            from,
-            "Asante kwa taarifa yako. Tafadhali tupatie jibu lako litakapokuwa tayari. Karibu sana GeitaCard."
-          );
-
-
-          return res.sendStatus(200);
-
-        }
+        );
 
 
         return res.sendStatus(200);
 
       }
 
+
+      /* ---------------------------------------------------
+         OTHER MESSAGE TYPES
+      --------------------------------------------------- */
 
       console.log(
         "Unhandled message type:",
@@ -1066,8 +1044,8 @@ app.post(
 
 
       /*
-        WhatsApp webhook ipokee 200 ili isirudie
-        request mara kwa mara kwa error za ndani.
+        WhatsApp inahitaji webhook response
+        isirudishe error loop.
       */
 
       return res.sendStatus(200);
@@ -1079,7 +1057,7 @@ app.post(
 
 
 /* =========================================================
-   SEND ONE INVITATION
+   SEND SINGLE INVITATION
 ========================================================= */
 
 app.post(
@@ -1114,27 +1092,42 @@ app.post(
       }
 
 
+      /*
+        CODE INABAKI EXACTLY
+        KAMA ILIVYOTUMWA.
+      */
+
+      const cleanTo =
+        String(to).trim();
+
+      const cleanName =
+        String(name).trim();
+
+      const cleanCode =
+        String(code).trim();
+
+
       console.log(
         "=============================================="
       );
 
       console.log(
-        "Sending one invitation..."
+        "Sending single invitation"
       );
 
       console.log(
         "To:",
-        to
+        cleanTo
       );
 
       console.log(
         "Name:",
-        name
+        cleanName
       );
 
       console.log(
         "Code:",
-        code
+        cleanCode
       );
 
       console.log(
@@ -1142,24 +1135,23 @@ app.post(
       );
 
 
-      /*
-        Kwanza tunatuma WhatsApp.
-        Tukifanikiwa ndipo tuna-save guest.
-      */
+      /* SEND WHATSAPP FIRST */
 
       const result =
         await sendInvitation(
-          to,
-          name,
-          code
+          cleanTo,
+          cleanName,
+          cleanCode
         );
 
 
+      /* SAVE ONLY IF WHATSAPP SENT */
+
       const guest =
         await saveGuest(
-          to,
-          name,
-          code
+          cleanTo,
+          cleanName,
+          cleanCode
         );
 
 
@@ -1207,25 +1199,6 @@ app.post(
    BULK SEND
 ========================================================= */
 
-/*
-POST /send-bulk
-
-Body:
-
-{
-  "contacts": [
-    {
-      "to": "2557XXXXXXXX",
-      "name": "Rajabu",
-      "code": "9749-Rajabu"
-    }
-  ]
-}
-
-Kila invitation iliyofanikiwa kutumwa
-ita-save guest kwenye Supabase.
-*/
-
 app.post(
   "/send-bulk",
   async (req, res) => {
@@ -1266,30 +1239,7 @@ app.post(
             false,
 
           message:
-            "Hakuna wageni wa kutuma."
-
-        });
-
-      }
-
-
-      /*
-        Limit ya usalama kwa request moja.
-        Dashboard inaweza kutuma batches zaidi
-        ikiwa tutahitaji.
-      */
-
-      if (
-        contacts.length > 500
-      ) {
-
-        return res.status(400).json({
-
-          success:
-            false,
-
-          message:
-            "Request moja hairuhusiwi kuzidi wageni 500."
+            "Hakuna contact iliyotumwa."
 
         });
 
@@ -1299,22 +1249,27 @@ app.post(
       const results = [];
 
 
-      let sentCount =
-        0;
+      console.log(
+        "=============================================="
+      );
 
-      let failedCount =
-        0;
+      console.log(
+        "BULK SEND STARTED"
+      );
 
-      let savedCount =
-        0;
+      console.log(
+        "Total contacts:",
+        contacts.length
+      );
 
-      let saveFailedCount =
-        0;
+      console.log(
+        "=============================================="
+      );
 
 
-      /* -----------------------------------------------------
-         LOOP
-      ----------------------------------------------------- */
+      /* ---------------------------------------------------
+         PROCESS ONE BY ONE
+      --------------------------------------------------- */
 
       for (
         let i = 0;
@@ -1323,22 +1278,46 @@ app.post(
       ) {
 
         const contact =
-          contacts[i] || {};
+          contacts[i];
 
 
         const to =
-          contact.to;
+          contact.to
+            ? String(
+                contact.to
+              ).trim()
+            : "";
+
 
         const name =
-          contact.name;
+          contact.name
+            ? String(
+                contact.name
+              ).trim()
+            : "";
+
+
+        /*
+          MUHIMU SANA:
+
+          CODE HII HAPA
+          HAITENGENEZWI.
+
+          INACHUKULIWA MOJA KWA MOJA
+          KUTOKA EXCEL/CSV.
+        */
 
         const code =
-          contact.code;
+          contact.code
+            ? String(
+                contact.code
+              ).trim()
+            : "";
 
 
-        /* ---------------------------------------------------
+        /* -------------------------------------------------
            VALIDATION
-        --------------------------------------------------- */
+        ------------------------------------------------- */
 
         if (
           !to ||
@@ -1346,31 +1325,22 @@ app.post(
           !code
         ) {
 
-          failedCount++;
-
-
           results.push({
 
-            index:
-              i + 1,
-
             to:
-              to || "",
+              to,
 
             name:
-              name || "",
+              name,
 
             code:
-              code || "",
+              code,
 
             success:
               false,
 
-            saved:
-              false,
-
             error:
-              "Missing to, name or code"
+              "Namba, Jina na Code vinahitajika."
 
           });
 
@@ -1380,134 +1350,127 @@ app.post(
         }
 
 
-        const normalizedPhone =
-          String(to)
-            .replace(/\D/g, "");
-
-
         try {
 
-          /* -----------------------------------------------
-             SEND WHATSAPP
-          ----------------------------------------------- */
+          console.log(
+            "----------------------------------------------"
+          );
 
-          const result =
+          console.log(
+            `Bulk ${i + 1}/${contacts.length}`
+          );
+
+          console.log(
+            "To:",
+            to
+          );
+
+          console.log(
+            "Name:",
+            name
+          );
+
+          console.log(
+            "Code:",
+            code
+          );
+
+
+          /* ---------------------------------------------
+             1. SEND WHATSAPP
+          --------------------------------------------- */
+
+          const whatsappResult =
             await sendInvitation(
-              normalizedPhone,
-              String(name).trim(),
-              String(code).trim()
+              to,
+              name,
+              code
             );
 
 
-          sentCount++;
+          /* ---------------------------------------------
+             2. SAVE TO SUPABASE
+          --------------------------------------------- */
 
-
-          let guest =
-            null;
-
-          let saved =
-            false;
-
-
-          /* -----------------------------------------------
-             SAVE SUPABASE
-          ----------------------------------------------- */
-
-          try {
-
-            guest =
-              await saveGuest(
-                normalizedPhone,
-                String(name).trim(),
-                String(code).trim()
-              );
-
-
-            saved =
-              true;
-
-            savedCount++;
-
-
-          } catch (saveError) {
-
-            saveFailedCount++;
-
-
-            console.error(
-              "Guest save failed after WhatsApp send:",
-              saveError.message
+          const guest =
+            await saveGuest(
+              to,
+              name,
+              code
             );
 
-          }
 
+          /* ---------------------------------------------
+             3. RESULT
+          --------------------------------------------- */
 
           results.push({
 
-            index:
-              i + 1,
-
             to:
-              normalizedPhone,
+              to,
 
             name:
-              String(name).trim(),
+              name,
 
             code:
-              String(code).trim(),
+              code,
 
             success:
               true,
-
-            saved:
-              saved,
 
             guest:
               guest,
 
             result:
-              result
+              whatsappResult
 
           });
 
 
-        } catch (sendError) {
+          console.log(
+            "SUCCESS:",
+            name,
+            code
+          );
 
-          failedCount++;
+
+        } catch (error) {
+
+          console.error(
+            "Bulk item error:",
+            error.response?.data ||
+            error.message
+          );
 
 
           results.push({
 
-            index:
-              i + 1,
-
             to:
-              normalizedPhone,
+              to,
 
             name:
-              String(name).trim(),
+              name,
 
             code:
-              String(code).trim(),
+              code,
 
             success:
               false,
 
-            saved:
-              false,
-
             error:
-              sendError.response?.data ||
-              sendError.message
+              error.response?.data ||
+              error.message
 
           });
 
         }
 
 
-        /* -----------------------------------------------
-           PAUSE
-        ----------------------------------------------- */
+        /*
+          Pause kati ya message.
+
+          Tunatumia sekunde 1 hapa.
+        */
 
         if (
           i <
@@ -1518,7 +1481,7 @@ app.post(
             resolve =>
               setTimeout(
                 resolve,
-                700
+                1000
               )
           );
 
@@ -1527,16 +1490,30 @@ app.post(
       }
 
 
-      /* -----------------------------------------------------
-         RESPONSE
-      ----------------------------------------------------- */
+      /* ---------------------------------------------------
+         SUMMARY
+      --------------------------------------------------- */
+
+      const successful =
+        results.filter(
+          item =>
+            item.success
+        ).length;
+
+
+      const failed =
+        results.filter(
+          item =>
+            !item.success
+        ).length;
+
 
       console.log(
         "=============================================="
       );
 
       console.log(
-        "BULK SEND FINISHED"
+        "BULK SEND COMPLETE"
       );
 
       console.log(
@@ -1545,23 +1522,13 @@ app.post(
       );
 
       console.log(
-        "Sent:",
-        sentCount
+        "Successful:",
+        successful
       );
 
       console.log(
         "Failed:",
-        failedCount
-      );
-
-      console.log(
-        "Saved:",
-        savedCount
-      );
-
-      console.log(
-        "Save failed:",
-        saveFailedCount
+        failed
       );
 
       console.log(
@@ -1577,17 +1544,11 @@ app.post(
         total:
           contacts.length,
 
-        sent:
-          sentCount,
+        successful:
+          successful,
 
         failed:
-          failedCount,
-
-        saved:
-          savedCount,
-
-        saveFailed:
-          saveFailedCount,
+          failed,
 
         results:
           results
@@ -1599,6 +1560,7 @@ app.post(
 
       console.error(
         "Bulk send error:",
+        error.response?.data ||
         error.message
       );
 
@@ -1609,6 +1571,7 @@ app.post(
           false,
 
         error:
+          error.response?.data ||
           error.message
 
       });
@@ -1676,10 +1639,10 @@ app.get(
           true,
 
         total:
-          data.length,
+          data?.length || 0,
 
         guests:
-          data
+          data || []
 
       });
 
@@ -1723,14 +1686,16 @@ app.get(
       );
 
 
+      /* ---------------------------------------------------
+         GET GUESTS
+      --------------------------------------------------- */
+
       const {
         data,
         error
       } = await supabase
 
-        .from(
-          "guests"
-        )
+        .from("guests")
 
         .select(
           "full_name, phone, guest_code, invitation_type, attendance_status, scanned_at, created_at"
@@ -1766,8 +1731,12 @@ app.get(
       }
 
 
+      /* ---------------------------------------------------
+         CONVERT DATA
+      --------------------------------------------------- */
+
       const rows =
-        data.map(
+        (data || []).map(
           (guest, index) => ({
 
             "#":
@@ -1787,7 +1756,7 @@ app.get(
 
             "Ushiriki":
               guest.attendance_status ===
-                "confirmed"
+              "confirmed"
 
                 ? "Nitashiriki"
 
@@ -1815,17 +1784,34 @@ app.get(
                   ).toLocaleString(
                     "sw-TZ"
                   )
+                : "",
+
+            "Muda wa Kutengenezwa":
+              guest.created_at
+                ? new Date(
+                    guest.created_at
+                  ).toLocaleString(
+                    "sw-TZ"
+                  )
                 : ""
 
           })
         );
 
 
+      /* ---------------------------------------------------
+         CREATE WORKSHEET
+      --------------------------------------------------- */
+
       const worksheet =
         XLSX.utils.json_to_sheet(
           rows
         );
 
+
+      /* ---------------------------------------------------
+         COLUMN WIDTHS
+      --------------------------------------------------- */
 
       worksheet["!cols"] = [
 
@@ -1836,7 +1822,7 @@ app.get(
 
         {
           wch:
-            25
+            30
         },
 
         {
@@ -1861,7 +1847,12 @@ app.get(
 
         {
           wch:
-            18
+            20
+        },
+
+        {
+          wch:
+            25
         },
 
         {
@@ -1871,6 +1862,10 @@ app.get(
 
       ];
 
+
+      /* ---------------------------------------------------
+         CREATE WORKBOOK
+      --------------------------------------------------- */
 
       const workbook =
         XLSX.utils.book_new();
@@ -1882,6 +1877,10 @@ app.get(
         "Wahudhuriaji"
       );
 
+
+      /* ---------------------------------------------------
+         WRITE EXCEL
+      --------------------------------------------------- */
 
       const buffer =
         XLSX.write(
@@ -1897,6 +1896,10 @@ app.get(
           }
         );
 
+
+      /* ---------------------------------------------------
+         SEND FILE
+      --------------------------------------------------- */
 
       const filename =
         "GeitaCard_Wahudhuriaji.xlsx";
@@ -1963,7 +1966,13 @@ app.post(
       } = req.body;
 
 
-      if (!code) {
+      /* ---------------------------------------------------
+         VALIDATION
+      --------------------------------------------------- */
+
+      if (
+        !code
+      ) {
 
         return res.status(400).json({
 
@@ -1977,39 +1986,36 @@ app.post(
 
       }
 
+
+      /*
+        Code ya CHECK-IN
+        inatumika kama ilivyo.
+
+        Tunatoa spaces za mwanzo/mwisho tu.
+      */
 
       const guestCode =
-        String(code)
-          .trim();
+        String(
+          code
+        ).trim();
 
 
-      if (!guestCode) {
-
-        return res.status(400).json({
-
-          success:
-            false,
-
-          message:
-            "Code ya mgeni inahitajika."
-
-        });
-
-      }
+      console.log(
+        "CHECK-IN CODE:",
+        guestCode
+      );
 
 
-      /* -----------------------------------------------------
-         SEARCH GUEST
-      ----------------------------------------------------- */
+      /* ---------------------------------------------------
+         SEARCH GUEST BY CODE
+      --------------------------------------------------- */
 
       const {
         data: guest,
         error: findError
       } = await supabase
 
-        .from(
-          "guests"
-        )
+        .from("guests")
 
         .select("*")
 
@@ -2052,9 +2058,9 @@ app.post(
       }
 
 
-      /* -----------------------------------------------------
-         NOT FOUND
-      ----------------------------------------------------- */
+      /* ---------------------------------------------------
+         GUEST NOT FOUND
+      --------------------------------------------------- */
 
       if (!guest) {
 
@@ -2071,9 +2077,9 @@ app.post(
       }
 
 
-      /* -----------------------------------------------------
+      /* ---------------------------------------------------
          ALREADY CHECKED IN
-      ----------------------------------------------------- */
+      --------------------------------------------------- */
 
       if (
         guest.scanned_at
@@ -2098,24 +2104,21 @@ app.post(
       }
 
 
-      /* -----------------------------------------------------
+      /* ---------------------------------------------------
          CHECK-IN
-      ----------------------------------------------------- */
+      --------------------------------------------------- */
 
       const {
         data: updatedGuest,
         error: updateError
       } = await supabase
 
-        .from(
-          "guests"
-        )
+        .from("guests")
 
         .update({
 
           scanned_at:
-            new Date()
-              .toISOString()
+            new Date().toISOString()
 
         })
 
@@ -2195,6 +2198,28 @@ app.post(
 
 
 /* =========================================================
+   HEALTH CHECK
+========================================================= */
+
+app.get(
+  "/health",
+  (req, res) => {
+
+    res.status(200).json({
+
+      success:
+        true,
+
+      message:
+        "GeitaCard server iko hai."
+
+    });
+
+  }
+);
+
+
+/* =========================================================
    START SERVER
 ========================================================= */
 
@@ -2208,6 +2233,10 @@ app.listen(
 
     console.log(
       `Server running on port ${PORT}`
+    );
+
+    console.log(
+      "GeitaCard system READY"
     );
 
     console.log(
