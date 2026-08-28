@@ -782,7 +782,47 @@ app.post("/send-bulk", async (req, res) => {
     });
   }
 });
+/* =========================================================
+   ATTENDANCE DASHBOARD API
+========================================================= */
 
+app.get("/api/attendance", async (req, res) => {
+  try {
+    const { data, error } = await supabase
+      .from("attendance_list")
+      .select("*")
+      .order("created_at", { ascending: false });
+
+    if (error) {
+      console.error(
+        "Attendance API error:",
+        error.message
+      );
+
+      return res.status(500).json({
+        success: false,
+        error: error.message
+      });
+    }
+
+    return res.status(200).json({
+      success: true,
+      total: data.length,
+      guests: data
+    });
+
+  } catch (error) {
+    console.error(
+      "Attendance API error:",
+      error.message
+    );
+
+    return res.status(500).json({
+      success: false,
+      error: error.message
+    });
+  }
+});
 /* =========================================================
    START SERVER
 ========================================================= */
