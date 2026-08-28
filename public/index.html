@@ -1,373 +1,301 @@
 <!DOCTYPE html>
 <html lang="sw">
-
 <head>
-
-  <meta charset="UTF-8">
-
-  <meta
-    name="viewport"
-    content="width=device-width, initial-scale=1.0"
-  >
-
-  <title>GeitaCard - Dashboard</title>
-
-  <style>
-
-    * {
-      box-sizing: border-box;
-      margin: 0;
-      padding: 0;
-    }
-
-    body {
-      font-family: Arial, sans-serif;
-      background: #f4f6f8;
-      color: #222;
-    }
-
-    header {
-      background: #111827;
-      color: white;
-      padding: 20px;
-    }
-
-    header h1 {
-      font-size: 24px;
-    }
-
-    header p {
-      margin-top: 5px;
-      opacity: 0.8;
-    }
-
-    .container {
-      max-width: 1200px;
-      margin: auto;
-      padding: 20px;
-    }
-
-    /* ==============================
-       STATISTICS
-    ============================== */
-
-    .stats {
-      display: grid;
-      grid-template-columns:
-        repeat(auto-fit, minmax(170px, 1fr));
-
-      gap: 15px;
-      margin-bottom: 20px;
-    }
-
-    .card {
-      background: white;
-      padding: 20px;
-      border-radius: 12px;
-
-      box-shadow:
-        0 2px 8px rgba(0,0,0,0.08);
-    }
-
-    .card h3 {
-      font-size: 14px;
-      color: #666;
-      margin-bottom: 10px;
-    }
-
-    .number {
-      font-size: 30px;
-      font-weight: bold;
-    }
-
-    /* ==============================
-       CHECK-IN
-    ============================== */
-
-    .checkin-box {
-      background: white;
-      padding: 20px;
-      border-radius: 12px;
-      margin-bottom: 20px;
-
-      box-shadow:
-        0 2px 8px rgba(0,0,0,0.08);
-    }
-
-    .checkin-box h2 {
-      margin-bottom: 8px;
-      font-size: 20px;
-    }
-
-    .checkin-box p {
-      color: #666;
-      margin-bottom: 15px;
-    }
-
-    .checkin-form {
-      display: flex;
-      gap: 10px;
-      flex-wrap: wrap;
-    }
-
-    .checkin-form input {
-      flex: 1;
-      min-width: 220px;
-
-      padding: 14px;
-
-      border: 1px solid #ddd;
-      border-radius: 8px;
-
-      font-size: 16px;
-    }
-
-    .checkin-button {
-      background: #111827;
-      color: white;
-
-      border: none;
-      border-radius: 8px;
-
-      padding: 14px 22px;
-
-      font-size: 16px;
-      font-weight: bold;
-
-      cursor: pointer;
-    }
-
-    .checkin-button:disabled {
-      opacity: 0.6;
-      cursor: not-allowed;
-    }
-
-    #checkinMessage {
-      margin-top: 15px;
-      font-weight: bold;
-    }
-
-    .success-message {
-      color: #166534;
-      background: #dcfce7;
-
-      padding: 12px;
-      border-radius: 8px;
-    }
-
-    .error-message {
-      color: #991b1b;
-      background: #fee2e2;
-
-      padding: 12px;
-      border-radius: 8px;
-    }
-
-    .warning-message {
-      color: #92400e;
-      background: #fef3c7;
-
-      padding: 12px;
-      border-radius: 8px;
-    }
-
-    /* ==============================
-       CONTROLS
-    ============================== */
-
-    .controls {
-      background: white;
-
-      padding: 15px;
-
-      border-radius: 12px;
-
-      margin-bottom: 20px;
-
-      display: flex;
-
-      gap: 10px;
-
-      flex-wrap: wrap;
-    }
-
-    .controls input,
-    .controls select,
-    .controls button {
-
-      padding: 12px;
-
-      border-radius: 8px;
-
-      border: 1px solid #ddd;
-
-      font-size: 15px;
-    }
-
-    .controls input {
-
-      flex: 1;
-
-      min-width: 220px;
-    }
-
-    .controls button {
-
-      background: #111827;
-
-      color: white;
-
-      border: none;
-
-      cursor: pointer;
-
-      font-weight: bold;
-    }
-
-    .controls button:hover {
-      opacity: 0.9;
-    }
-
-    /* ==============================
-       TABLE
-    ============================== */
-
-    .table-container {
-
-      background: white;
-
-      border-radius: 12px;
-
-      overflow-x: auto;
-
-      box-shadow:
-        0 2px 8px rgba(0,0,0,0.08);
-    }
-
-    table {
-
-      width: 100%;
-
-      border-collapse: collapse;
-
-      min-width: 850px;
-    }
-
-    th,
-    td {
-
-      padding: 14px;
-
-      text-align: left;
-
-      border-bottom: 1px solid #eee;
-    }
-
-    th {
-
-      background: #f9fafb;
-    }
-
-    .status {
-
-      padding: 6px 10px;
-
-      border-radius: 20px;
-
-      font-size: 13px;
-
-      font-weight: bold;
-
-      display: inline-block;
-    }
-
-    .confirmed {
-
-      background: #dcfce7;
-
-      color: #166534;
-    }
-
-    .declined {
-
-      background: #fee2e2;
-
-      color: #991b1b;
-    }
-
-    .maybe {
-
-      background: #fef3c7;
-
-      color: #92400e;
-    }
-
-    .pending {
-
-      background: #e5e7eb;
-
-      color: #374151;
-    }
-
-    .checked {
-
-      background: #dbeafe;
-
-      color: #1e40af;
-    }
-
-    .not-checked {
-
-      color: #777;
-    }
-
-    .loading {
-
-      text-align: center;
-
-      padding: 30px;
-    }
-
-    .error {
-
-      color: #b91c1c;
-
-      padding: 20px;
-
-      text-align: center;
-    }
-
-    @media (max-width: 600px) {
-
-      .container {
-        padding: 12px;
-      }
-
-      header {
-        padding: 15px;
-      }
-
-      header h1 {
-        font-size: 20px;
-      }
-
-      .card {
-        padding: 15px;
-      }
-
-      .controls button {
-        width: 100%;
-      }
-
-    }
-
-  </style>
-
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width,initial-scale=1.0">
+<title>GeitaCard - Dashboard</title>
+
+<style>
+*{
+  box-sizing:border-box;
+  margin:0;
+  padding:0
+}
+
+body{
+  font-family:Arial,sans-serif;
+  background:#f4f6f8;
+  color:#222
+}
+
+header{
+  background:#111827;
+  color:#fff;
+  padding:18px
+}
+
+header h1{
+  font-size:22px
+}
+
+header p{
+  margin-top:5px;
+  opacity:.8
+}
+
+.container{
+  max-width:1200px;
+  margin:auto;
+  padding:18px
+}
+
+.stats{
+  display:grid;
+  grid-template-columns:
+    repeat(auto-fit,minmax(160px,1fr));
+  gap:14px;
+  margin-bottom:18px
+}
+
+.card,
+.checkin-box,
+.controls,
+.table-container{
+  background:#fff;
+  border-radius:12px;
+  box-shadow:0 2px 8px rgba(0,0,0,.08)
+}
+
+.card{
+  padding:18px
+}
+
+.card h3{
+  font-size:13px;
+  color:#666;
+  margin-bottom:9px
+}
+
+.number{
+  font-size:30px;
+  font-weight:bold
+}
+
+/* =========================
+   CHECK-IN
+========================= */
+
+.checkin-box{
+  padding:18px;
+  margin-bottom:18px
+}
+
+.checkin-box h2{
+  font-size:19px;
+  margin-bottom:7px
+}
+
+.checkin-box p{
+  color:#666;
+  margin-bottom:14px;
+  line-height:1.5
+}
+
+.checkin-form{
+  display:flex;
+  gap:9px;
+  flex-wrap:wrap
+}
+
+input,
+select,
+button{
+  padding:12px;
+  border-radius:8px;
+  font-size:15px
+}
+
+input,
+select{
+  border:1px solid #ddd;
+  background:#fff
+}
+
+.checkin-form input{
+  flex:1;
+  min-width:220px;
+  font-size:16px
+}
+
+button{
+  border:0;
+  cursor:pointer;
+  font-weight:bold
+}
+
+.checkin-button,
+.refresh-button{
+  background:#111827;
+  color:#fff
+}
+
+.checkin-button{
+  padding:13px 20px
+}
+
+.refresh-button{
+  padding:12px 16px
+}
+
+.excel-button{
+  background:#166534;
+  color:#fff;
+  padding:12px 16px
+}
+
+button:disabled{
+  opacity:.6;
+  cursor:not-allowed
+}
+
+#checkinMessage{
+  margin-top:14px;
+  font-weight:bold
+}
+
+.success-message,
+.error-message,
+.warning-message{
+  padding:12px;
+  border-radius:8px;
+  line-height:1.5
+}
+
+.success-message{
+  color:#166534;
+  background:#dcfce7
+}
+
+.error-message{
+  color:#991b1b;
+  background:#fee2e2
+}
+
+.warning-message{
+  color:#92400e;
+  background:#fef3c7
+}
+
+/* =========================
+   SEARCH / FILTER
+========================= */
+
+.controls{
+  padding:14px;
+  margin-bottom:18px;
+  display:flex;
+  gap:9px;
+  flex-wrap:wrap
+}
+
+.controls input{
+  flex:1;
+  min-width:220px
+}
+
+/* =========================
+   TABLE
+========================= */
+
+.table-container{
+  overflow-x:auto
+}
+
+table{
+  width:100%;
+  border-collapse:collapse;
+  min-width:850px
+}
+
+th,
+td{
+  padding:13px;
+  text-align:left;
+  border-bottom:1px solid #eee
+}
+
+th{
+  background:#f9fafb
+}
+
+.status{
+  padding:6px 10px;
+  border-radius:20px;
+  font-size:13px;
+  font-weight:bold;
+  display:inline-block;
+  white-space:nowrap
+}
+
+.confirmed{
+  background:#dcfce7;
+  color:#166534
+}
+
+.declined{
+  background:#fee2e2;
+  color:#991b1b
+}
+
+.maybe{
+  background:#fef3c7;
+  color:#92400e
+}
+
+.pending{
+  background:#e5e7eb;
+  color:#374151
+}
+
+.checked{
+  background:#dbeafe;
+  color:#1e40af
+}
+
+.not-checked{
+  color:#777
+}
+
+.loading,
+.error,
+.empty{
+  text-align:center;
+  padding:25px
+}
+
+.error{
+  color:#b91c1c
+}
+
+/* =========================
+   MOBILE
+========================= */
+
+@media(max-width:600px){
+
+  .container{
+    padding:12px
+  }
+
+  .controls > *{
+    width:100%;
+    min-width:0
+  }
+
+  .controls input{
+    min-width:0
+  }
+
+  .checkin-form input,
+  .checkin-button{
+    width:100%
+  }
+
+}
+</style>
 </head>
 
-
 <body>
-
 
 <header>
 
@@ -383,12 +311,11 @@
 <div class="container">
 
 
-  <!-- ==============================
+  <!-- =====================================================
        STATISTICS
-  =============================== -->
+  ====================================================== -->
 
   <div class="stats">
-
 
     <div class="card">
 
@@ -484,3 +411,1149 @@
       </div>
 
     </div>
+
+  </div>
+
+
+  <!-- =====================================================
+       CHECK-IN
+  ====================================================== -->
+
+  <div class="checkin-box">
+
+    <h2>
+      🎟️ CHECK-IN YA MGENI
+    </h2>
+
+    <p>
+      Andika Code ya mgeni kisha bonyeza CHECK-IN.
+      Hakuna QR scan inayohitajika.
+    </p>
+
+
+    <div class="checkin-form">
+
+      <input
+        id="checkinCode"
+        type="text"
+        placeholder="Mfano: 9749-KAMATI"
+        autocomplete="off"
+      >
+
+
+      <button
+        class="checkin-button"
+        id="checkinButton"
+        onclick="checkInGuest()"
+      >
+        CHECK-IN
+      </button>
+
+    </div>
+
+
+    <div id="checkinMessage"></div>
+
+  </div>
+
+
+  <!-- =====================================================
+       SEARCH / FILTER / EXCEL
+  ====================================================== -->
+
+  <div class="controls">
+
+
+    <input
+      id="search"
+      type="text"
+      placeholder="Tafuta jina, simu au code..."
+    >
+
+
+    <select id="statusFilter">
+
+      <option value="all">
+        Hali zote
+      </option>
+
+      <option value="confirmed">
+        Nitashiriki
+      </option>
+
+      <option value="declined">
+        Sitashiriki
+      </option>
+
+      <option value="maybe">
+        Sina uhakika
+      </option>
+
+      <option value="pending">
+        Pending
+      </option>
+
+    </select>
+
+
+    <select id="checkinFilter">
+
+      <option value="all">
+        Check-in zote
+      </option>
+
+      <option value="checked">
+        Wameingia
+      </option>
+
+      <option value="not_checked">
+        Hawajaingia
+      </option>
+
+    </select>
+
+
+    <button
+      class="refresh-button"
+      id="refreshButton"
+      onclick="loadGuests()"
+    >
+      🔄 Refresh
+    </button>
+
+
+    <button
+      class="excel-button"
+      id="excelButton"
+      onclick="downloadExcel()"
+    >
+      📥 Pakua Excel
+    </button>
+
+  </div>
+
+
+  <!-- =====================================================
+       TABLE
+  ====================================================== -->
+
+  <div class="table-container">
+
+
+    <div
+      id="loading"
+      class="loading"
+    >
+      Inapakia wageni...
+    </div>
+
+
+    <div
+      id="error"
+      class="error"
+    ></div>
+
+
+    <table
+      id="guestTable"
+      style="display:none"
+    >
+
+      <thead>
+
+        <tr>
+
+          <th>#</th>
+
+          <th>Jina</th>
+
+          <th>Simu</th>
+
+          <th>Code</th>
+
+          <th>Aina</th>
+
+          <th>Ushiriki</th>
+
+          <th>Check-in</th>
+
+        </tr>
+
+      </thead>
+
+
+      <tbody
+        id="guestBody"
+      ></tbody>
+
+    </table>
+
+  </div>
+
+</div>
+
+
+<script>
+
+let guests = [];
+
+
+/* =========================================================
+   LOAD GUESTS
+========================================================= */
+
+async function loadGuests(){
+
+  const loading =
+    document.getElementById("loading");
+
+  const error =
+    document.getElementById("error");
+
+  const table =
+    document.getElementById("guestTable");
+
+  const btn =
+    document.getElementById("refreshButton");
+
+
+  loading.style.display = "block";
+
+  error.textContent = "";
+
+  table.style.display = "none";
+
+  btn.disabled = true;
+
+
+  try{
+
+    const response =
+      await fetch(
+        "/api/attendance",
+        {
+          cache:"no-store"
+        }
+      );
+
+
+    const result =
+      await response.json();
+
+
+    if(
+      !response.ok ||
+      !result.success
+    ){
+
+      throw new Error(
+        result.error ||
+        result.message ||
+        "Imeshindikana kupakia data."
+      );
+
+    }
+
+
+    guests =
+      Array.isArray(result.guests)
+        ? result.guests
+        : [];
+
+
+    updateStats();
+
+    renderGuests();
+
+
+    loading.style.display = "none";
+
+    table.style.display = "table";
+
+
+  }catch(err){
+
+    loading.style.display = "none";
+
+    error.textContent =
+      "❌ Imeshindikana kupakia wageni: " +
+      err.message;
+
+  }finally{
+
+    btn.disabled = false;
+
+  }
+
+}
+
+
+/* =========================================================
+   UPDATE STATISTICS
+========================================================= */
+
+function updateStats(){
+
+  document.getElementById("total")
+    .textContent =
+    guests.length;
+
+
+  document.getElementById("confirmed")
+    .textContent =
+    guests.filter(
+      g =>
+        g.attendance_status ===
+        "confirmed"
+    ).length;
+
+
+  document.getElementById("declined")
+    .textContent =
+    guests.filter(
+      g =>
+        g.attendance_status ===
+        "declined"
+    ).length;
+
+
+  document.getElementById("maybe")
+    .textContent =
+    guests.filter(
+      g =>
+        g.attendance_status ===
+        "maybe"
+    ).length;
+
+
+  document.getElementById("pending")
+    .textContent =
+    guests.filter(
+      g =>
+        !g.attendance_status ||
+        g.attendance_status ===
+        "pending"
+    ).length;
+
+
+  document.getElementById("checkedIn")
+    .textContent =
+    guests.filter(
+      g =>
+        !!g.scanned_at
+    ).length;
+
+}
+
+
+/* =========================================================
+   RENDER GUESTS
+========================================================= */
+
+function renderGuests(){
+
+  const search =
+    document
+      .getElementById("search")
+      .value
+      .toLowerCase()
+      .trim();
+
+
+  const statusFilter =
+    document.getElementById(
+      "statusFilter"
+    ).value;
+
+
+  const checkinFilter =
+    document.getElementById(
+      "checkinFilter"
+    ).value;
+
+
+  const rows =
+    guests.filter(g => {
+
+      const text =
+        (g.full_name || "") +
+        " " +
+        (g.phone || "") +
+        " " +
+        (g.guest_code || "");
+
+
+      const status =
+        g.attendance_status ||
+        "pending";
+
+
+      const checked =
+        !!g.scanned_at;
+
+
+      return (
+
+        text
+          .toLowerCase()
+          .includes(search)
+
+        &&
+
+        (
+          statusFilter === "all" ||
+          status === statusFilter
+        )
+
+        &&
+
+        (
+          checkinFilter === "all" ||
+
+          (
+            checkinFilter === "checked" &&
+            checked
+          ) ||
+
+          (
+            checkinFilter === "not_checked" &&
+            !checked
+          )
+        )
+
+      );
+
+    });
+
+
+  const body =
+    document.getElementById(
+      "guestBody"
+    );
+
+
+  body.innerHTML = "";
+
+
+  if(!rows.length){
+
+    body.innerHTML = `
+
+      <tr>
+
+        <td
+          colspan="7"
+          class="empty"
+        >
+          Hakuna mgeni aliyepatikana.
+        </td>
+
+      </tr>
+
+    `;
+
+    return;
+
+  }
+
+
+  rows.forEach(
+    (guest,index) => {
+
+      const row =
+        document.createElement("tr");
+
+
+      row.innerHTML = `
+
+        <td>
+          ${index + 1}
+        </td>
+
+
+        <td>
+          ${esc(
+            guest.full_name || "-"
+          )}
+        </td>
+
+
+        <td>
+          ${esc(
+            guest.phone || "-"
+          )}
+        </td>
+
+
+        <td>
+          ${esc(
+            guest.guest_code || "-"
+          )}
+        </td>
+
+
+        <td>
+          ${esc(
+            guest.invitation_type || "-"
+          )}
+        </td>
+
+
+        <td>
+          ${statusLabel(
+            guest.attendance_status
+          )}
+        </td>
+
+
+        <td>
+          ${checkLabel(
+            guest.scanned_at
+          )}
+        </td>
+
+      `;
+
+
+      body.appendChild(row);
+
+    }
+  );
+
+}
+
+
+/* =========================================================
+   CHECK-IN GUEST
+========================================================= */
+
+async function checkInGuest(){
+
+  const input =
+    document.getElementById(
+      "checkinCode"
+    );
+
+
+  const button =
+    document.getElementById(
+      "checkinButton"
+    );
+
+
+  const message =
+    document.getElementById(
+      "checkinMessage"
+    );
+
+
+  const code =
+    input.value.trim();
+
+
+  message.innerHTML = "";
+
+
+  if(!code){
+
+    message.innerHTML = `
+
+      <div class="error-message">
+
+        ⚠️ Tafadhali andika Code ya mgeni.
+
+      </div>
+
+    `;
+
+    input.focus();
+
+    return;
+
+  }
+
+
+  button.disabled = true;
+
+  button.textContent =
+    "Inachakata...";
+
+
+  try{
+
+    const response =
+      await fetch(
+        "/api/check-in",
+        {
+          method:"POST",
+
+          headers:{
+            "Content-Type":
+              "application/json"
+          },
+
+          body:
+            JSON.stringify({
+              code:code
+            })
+        }
+      );
+
+
+    const result =
+      await response.json();
+
+
+    /* SUCCESS */
+
+    if(
+      response.ok &&
+      result.success
+    ){
+
+      const guest =
+        result.guest || {};
+
+
+      message.innerHTML = `
+
+        <div class="success-message">
+
+          ✅
+          <strong>
+            CHECK-IN IMEFANIKIWA!
+          </strong>
+
+          <br><br>
+
+          Jina:
+
+          <strong>
+            ${esc(
+              guest.full_name || "-"
+            )}
+          </strong>
+
+          <br>
+
+          Code:
+
+          <strong>
+            ${esc(
+              guest.guest_code || code
+            )}
+          </strong>
+
+          <br>
+
+          Muda:
+
+          ${date(
+            guest.scanned_at
+          )}
+
+        </div>
+
+      `;
+
+
+      input.value = "";
+
+
+      await loadGuests();
+
+
+      return;
+
+    }
+
+
+    /* ALREADY CHECKED IN */
+
+    if(
+      response.status === 409
+    ){
+
+      const guest =
+        result.guest || {};
+
+
+      message.innerHTML = `
+
+        <div class="warning-message">
+
+          ⚠️
+          <strong>
+            MGENI HUYU AMESHA-CHECK-IN!
+          </strong>
+
+          <br><br>
+
+          Jina:
+
+          <strong>
+            ${esc(
+              guest.full_name || "-"
+            )}
+          </strong>
+
+          <br>
+
+          Code:
+
+          <strong>
+            ${esc(
+              guest.guest_code || code
+            )}
+          </strong>
+
+          <br>
+
+          Aliingia:
+
+          ${date(
+            guest.scanned_at
+          )}
+
+        </div>
+
+      `;
+
+
+      input.value = "";
+
+      return;
+
+    }
+
+
+    /* OTHER ERROR */
+
+    message.innerHTML = `
+
+      <div class="error-message">
+
+        ❌
+
+        ${esc(
+          result.message ||
+          result.error ||
+          "Mgeni hakupatikana."
+        )}
+
+      </div>
+
+    `;
+
+
+  }catch(error){
+
+    message.innerHTML = `
+
+      <div class="error-message">
+
+        ❌ Kuna tatizo la kuwasiliana
+        na server.
+
+        <br>
+
+        ${esc(
+          error.message
+        )}
+
+      </div>
+
+    `;
+
+  }finally{
+
+    button.disabled = false;
+
+    button.textContent =
+      "CHECK-IN";
+
+  }
+
+}
+
+
+/* =========================================================
+   DOWNLOAD EXCEL
+========================================================= */
+
+async function downloadExcel(){
+
+  const button =
+    document.getElementById(
+      "excelButton"
+    );
+
+
+  const oldText =
+    button.textContent;
+
+
+  button.disabled = true;
+
+  button.textContent =
+    "⏳ Inatengeneza Excel...";
+
+
+  try{
+
+    const response =
+      await fetch(
+        "/api/attendance/export",
+        {
+          method:"GET",
+          cache:"no-store"
+        }
+      );
+
+
+    if(!response.ok){
+
+      let message =
+        "Imeshindikana kutengeneza Excel.";
+
+
+      try{
+
+        const result =
+          await response.json();
+
+
+        message =
+          result.error ||
+          result.message ||
+          message;
+
+      }catch(_){}
+
+
+      throw new Error(
+        message
+      );
+
+    }
+
+
+    const blob =
+      await response.blob();
+
+
+    if(
+      !blob ||
+      blob.size === 0
+    ){
+
+      throw new Error(
+        "Server imerudisha file tupu."
+      );
+
+    }
+
+
+    const url =
+      URL.createObjectURL(
+        blob
+      );
+
+
+    const link =
+      document.createElement(
+        "a"
+      );
+
+
+    link.href = url;
+
+    link.download =
+      "GeitaCard_Wahudhuriaji.xlsx";
+
+
+    document.body.appendChild(
+      link
+    );
+
+
+    link.click();
+
+
+    link.remove();
+
+
+    URL.revokeObjectURL(
+      url
+    );
+
+
+  }catch(error){
+
+    alert(
+      "❌ Imeshindikana kupakua Excel.\n\n" +
+      error.message
+    );
+
+  }finally{
+
+    button.disabled = false;
+
+    button.textContent =
+      oldText;
+
+  }
+
+}
+
+
+/* =========================================================
+   STATUS LABEL
+========================================================= */
+
+function statusLabel(status){
+
+  if(
+    status === "confirmed"
+  ){
+
+    return `
+
+      <span
+        class="status confirmed"
+      >
+        Nitashiriki
+      </span>
+
+    `;
+
+  }
+
+
+  if(
+    status === "declined"
+  ){
+
+    return `
+
+      <span
+        class="status declined"
+      >
+        Sitashiriki
+      </span>
+
+    `;
+
+  }
+
+
+  if(
+    status === "maybe"
+  ){
+
+    return `
+
+      <span
+        class="status maybe"
+      >
+        Sina uhakika
+      </span>
+
+    `;
+
+  }
+
+
+  return `
+
+    <span
+      class="status pending"
+    >
+      Pending
+    </span>
+
+  `;
+
+}
+
+
+/* =========================================================
+   CHECK-IN LABEL
+========================================================= */
+
+function checkLabel(scannedAt){
+
+  if(scannedAt){
+
+    return `
+
+      <span
+        class="status checked"
+      >
+        ✅ Checked-in
+      </span>
+
+    `;
+
+  }
+
+
+  return `
+
+    <span
+      class="not-checked"
+    >
+      —
+    </span>
+
+  `;
+
+}
+
+
+/* =========================================================
+   DATE
+========================================================= */
+
+function date(value){
+
+  if(!value){
+    return "-";
+  }
+
+
+  try{
+
+    return new Date(
+      value
+    ).toLocaleString(
+      "sw-TZ",
+      {
+        dateStyle:"medium",
+        timeStyle:"short"
+      }
+    );
+
+  }catch(_){
+
+    return String(value);
+
+  }
+
+}
+
+
+/* =========================================================
+   SECURITY
+========================================================= */
+
+function esc(value){
+
+  return String(value)
+
+    .replace(
+      /&/g,
+      "&amp;"
+    )
+
+    .replace(
+      /</g,
+      "&lt;"
+    )
+
+    .replace(
+      />/g,
+      "&gt;"
+    )
+
+    .replace(
+      /"/g,
+      "&quot;"
+    )
+
+    .replace(
+      /'/g,
+      "&#039;"
+    );
+
+}
+
+
+/* =========================================================
+   ENTER KEY
+========================================================= */
+
+document
+  .getElementById(
+    "checkinCode"
+  )
+  .addEventListener(
+    "keydown",
+    function(event){
+
+      if(
+        event.key === "Enter"
+      ){
+
+        event.preventDefault();
+
+        checkInGuest();
+
+      }
+
+    }
+  );
+
+
+/* =========================================================
+   SEARCH
+========================================================= */
+
+document
+  .getElementById(
+    "search"
+  )
+  .addEventListener(
+    "input",
+    renderGuests
+  );
+
+
+/* =========================================================
+   STATUS FILTER
+========================================================= */
+
+document
+  .getElementById(
+    "statusFilter"
+  )
+  .addEventListener(
+    "change",
+    renderGuests
+  );
+
+
+/* =========================================================
+   CHECK-IN FILTER
+========================================================= */
+
+document
+  .getElementById(
+    "checkinFilter"
+  )
+  .addEventListener(
+    "change",
+    renderGuests
+  );
+
+
+/* =========================================================
+   START
+========================================================= */
+
+loadGuests();
+
+</script>
+
+</body>
+</html>
