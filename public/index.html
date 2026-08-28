@@ -1,305 +1,532 @@
 <!DOCTYPE html>
 <html lang="sw">
+
 <head>
-<meta charset="UTF-8">
-<meta name="viewport" content="width=device-width,initial-scale=1.0">
-<title>GeitaCard - Dashboard</title>
 
-<style>
-*{
-  box-sizing:border-box;
-  margin:0;
-  padding:0
-}
+  <meta charset="UTF-8">
 
-body{
-  font-family:Arial,sans-serif;
-  background:#f4f6f8;
-  color:#222
-}
+  <meta
+    name="viewport"
+    content="width=device-width, initial-scale=1.0"
+  >
 
-header{
-  background:#111827;
-  color:#fff;
-  padding:18px
-}
+  <title>GeitaCard - Dashboard</title>
 
-header h1{
-  font-size:22px
-}
+  <style>
 
-header p{
-  margin-top:5px;
-  opacity:.8
-}
+    * {
+      box-sizing: border-box;
+      margin: 0;
+      padding: 0;
+    }
 
-.container{
-  max-width:1200px;
-  margin:auto;
-  padding:18px
-}
+    body {
+      font-family: Arial, sans-serif;
+      background: #f4f6f8;
+      color: #222;
+    }
 
-.stats{
-  display:grid;
-  grid-template-columns:
-    repeat(auto-fit,minmax(160px,1fr));
-  gap:14px;
-  margin-bottom:18px
-}
+    header {
+      background: #111827;
+      color: white;
+      padding: 18px;
+    }
 
-.card,
-.checkin-box,
-.controls,
-.table-container{
-  background:#fff;
-  border-radius:12px;
-  box-shadow:0 2px 8px rgba(0,0,0,.08)
-}
+    header h1 {
+      font-size: 23px;
+    }
 
-.card{
-  padding:18px
-}
+    header p {
+      margin-top: 5px;
+      opacity: 0.8;
+    }
 
-.card h3{
-  font-size:13px;
-  color:#666;
-  margin-bottom:9px
-}
+    .container {
+      max-width: 1200px;
+      margin: auto;
+      padding: 18px;
+    }
 
-.number{
-  font-size:30px;
-  font-weight:bold
-}
+    /* =====================================================
+       GENERAL CARDS
+    ===================================================== */
 
-/* =========================
-   CHECK-IN
-========================= */
+    .card,
+    .box,
+    .table-container {
+      background: white;
+      border-radius: 12px;
 
-.checkin-box{
-  padding:18px;
-  margin-bottom:18px
-}
+      box-shadow:
+        0 2px 8px rgba(0,0,0,0.08);
+    }
 
-.checkin-box h2{
-  font-size:19px;
-  margin-bottom:7px
-}
+    /* =====================================================
+       STATISTICS
+    ===================================================== */
 
-.checkin-box p{
-  color:#666;
-  margin-bottom:14px;
-  line-height:1.5
-}
+    .stats {
+      display: grid;
 
-.checkin-form{
-  display:flex;
-  gap:9px;
-  flex-wrap:wrap
-}
+      grid-template-columns:
+        repeat(auto-fit, minmax(160px, 1fr));
 
-input,
-select,
-button{
-  padding:12px;
-  border-radius:8px;
-  font-size:15px
-}
+      gap: 14px;
 
-input,
-select{
-  border:1px solid #ddd;
-  background:#fff
-}
+      margin-bottom: 18px;
+    }
 
-.checkin-form input{
-  flex:1;
-  min-width:220px;
-  font-size:16px
-}
+    .card {
+      padding: 18px;
+    }
 
-button{
-  border:0;
-  cursor:pointer;
-  font-weight:bold
-}
+    .card h3 {
+      font-size: 13px;
+      color: #666;
+      margin-bottom: 9px;
+    }
 
-.checkin-button,
-.refresh-button{
-  background:#111827;
-  color:#fff
-}
+    .number {
+      font-size: 30px;
+      font-weight: bold;
+    }
 
-.checkin-button{
-  padding:13px 20px
-}
+    /* =====================================================
+       BULK SEND
+    ===================================================== */
 
-.refresh-button{
-  padding:12px 16px
-}
+    .bulk-box {
+      padding: 20px;
+      margin-bottom: 18px;
+    }
 
-.excel-button{
-  background:#166534;
-  color:#fff;
-  padding:12px 16px
-}
+    .bulk-box h2 {
+      font-size: 20px;
+      margin-bottom: 8px;
+    }
 
-button:disabled{
-  opacity:.6;
-  cursor:not-allowed
-}
+    .bulk-description {
+      color: #666;
+      line-height: 1.5;
+      margin-bottom: 15px;
+    }
 
-#checkinMessage{
-  margin-top:14px;
-  font-weight:bold
-}
+    .upload-area {
+      border: 2px dashed #cbd5e1;
+      border-radius: 10px;
+      padding: 20px;
+      text-align: center;
+      background: #f8fafc;
+      margin-bottom: 15px;
+    }
 
-.success-message,
-.error-message,
-.warning-message{
-  padding:12px;
-  border-radius:8px;
-  line-height:1.5
-}
+    .upload-area p {
+      margin-bottom: 12px;
+      color: #555;
+    }
 
-.success-message{
-  color:#166534;
-  background:#dcfce7
-}
+    .file-input {
+      display: none;
+    }
 
-.error-message{
-  color:#991b1b;
-  background:#fee2e2
-}
+    .choose-file-button {
+      display: inline-block;
 
-.warning-message{
-  color:#92400e;
-  background:#fef3c7
-}
+      background: #111827;
+      color: white;
 
-/* =========================
-   SEARCH / FILTER
-========================= */
+      padding: 12px 18px;
 
-.controls{
-  padding:14px;
-  margin-bottom:18px;
-  display:flex;
-  gap:9px;
-  flex-wrap:wrap
-}
+      border-radius: 8px;
 
-.controls input{
-  flex:1;
-  min-width:220px
-}
+      cursor: pointer;
 
-/* =========================
-   TABLE
-========================= */
+      font-weight: bold;
+    }
 
-.table-container{
-  overflow-x:auto
-}
+    #fileName {
+      margin-top: 10px;
+      font-size: 14px;
+      color: #555;
+      word-break: break-word;
+    }
 
-table{
-  width:100%;
-  border-collapse:collapse;
-  min-width:850px
-}
+    .bulk-actions {
+      display: flex;
+      gap: 10px;
+      flex-wrap: wrap;
+      margin-bottom: 15px;
+    }
 
-th,
-td{
-  padding:13px;
-  text-align:left;
-  border-bottom:1px solid #eee
-}
+    button {
+      border: none;
+      border-radius: 8px;
+      padding: 12px 16px;
+      font-size: 15px;
+      font-weight: bold;
+      cursor: pointer;
+    }
 
-th{
-  background:#f9fafb
-}
+    button:disabled {
+      opacity: 0.6;
+      cursor: not-allowed;
+    }
 
-.status{
-  padding:6px 10px;
-  border-radius:20px;
-  font-size:13px;
-  font-weight:bold;
-  display:inline-block;
-  white-space:nowrap
-}
+    .primary-button {
+      background: #111827;
+      color: white;
+    }
 
-.confirmed{
-  background:#dcfce7;
-  color:#166534
-}
+    .send-button {
+      background: #166534;
+      color: white;
+    }
 
-.declined{
-  background:#fee2e2;
-  color:#991b1b
-}
+    .danger-button {
+      background: #991b1b;
+      color: white;
+    }
 
-.maybe{
-  background:#fef3c7;
-  color:#92400e
-}
+    .excel-button {
+      background: #166534;
+      color: white;
+    }
 
-.pending{
-  background:#e5e7eb;
-  color:#374151
-}
+    .preview-summary {
+      display: none;
 
-.checked{
-  background:#dbeafe;
-  color:#1e40af
-}
+      background: #f1f5f9;
 
-.not-checked{
-  color:#777
-}
+      padding: 14px;
 
-.loading,
-.error,
-.empty{
-  text-align:center;
-  padding:25px
-}
+      border-radius: 9px;
 
-.error{
-  color:#b91c1c
-}
+      margin-bottom: 15px;
 
-/* =========================
-   MOBILE
-========================= */
+      line-height: 1.7;
+    }
 
-@media(max-width:600px){
+    .preview-table-container {
+      display: none;
 
-  .container{
-    padding:12px
-  }
+      overflow-x: auto;
 
-  .controls > *{
-    width:100%;
-    min-width:0
-  }
+      border: 1px solid #e5e7eb;
 
-  .controls input{
-    min-width:0
-  }
+      border-radius: 9px;
 
-  .checkin-form input,
-  .checkin-button{
-    width:100%
-  }
+      margin-bottom: 15px;
+    }
 
-}
-</style>
+    .preview-table {
+      width: 100%;
+
+      min-width: 700px;
+
+      border-collapse: collapse;
+    }
+
+    .preview-table th,
+    .preview-table td {
+      padding: 10px;
+
+      text-align: left;
+
+      border-bottom: 1px solid #eee;
+    }
+
+    .preview-table th {
+      background: #f9fafb;
+    }
+
+    .bulk-progress {
+      display: none;
+      margin-top: 15px;
+    }
+
+    .progress-bar-background {
+      width: 100%;
+
+      height: 18px;
+
+      background: #e5e7eb;
+
+      border-radius: 20px;
+
+      overflow: hidden;
+    }
+
+    .progress-bar {
+      width: 0%;
+
+      height: 100%;
+
+      background: #166534;
+
+      transition: width 0.3s ease;
+    }
+
+    .progress-text {
+      margin-top: 8px;
+
+      font-weight: bold;
+
+      font-size: 14px;
+    }
+
+    .bulk-result {
+      display: none;
+
+      margin-top: 15px;
+
+      padding: 14px;
+
+      border-radius: 9px;
+
+      line-height: 1.7;
+    }
+
+    .result-success {
+      background: #dcfce7;
+      color: #166534;
+    }
+
+    .result-warning {
+      background: #fef3c7;
+      color: #92400e;
+    }
+
+    .result-error {
+      background: #fee2e2;
+      color: #991b1b;
+    }
+
+    /* =====================================================
+       CHECK-IN
+    ===================================================== */
+
+    .checkin-box {
+      padding: 18px;
+      margin-bottom: 18px;
+    }
+
+    .checkin-box h2 {
+      font-size: 19px;
+      margin-bottom: 7px;
+    }
+
+    .checkin-box p {
+      color: #666;
+      margin-bottom: 14px;
+      line-height: 1.5;
+    }
+
+    .checkin-form {
+      display: flex;
+      gap: 9px;
+      flex-wrap: wrap;
+    }
+
+    .checkin-form input {
+      flex: 1;
+      min-width: 220px;
+
+      padding: 13px;
+
+      border: 1px solid #ddd;
+
+      border-radius: 8px;
+
+      font-size: 16px;
+    }
+
+    .checkin-button {
+      background: #111827;
+      color: white;
+    }
+
+    #checkinMessage {
+      margin-top: 14px;
+      font-weight: bold;
+    }
+
+    .success-message,
+    .error-message,
+    .warning-message {
+      padding: 12px;
+      border-radius: 8px;
+      line-height: 1.5;
+    }
+
+    .success-message {
+      color: #166534;
+      background: #dcfce7;
+    }
+
+    .error-message {
+      color: #991b1b;
+      background: #fee2e2;
+    }
+
+    .warning-message {
+      color: #92400e;
+      background: #fef3c7;
+    }
+
+    /* =====================================================
+       SEARCH / FILTER
+    ===================================================== */
+
+    .controls {
+      padding: 14px;
+      margin-bottom: 18px;
+
+      display: flex;
+      gap: 9px;
+      flex-wrap: wrap;
+    }
+
+    .controls input,
+    .controls select {
+      padding: 12px;
+
+      border-radius: 8px;
+
+      border: 1px solid #ddd;
+
+      font-size: 15px;
+    }
+
+    .controls input {
+      flex: 1;
+      min-width: 220px;
+    }
+
+    .refresh-button {
+      background: #111827;
+      color: white;
+    }
+
+    /* =====================================================
+       TABLE
+    ===================================================== */
+
+    .table-container {
+      overflow-x: auto;
+    }
+
+    table {
+      width: 100%;
+
+      border-collapse: collapse;
+
+      min-width: 850px;
+    }
+
+    th,
+    td {
+      padding: 13px;
+
+      text-align: left;
+
+      border-bottom: 1px solid #eee;
+    }
+
+    th {
+      background: #f9fafb;
+    }
+
+    .status {
+      padding: 6px 10px;
+
+      border-radius: 20px;
+
+      font-size: 13px;
+
+      font-weight: bold;
+
+      display: inline-block;
+
+      white-space: nowrap;
+    }
+
+    .confirmed {
+      background: #dcfce7;
+      color: #166534;
+    }
+
+    .declined {
+      background: #fee2e2;
+      color: #991b1b;
+    }
+
+    .maybe {
+      background: #fef3c7;
+      color: #92400e;
+    }
+
+    .pending {
+      background: #e5e7eb;
+      color: #374151;
+    }
+
+    .checked {
+      background: #dbeafe;
+      color: #1e40af;
+    }
+
+    .not-checked {
+      color: #777;
+    }
+
+    .loading,
+    .error,
+    .empty {
+      text-align: center;
+      padding: 25px;
+    }
+
+    .error {
+      color: #b91c1c;
+    }
+
+    /* =====================================================
+       MOBILE
+    ===================================================== */
+
+    @media (max-width: 600px) {
+
+      .container {
+        padding: 12px;
+      }
+
+      .bulk-actions button,
+      .controls input,
+      .controls select,
+      .controls button {
+        width: 100%;
+      }
+
+      .checkin-form input,
+      .checkin-button {
+        width: 100%;
+      }
+
+    }
+
+  </style>
+
 </head>
+
 
 <body>
 
+
 <header>
 
-  <h1>GeitaCard</h1>
+  <h1>
+    GeitaCard
+  </h1>
 
   <p>
     Dashboard ya Wahudhuriaji
@@ -316,6 +543,7 @@ th{
   ====================================================== -->
 
   <div class="stats">
+
 
     <div class="card">
 
@@ -412,6 +640,179 @@ th{
 
     </div>
 
+
+  </div>
+
+
+  <!-- =====================================================
+       BULK SEND
+  ====================================================== -->
+
+  <div class="box bulk-box">
+
+
+    <h2>
+      📤 TUMA MIALIKO KWA EXCEL
+    </h2>
+
+
+    <p class="bulk-description">
+
+      Chagua Excel au CSV yenye columns:
+      <strong>to, name, code</strong>.
+      Mfumo utaonyesha preview kwanza kabla ya kutuma.
+
+    </p>
+
+
+    <div class="upload-area">
+
+      <p>
+        Chagua faili la Excel/CSV la wageni
+      </p>
+
+
+      <label
+        for="excelFile"
+        class="choose-file-button"
+      >
+        📁 Chagua Excel / CSV
+      </label>
+
+
+      <input
+        id="excelFile"
+        class="file-input"
+        type="file"
+        accept=".xlsx,.xls,.csv"
+      >
+
+
+      <div
+        id="fileName"
+      ></div>
+
+    </div>
+
+
+    <div
+      class="bulk-actions"
+    >
+
+      <button
+        id="previewButton"
+        class="primary-button"
+        onclick="previewExcel()"
+        disabled
+      >
+        👀 Preview
+      </button>
+
+
+      <button
+        id="sendBulkButton"
+        class="send-button"
+        onclick="sendBulkInvitations()"
+        disabled
+      >
+        📤 Tuma Mialiko Yote
+      </button>
+
+
+      <button
+        id="clearExcelButton"
+        class="danger-button"
+        onclick="clearExcel()"
+        disabled
+      >
+        🗑️ Ondoa
+      </button>
+
+    </div>
+
+
+    <div
+      id="previewSummary"
+      class="preview-summary"
+    ></div>
+
+
+    <div
+      id="previewTableContainer"
+      class="preview-table-container"
+    >
+
+      <table
+        class="preview-table"
+      >
+
+        <thead>
+
+          <tr>
+
+            <th>
+              #
+            </th>
+
+            <th>
+              Simu
+            </th>
+
+            <th>
+              Jina
+            </th>
+
+            <th>
+              Code
+            </th>
+
+          </tr>
+
+        </thead>
+
+
+        <tbody
+          id="previewBody"
+        ></tbody>
+
+      </table>
+
+    </div>
+
+
+    <div
+      id="bulkProgress"
+      class="bulk-progress"
+    >
+
+      <div
+        class="progress-bar-background"
+      >
+
+        <div
+          id="progressBar"
+          class="progress-bar"
+        ></div>
+
+      </div>
+
+
+      <div
+        id="progressText"
+        class="progress-text"
+      >
+        Inatuma...
+      </div>
+
+    </div>
+
+
+    <div
+      id="bulkResult"
+      class="bulk-result"
+    ></div>
+
+
   </div>
 
 
@@ -419,11 +820,13 @@ th{
        CHECK-IN
   ====================================================== -->
 
-  <div class="checkin-box">
+  <div class="box checkin-box">
+
 
     <h2>
       🎟️ CHECK-IN YA MGENI
     </h2>
+
 
     <p>
       Andika Code ya mgeni kisha bonyeza CHECK-IN.
@@ -431,19 +834,21 @@ th{
     </p>
 
 
-    <div class="checkin-form">
+    <div
+      class="checkin-form"
+    >
 
       <input
-        id="checkinCode"
         type="text"
+        id="checkinCode"
         placeholder="Mfano: 9749-KAMATI"
         autocomplete="off"
       >
 
 
       <button
-        class="checkin-button"
         id="checkinButton"
+        class="checkin-button"
         onclick="checkInGuest()"
       >
         CHECK-IN
@@ -452,26 +857,30 @@ th{
     </div>
 
 
-    <div id="checkinMessage"></div>
+    <div
+      id="checkinMessage"
+    ></div>
 
   </div>
 
 
   <!-- =====================================================
-       SEARCH / FILTER / EXCEL
+       SEARCH / FILTER
   ====================================================== -->
 
-  <div class="controls">
+  <div class="box controls">
 
 
     <input
-      id="search"
       type="text"
+      id="search"
       placeholder="Tafuta jina, simu au code..."
     >
 
 
-    <select id="statusFilter">
+    <select
+      id="statusFilter"
+    >
 
       <option value="all">
         Hali zote
@@ -496,7 +905,9 @@ th{
     </select>
 
 
-    <select id="checkinFilter">
+    <select
+      id="checkinFilter"
+    >
 
       <option value="all">
         Check-in zote
@@ -514,8 +925,8 @@ th{
 
 
     <button
-      class="refresh-button"
       id="refreshButton"
+      class="refresh-button"
       onclick="loadGuests()"
     >
       🔄 Refresh
@@ -523,21 +934,24 @@ th{
 
 
     <button
+      id="excelDownloadButton"
       class="excel-button"
-      id="excelButton"
       onclick="downloadExcel()"
     >
       📥 Pakua Excel
     </button>
 
+
   </div>
 
 
   <!-- =====================================================
-       TABLE
+       GUEST TABLE
   ====================================================== -->
 
-  <div class="table-container">
+  <div
+    class="table-container"
+  >
 
 
     <div
@@ -563,19 +977,33 @@ th{
 
         <tr>
 
-          <th>#</th>
+          <th>
+            #
+          </th>
 
-          <th>Jina</th>
+          <th>
+            Jina
+          </th>
 
-          <th>Simu</th>
+          <th>
+            Simu
+          </th>
 
-          <th>Code</th>
+          <th>
+            Code
+          </th>
 
-          <th>Aina</th>
+          <th>
+            Aina
+          </th>
 
-          <th>Ushiriki</th>
+          <th>
+            Ushiriki
+          </th>
 
-          <th>Check-in</th>
+          <th>
+            Check-in
+          </th>
 
         </tr>
 
@@ -590,49 +1018,811 @@ th{
 
   </div>
 
+
 </div>
 
 
 <script>
 
+
+/* =========================================================
+   GLOBAL DATA
+========================================================= */
+
 let guests = [];
+
+let excelContacts = [];
+
+let selectedFile = null;
 
 
 /* =========================================================
-   LOAD GUESTS
+   FILE SELECT
 ========================================================= */
 
-async function loadGuests(){
+document
+  .getElementById("excelFile")
+  .addEventListener(
+    "change",
+    function(event) {
 
-  const loading =
-    document.getElementById("loading");
+      const file =
+        event.target.files[0];
 
-  const error =
-    document.getElementById("error");
+
+      selectedFile =
+        file || null;
+
+
+      const fileName =
+        document.getElementById(
+          "fileName"
+        );
+
+
+      const previewButton =
+        document.getElementById(
+          "previewButton"
+        );
+
+
+      const clearButton =
+        document.getElementById(
+          "clearExcelButton"
+        );
+
+
+      const sendButton =
+        document.getElementById(
+          "sendBulkButton"
+        );
+
+
+      if (!file) {
+
+        fileName.textContent = "";
+
+        previewButton.disabled =
+          true;
+
+        clearButton.disabled =
+          true;
+
+        sendButton.disabled =
+          true;
+
+        return;
+
+      }
+
+
+      fileName.textContent =
+        "📄 " +
+        file.name;
+
+
+      previewButton.disabled =
+        false;
+
+
+      clearButton.disabled =
+        false;
+
+
+      sendButton.disabled =
+        true;
+
+
+      excelContacts = [];
+
+
+      hideBulkResult();
+
+    }
+  );
+
+
+/* =========================================================
+   READ EXCEL
+========================================================= */
+
+async function previewExcel() {
+
+
+  if (!selectedFile) {
+
+    alert(
+      "Tafadhali chagua Excel au CSV kwanza."
+    );
+
+    return;
+
+  }
+
+
+  const previewButton =
+    document.getElementById(
+      "previewButton"
+    );
+
+
+  const summary =
+    document.getElementById(
+      "previewSummary"
+    );
+
 
   const table =
-    document.getElementById("guestTable");
-
-  const btn =
-    document.getElementById("refreshButton");
-
-
-  loading.style.display = "block";
-
-  error.textContent = "";
-
-  table.style.display = "none";
-
-  btn.disabled = true;
+    document.getElementById(
+      "previewTableContainer"
+    );
 
 
-  try{
+  const body =
+    document.getElementById(
+      "previewBody"
+    );
+
+
+  previewButton.disabled =
+    true;
+
+
+  previewButton.textContent =
+    "⏳ Inasoma Excel...";
+
+
+  summary.style.display =
+    "none";
+
+
+  table.style.display =
+    "none";
+
+
+  body.innerHTML =
+    "";
+
+
+  try {
+
+
+    const file =
+      selectedFile;
+
+
+    const fileName =
+      file.name.toLowerCase();
+
+
+    const arrayBuffer =
+      await file.arrayBuffer();
+
+
+    /*
+      XLSX library inatakiwa kuwepo.
+      Tuta-load SheetJS hapa kama haipo.
+    */
+
+    if (
+      typeof XLSX ===
+      "undefined"
+    ) {
+
+      await loadXLSXLibrary();
+
+    }
+
+
+    let workbook;
+
+
+    if (
+      fileName.endsWith(".csv")
+    ) {
+
+      const text =
+        new TextDecoder(
+          "utf-8"
+        ).decode(
+          arrayBuffer
+        );
+
+
+      workbook =
+        XLSX.read(
+          text,
+          {
+            type:
+              "string"
+          }
+        );
+
+    } else {
+
+      workbook =
+        XLSX.read(
+          arrayBuffer,
+          {
+            type:
+              "array"
+          }
+        );
+
+    }
+
+
+    if (
+      !workbook.SheetNames ||
+      !workbook.SheetNames.length
+    ) {
+
+      throw new Error(
+        "Excel haina worksheet."
+      );
+
+    }
+
+
+    const firstSheet =
+      workbook.Sheets[
+        workbook.SheetNames[0]
+      ];
+
+
+    const rawRows =
+      XLSX.utils.sheet_to_json(
+        firstSheet,
+        {
+          defval: ""
+        }
+      );
+
+
+    if (
+      !rawRows.length
+    ) {
+
+      throw new Error(
+        "Excel haina data ya wageni."
+      );
+
+    }
+
+
+    excelContacts =
+      normalizeExcelRows(
+        rawRows
+      );
+
+
+    if (
+      excelContacts.length === 0
+    ) {
+
+      throw new Error(
+        "Hakuna row yenye to, name na code sahihi."
+      );
+
+    }
+
+
+    const invalidRows =
+      rawRows.length -
+      excelContacts.length;
+
+
+    renderPreview(
+      excelContacts
+    );
+
+
+    summary.innerHTML = `
+
+      <strong>📊 Preview ya Excel</strong>
+
+      <br>
+
+      Jumla ya rows:
+      <strong>
+        ${rawRows.length}
+      </strong>
+
+      <br>
+
+      Zilizo tayari kutumwa:
+      <strong>
+        ${excelContacts.length}
+      </strong>
+
+      <br>
+
+      Zisizo sahihi:
+      <strong>
+        ${invalidRows}
+      </strong>
+
+      <br><br>
+
+      Hakikisha majina, namba na codes ni sahihi
+      kabla ya kubonyeza
+      <strong>Tuma Mialiko Yote</strong>.
+
+    `;
+
+
+    summary.style.display =
+      "block";
+
+
+    table.style.display =
+      "block";
+
+
+    document.getElementById(
+      "sendBulkButton"
+    ).disabled =
+      false;
+
+
+    hideBulkResult();
+
+
+  } catch (error) {
+
+
+    excelContacts = [];
+
+
+    alert(
+      "❌ Imeshindikana kusoma Excel:\n\n" +
+      error.message
+    );
+
+
+  } finally {
+
+    previewButton.disabled =
+      false;
+
+    previewButton.textContent =
+      "👀 Preview";
+
+  }
+
+}
+
+
+/* =========================================================
+   LOAD XLSX LIBRARY
+========================================================= */
+
+function loadXLSXLibrary() {
+
+  return new Promise(
+    function(resolve, reject) {
+
+      const script =
+        document.createElement(
+          "script"
+        );
+
+
+      script.src =
+        "https://cdn.jsdelivr.net/npm/xlsx@0.18.5/dist/xlsx.full.min.js";
+
+
+      script.onload =
+        function() {
+
+          resolve();
+
+        };
+
+
+      script.onerror =
+        function() {
+
+          reject(
+            new Error(
+              "Imeshindikana kupakia Excel reader."
+            )
+          );
+
+        };
+
+
+      document.head.appendChild(
+        script
+      );
+
+    }
+  );
+
+}
+
+
+/* =========================================================
+   NORMALIZE EXCEL ROWS
+========================================================= */
+
+function normalizeExcelRows(
+  rows
+) {
+
+
+  const result = [];
+
+
+  for (
+    const row of rows
+  ) {
+
+
+    const normalized = {};
+
+
+    Object.keys(row)
+      .forEach(
+        key => {
+
+          const cleanKey =
+            String(key)
+              .trim()
+              .toLowerCase();
+
+
+          normalized[
+            cleanKey
+          ] =
+            row[key];
+
+        }
+      );
+
+
+    /*
+      Tunakubali:
+      to / phone / simu
+      name / jina
+      code / guest_code
+    */
+
+
+    const to =
+      normalized.to ||
+      normalized.phone ||
+      normalized.simu ||
+      "";
+
+
+    const name =
+      normalized.name ||
+      normalized.jina ||
+      normalized.full_name ||
+      "";
+
+
+    const code =
+      normalized.code ||
+      normalized.guest_code ||
+      "";
+
+
+    const cleanTo =
+      String(to)
+        .trim()
+        .replace(
+          /\s+/g,
+          ""
+        );
+
+
+    const cleanName =
+      String(name)
+        .trim();
+
+
+    const cleanCode =
+      String(code)
+        .trim();
+
+
+    if (
+      !cleanTo ||
+      !cleanName ||
+      !cleanCode
+    ) {
+
+      continue;
+
+    }
+
+
+    result.push({
+
+      to:
+        cleanTo,
+
+      name:
+        cleanName,
+
+      code:
+        cleanCode
+
+    });
+
+  }
+
+
+  return result;
+
+}
+
+
+/* =========================================================
+   RENDER EXCEL PREVIEW
+========================================================= */
+
+function renderPreview(
+  contacts
+) {
+
+
+  const body =
+    document.getElementById(
+      "previewBody"
+    );
+
+
+  body.innerHTML =
+    "";
+
+
+  /*
+    Tunaonyesha mpaka rows 100
+    kwenye preview ili dashboard
+    isilemewe na Excel kubwa.
+  */
+
+  const previewRows =
+    contacts.slice(
+      0,
+      100
+    );
+
+
+  previewRows.forEach(
+    function(
+      contact,
+      index
+    ) {
+
+
+      const row =
+        document.createElement(
+          "tr"
+        );
+
+
+      row.innerHTML = `
+
+        <td>
+          ${index + 1}
+        </td>
+
+        <td>
+          ${escapeHtml(
+            contact.to
+          )}
+        </td>
+
+        <td>
+          ${escapeHtml(
+            contact.name
+          )}
+        </td>
+
+        <td>
+          ${escapeHtml(
+            contact.code
+          )}
+        </td>
+
+      `;
+
+
+      body.appendChild(
+        row
+      );
+
+    }
+  );
+
+
+  if (
+    contacts.length > 100
+  ) {
+
+    const row =
+      document.createElement(
+        "tr"
+      );
+
+
+    row.innerHTML = `
+
+      <td
+        colspan="4"
+        style="
+          text-align:center;
+          padding:15px;
+          background:#f9fafb;
+        "
+      >
+
+        Inaonyesha rows 100 za kwanza.
+        Jumla ni
+        <strong>
+          ${contacts.length}
+        </strong>
+        .
+
+      </td>
+
+    `;
+
+
+    body.appendChild(
+      row
+    );
+
+  }
+
+}
+
+
+/* =========================================================
+   SEND BULK INVITATIONS
+========================================================= */
+
+async function sendBulkInvitations() {
+
+
+  if (
+    !excelContacts.length
+  ) {
+
+    alert(
+      "Tafadhali chagua Excel na ufanye Preview kwanza."
+    );
+
+    return;
+
+  }
+
+
+  if (
+    excelContacts.length > 500
+  ) {
+
+    alert(
+      "Excel hii ina wageni zaidi ya 500.\n\n" +
+      "Kwa sasa tutatuma maximum 500 kwa request moja."
+    );
+
+    return;
+
+  }
+
+
+  const confirmed =
+    window.confirm(
+      "Una uhakika unataka kutuma mialiko kwa " +
+      excelContacts.length +
+      " wageni?"
+    );
+
+
+  if (!confirmed) {
+
+    return;
+
+  }
+
+
+  const sendButton =
+    document.getElementById(
+      "sendBulkButton"
+    );
+
+
+  const previewButton =
+    document.getElementById(
+      "previewButton"
+    );
+
+
+  const clearButton =
+    document.getElementById(
+      "clearExcelButton"
+    );
+
+
+  const progress =
+    document.getElementById(
+      "bulkProgress"
+    );
+
+
+  const progressBar =
+    document.getElementById(
+      "progressBar"
+    );
+
+
+  const progressText =
+    document.getElementById(
+      "progressText"
+    );
+
+
+  hideBulkResult();
+
+
+  sendButton.disabled =
+    true;
+
+  previewButton.disabled =
+    true;
+
+  clearButton.disabled =
+    true;
+
+
+  progress.style.display =
+    "block";
+
+
+  progressBar.style.width =
+    "0%";
+
+
+  progressText.textContent =
+    "⏳ Inatuma mialiko...";
+
+
+  try {
+
+
+    /*
+      Endpoint ya index.js:
+      POST /send-bulk
+    */
 
     const response =
       await fetch(
-        "/api/attendance",
+        "/send-bulk",
         {
-          cache:"no-store"
+
+          method:
+            "POST",
+
+          headers: {
+
+            "Content-Type":
+              "application/json"
+
+          },
+
+          body:
+            JSON.stringify({
+
+              contacts:
+                excelContacts
+
+            })
+
         }
       );
 
@@ -641,10 +1831,385 @@ async function loadGuests(){
       await response.json();
 
 
-    if(
+    if (
       !response.ok ||
       !result.success
-    ){
+    ) {
+
+      throw new Error(
+        result.error ||
+        result.message ||
+        "Bulk send imeshindikana."
+      );
+
+    }
+
+
+    progressBar.style.width =
+      "100%";
+
+
+    progressText.textContent =
+      "✅ Kutuma kumekamilika.";
+
+
+    showBulkResult(
+      result
+    );
+
+
+    /*
+      Refresh dashboard baada ya kutuma
+    */
+
+    await loadGuests();
+
+
+  } catch (error) {
+
+
+    progressBar.style.width =
+      "0%";
+
+
+    progressText.textContent =
+      "❌ Kutuma kumeshindikana.";
+
+
+    showBulkError(
+      error.message
+    );
+
+
+  } finally {
+
+
+    sendButton.disabled =
+      false;
+
+    previewButton.disabled =
+      false;
+
+    clearButton.disabled =
+      false;
+
+  }
+
+}
+
+
+/* =========================================================
+   BULK RESULT
+========================================================= */
+
+function showBulkResult(
+  result
+) {
+
+
+  const box =
+    document.getElementById(
+      "bulkResult"
+    );
+
+
+  const sent =
+    Number(
+      result.sent || 0
+    );
+
+
+  const failed =
+    Number(
+      result.failed || 0
+    );
+
+
+  const saved =
+    Number(
+      result.saved || 0
+    );
+
+
+  const saveFailed =
+    Number(
+      result.saveFailed || 0
+    );
+
+
+  let cssClass =
+    "result-success";
+
+
+  if (
+    failed > 0 ||
+    saveFailed > 0
+  ) {
+
+    cssClass =
+      "result-warning";
+
+  }
+
+
+  box.className =
+    "bulk-result " +
+    cssClass;
+
+
+  box.innerHTML = `
+
+    <strong>
+      📊 MATOKEO YA BULK SEND
+    </strong>
+
+    <br><br>
+
+    Jumla:
+    <strong>
+      ${result.total || 0}
+    </strong>
+
+    <br>
+
+    ✅ Zilizotumwa:
+    <strong>
+      ${sent}
+    </strong>
+
+    <br>
+
+    💾 Zilizohifadhiwa Supabase:
+    <strong>
+      ${saved}
+    </strong>
+
+    <br>
+
+    ❌ Zilizoshindikana kutumwa:
+    <strong>
+      ${failed}
+    </strong>
+
+    <br>
+
+    ⚠️ Zilizotumwa lakini hazikuhifadhiwa:
+    <strong>
+      ${saveFailed}
+    </strong>
+
+  `;
+
+
+  box.style.display =
+    "block";
+
+}
+
+
+/* =========================================================
+   BULK ERROR
+========================================================= */
+
+function showBulkError(
+  message
+) {
+
+
+  const box =
+    document.getElementById(
+      "bulkResult"
+    );
+
+
+  box.className =
+    "bulk-result result-error";
+
+
+  box.innerHTML = `
+
+    <strong>
+      ❌ BULK SEND ERROR
+    </strong>
+
+    <br><br>
+
+    ${escapeHtml(
+      message
+    )}
+
+  `;
+
+
+  box.style.display =
+    "block";
+
+}
+
+
+/* =========================================================
+   HIDE BULK RESULT
+========================================================= */
+
+function hideBulkResult(){
+
+  const box =
+    document.getElementById(
+      "bulkResult"
+    );
+
+
+  box.style.display =
+    "none";
+
+  box.innerHTML =
+    "";
+
+}
+
+
+/* =========================================================
+   CLEAR EXCEL
+========================================================= */
+
+function clearExcel(){
+
+
+  selectedFile =
+    null;
+
+
+  excelContacts =
+    [];
+
+
+  document.getElementById(
+    "excelFile"
+  ).value =
+    "";
+
+
+  document.getElementById(
+    "fileName"
+  ).textContent =
+    "";
+
+
+  document.getElementById(
+    "previewBody"
+  ).innerHTML =
+    "";
+
+
+  document.getElementById(
+    "previewSummary"
+  ).style.display =
+    "none";
+
+
+  document.getElementById(
+    "previewTableContainer"
+  ).style.display =
+    "none";
+
+
+  document.getElementById(
+    "bulkProgress"
+  ).style.display =
+    "none";
+
+
+  document.getElementById(
+    "previewButton"
+  ).disabled =
+    true;
+
+
+  document.getElementById(
+    "sendBulkButton"
+  ).disabled =
+    true;
+
+
+  document.getElementById(
+    "clearExcelButton"
+  ).disabled =
+    true;
+
+
+  hideBulkResult();
+
+}
+
+
+/* =========================================================
+   LOAD GUESTS
+========================================================= */
+
+async function loadGuests(){
+
+
+  const loading =
+    document.getElementById(
+      "loading"
+    );
+
+
+  const error =
+    document.getElementById(
+      "error"
+    );
+
+
+  const table =
+    document.getElementById(
+      "guestTable"
+    );
+
+
+  const button =
+    document.getElementById(
+      "refreshButton"
+    );
+
+
+  loading.style.display =
+    "block";
+
+
+  error.textContent =
+    "";
+
+
+  table.style.display =
+    "none";
+
+
+  button.disabled =
+    true;
+
+
+  try {
+
+
+    const response =
+      await fetch(
+        "/api/attendance",
+        {
+          cache:
+            "no-store"
+        }
+      );
+
+
+    const result =
+      await response.json();
+
+
+    if (
+      !response.ok ||
+      !result.success
+    ) {
 
       throw new Error(
         result.error ||
@@ -656,7 +2221,9 @@ async function loadGuests(){
 
 
     guests =
-      Array.isArray(result.guests)
+      Array.isArray(
+        result.guests
+      )
         ? result.guests
         : [];
 
@@ -666,22 +2233,31 @@ async function loadGuests(){
     renderGuests();
 
 
-    loading.style.display = "none";
+    loading.style.display =
+      "none";
 
-    table.style.display = "table";
+
+    table.style.display =
+      "table";
 
 
-  }catch(err){
+  } catch (err) {
 
-    loading.style.display = "none";
+
+    loading.style.display =
+      "none";
+
 
     error.textContent =
       "❌ Imeshindikana kupakia wageni: " +
       err.message;
 
-  }finally{
 
-    btn.disabled = false;
+  } finally {
+
+
+    button.disabled =
+      false;
 
   }
 
@@ -694,53 +2270,60 @@ async function loadGuests(){
 
 function updateStats(){
 
-  document.getElementById("total")
-    .textContent =
+
+  document.getElementById(
+    "total"
+  ).textContent =
     guests.length;
 
 
-  document.getElementById("confirmed")
-    .textContent =
+  document.getElementById(
+    "confirmed"
+  ).textContent =
     guests.filter(
-      g =>
-        g.attendance_status ===
+      guest =>
+        guest.attendance_status ===
         "confirmed"
     ).length;
 
 
-  document.getElementById("declined")
-    .textContent =
+  document.getElementById(
+    "declined"
+  ).textContent =
     guests.filter(
-      g =>
-        g.attendance_status ===
+      guest =>
+        guest.attendance_status ===
         "declined"
     ).length;
 
 
-  document.getElementById("maybe")
-    .textContent =
+  document.getElementById(
+    "maybe"
+  ).textContent =
     guests.filter(
-      g =>
-        g.attendance_status ===
+      guest =>
+        guest.attendance_status ===
         "maybe"
     ).length;
 
 
-  document.getElementById("pending")
-    .textContent =
+  document.getElementById(
+    "pending"
+  ).textContent =
     guests.filter(
-      g =>
-        !g.attendance_status ||
-        g.attendance_status ===
+      guest =>
+        !guest.attendance_status ||
+        guest.attendance_status ===
         "pending"
     ).length;
 
 
-  document.getElementById("checkedIn")
-    .textContent =
+  document.getElementById(
+    "checkedIn"
+  ).textContent =
     guests.filter(
-      g =>
-        !!g.scanned_at
+      guest =>
+        !!guest.scanned_at
     ).length;
 
 }
@@ -752,9 +2335,12 @@ function updateStats(){
 
 function renderGuests(){
 
+
   const search =
     document
-      .getElementById("search")
+      .getElementById(
+        "search"
+      )
       .value
       .toLowerCase()
       .trim();
@@ -772,58 +2358,70 @@ function renderGuests(){
     ).value;
 
 
-  const rows =
-    guests.filter(g => {
-
-      const text =
-        (g.full_name || "") +
-        " " +
-        (g.phone || "") +
-        " " +
-        (g.guest_code || "");
+  const filtered =
+    guests.filter(
+      guest => {
 
 
-      const status =
-        g.attendance_status ||
-        "pending";
+        const text =
+
+          (guest.full_name || "") +
+          " " +
+          (guest.phone || "") +
+          " " +
+          (guest.guest_code || "");
 
 
-      const checked =
-        !!g.scanned_at;
+        const status =
+          guest.attendance_status ||
+          "pending";
 
 
-      return (
+        const checked =
+          !!guest.scanned_at;
 
-        text
-          .toLowerCase()
-          .includes(search)
 
-        &&
+        return (
 
-        (
-          statusFilter === "all" ||
-          status === statusFilter
-        )
+          text
+            .toLowerCase()
+            .includes(
+              search
+            )
 
-        &&
-
-        (
-          checkinFilter === "all" ||
+          &&
 
           (
-            checkinFilter === "checked" &&
-            checked
-          ) ||
+            statusFilter ===
+              "all" ||
 
-          (
-            checkinFilter === "not_checked" &&
-            !checked
+            status ===
+              statusFilter
           )
-        )
 
-      );
+          &&
 
-    });
+          (
+            checkinFilter ===
+              "all" ||
+
+            (
+              checkinFilter ===
+                "checked" &&
+              checked
+            ) ||
+
+            (
+              checkinFilter ===
+                "not_checked" &&
+              !checked
+            )
+          )
+
+        );
+
+      }
+    );
 
 
   const body =
@@ -832,10 +2430,13 @@ function renderGuests(){
     );
 
 
-  body.innerHTML = "";
+  body.innerHTML =
+    "";
 
 
-  if(!rows.length){
+  if (
+    filtered.length === 0
+  ) {
 
     body.innerHTML = `
 
@@ -857,11 +2458,17 @@ function renderGuests(){
   }
 
 
-  rows.forEach(
-    (guest,index) => {
+  filtered.forEach(
+    function(
+      guest,
+      index
+    ) {
+
 
       const row =
-        document.createElement("tr");
+        document.createElement(
+          "tr"
+        );
 
 
       row.innerHTML = `
@@ -870,34 +2477,29 @@ function renderGuests(){
           ${index + 1}
         </td>
 
-
         <td>
-          ${esc(
+          ${escapeHtml(
             guest.full_name || "-"
           )}
         </td>
 
-
         <td>
-          ${esc(
+          ${escapeHtml(
             guest.phone || "-"
           )}
         </td>
 
-
         <td>
-          ${esc(
+          ${escapeHtml(
             guest.guest_code || "-"
           )}
         </td>
 
-
         <td>
-          ${esc(
+          ${escapeHtml(
             guest.invitation_type || "-"
           )}
         </td>
-
 
         <td>
           ${statusLabel(
@@ -905,9 +2507,8 @@ function renderGuests(){
           )}
         </td>
 
-
         <td>
-          ${checkLabel(
+          ${checkinLabel(
             guest.scanned_at
           )}
         </td>
@@ -915,7 +2516,9 @@ function renderGuests(){
       `;
 
 
-      body.appendChild(row);
+      body.appendChild(
+        row
+      );
 
     }
   );
@@ -924,10 +2527,11 @@ function renderGuests(){
 
 
 /* =========================================================
-   CHECK-IN GUEST
+   CHECK-IN
 ========================================================= */
 
 async function checkInGuest(){
+
 
   const input =
     document.getElementById(
@@ -951,14 +2555,17 @@ async function checkInGuest(){
     input.value.trim();
 
 
-  message.innerHTML = "";
+  message.innerHTML =
+    "";
 
 
-  if(!code){
+  if (!code) {
 
     message.innerHTML = `
 
-      <div class="error-message">
+      <div
+        class="error-message"
+      >
 
         ⚠️ Tafadhali andika Code ya mgeni.
 
@@ -973,29 +2580,38 @@ async function checkInGuest(){
   }
 
 
-  button.disabled = true;
+  button.disabled =
+    true;
+
 
   button.textContent =
     "Inachakata...";
 
 
-  try{
+  try {
+
 
     const response =
       await fetch(
         "/api/check-in",
         {
-          method:"POST",
 
-          headers:{
+          method:
+            "POST",
+
+          headers: {
+
             "Content-Type":
               "application/json"
+
           },
 
           body:
             JSON.stringify({
-              code:code
+              code:
+                code
             })
+
         }
       );
 
@@ -1004,22 +2620,25 @@ async function checkInGuest(){
       await response.json();
 
 
-    /* SUCCESS */
-
-    if(
+    if (
       response.ok &&
       result.success
-    ){
+    ) {
+
 
       const guest =
-        result.guest || {};
+        result.guest ||
+        {};
 
 
       message.innerHTML = `
 
-        <div class="success-message">
+        <div
+          class="success-message"
+        >
 
           ✅
+
           <strong>
             CHECK-IN IMEFANIKIWA!
           </strong>
@@ -1029,7 +2648,7 @@ async function checkInGuest(){
           Jina:
 
           <strong>
-            ${esc(
+            ${escapeHtml(
               guest.full_name || "-"
             )}
           </strong>
@@ -1039,8 +2658,9 @@ async function checkInGuest(){
           Code:
 
           <strong>
-            ${esc(
-              guest.guest_code || code
+            ${escapeHtml(
+              guest.guest_code ||
+              code
             )}
           </strong>
 
@@ -1048,7 +2668,7 @@ async function checkInGuest(){
 
           Muda:
 
-          ${date(
+          ${formatDate(
             guest.scanned_at
           )}
 
@@ -1057,7 +2677,8 @@ async function checkInGuest(){
       `;
 
 
-      input.value = "";
+      input.value =
+        "";
 
 
       await loadGuests();
@@ -1068,21 +2689,25 @@ async function checkInGuest(){
     }
 
 
-    /* ALREADY CHECKED IN */
+    if (
+      response.status ===
+      409
+    ) {
 
-    if(
-      response.status === 409
-    ){
 
       const guest =
-        result.guest || {};
+        result.guest ||
+        {};
 
 
       message.innerHTML = `
 
-        <div class="warning-message">
+        <div
+          class="warning-message"
+        >
 
           ⚠️
+
           <strong>
             MGENI HUYU AMESHA-CHECK-IN!
           </strong>
@@ -1092,8 +2717,9 @@ async function checkInGuest(){
           Jina:
 
           <strong>
-            ${esc(
-              guest.full_name || "-"
+            ${escapeHtml(
+              guest.full_name ||
+              "-"
             )}
           </strong>
 
@@ -1102,8 +2728,9 @@ async function checkInGuest(){
           Code:
 
           <strong>
-            ${esc(
-              guest.guest_code || code
+            ${escapeHtml(
+              guest.guest_code ||
+              code
             )}
           </strong>
 
@@ -1111,7 +2738,7 @@ async function checkInGuest(){
 
           Aliingia:
 
-          ${date(
+          ${formatDate(
             guest.scanned_at
           )}
 
@@ -1120,22 +2747,24 @@ async function checkInGuest(){
       `;
 
 
-      input.value = "";
+      input.value =
+        "";
+
 
       return;
 
     }
 
 
-    /* OTHER ERROR */
-
     message.innerHTML = `
 
-      <div class="error-message">
+      <div
+        class="error-message"
+      >
 
         ❌
 
-        ${esc(
+        ${escapeHtml(
           result.message ||
           result.error ||
           "Mgeni hakupatikana."
@@ -1146,18 +2775,21 @@ async function checkInGuest(){
     `;
 
 
-  }catch(error){
+  } catch (error) {
+
 
     message.innerHTML = `
 
-      <div class="error-message">
+      <div
+        class="error-message"
+      >
 
         ❌ Kuna tatizo la kuwasiliana
         na server.
 
         <br>
 
-        ${esc(
+        ${escapeHtml(
           error.message
         )}
 
@@ -1165,9 +2797,13 @@ async function checkInGuest(){
 
     `;
 
-  }finally{
 
-    button.disabled = false;
+  } finally {
+
+
+    button.disabled =
+      false;
+
 
     button.textContent =
       "CHECK-IN";
@@ -1183,9 +2819,10 @@ async function checkInGuest(){
 
 async function downloadExcel(){
 
+
   const button =
     document.getElementById(
-      "excelButton"
+      "excelDownloadButton"
     );
 
 
@@ -1193,46 +2830,55 @@ async function downloadExcel(){
     button.textContent;
 
 
-  button.disabled = true;
+  button.disabled =
+    true;
+
 
   button.textContent =
     "⏳ Inatengeneza Excel...";
 
 
-  try{
+  try {
+
 
     const response =
       await fetch(
         "/api/attendance/export",
         {
-          method:"GET",
-          cache:"no-store"
+          method:
+            "GET",
+
+          cache:
+            "no-store"
         }
       );
 
 
-    if(!response.ok){
+    if (
+      !response.ok
+    ) {
 
-      let message =
+
+      let errorMessage =
         "Imeshindikana kutengeneza Excel.";
 
 
-      try{
+      try {
 
         const result =
           await response.json();
 
 
-        message =
+        errorMessage =
           result.error ||
           result.message ||
-          message;
+          errorMessage;
 
-      }catch(_){}
+      } catch (_) {}
 
 
       throw new Error(
-        message
+        errorMessage
       );
 
     }
@@ -1242,10 +2888,10 @@ async function downloadExcel(){
       await response.blob();
 
 
-    if(
+    if (
       !blob ||
       blob.size === 0
-    ){
+    ) {
 
       throw new Error(
         "Server imerudisha file tupu."
@@ -1266,7 +2912,9 @@ async function downloadExcel(){
       );
 
 
-    link.href = url;
+    link.href =
+      url;
+
 
     link.download =
       "GeitaCard_Wahudhuriaji.xlsx";
@@ -1288,16 +2936,21 @@ async function downloadExcel(){
     );
 
 
-  }catch(error){
+  } catch (error) {
+
 
     alert(
       "❌ Imeshindikana kupakua Excel.\n\n" +
       error.message
     );
 
-  }finally{
 
-    button.disabled = false;
+  } finally {
+
+
+    button.disabled =
+      false;
+
 
     button.textContent =
       oldText;
@@ -1311,11 +2964,15 @@ async function downloadExcel(){
    STATUS LABEL
 ========================================================= */
 
-function statusLabel(status){
+function statusLabel(
+  status
+) {
 
-  if(
-    status === "confirmed"
-  ){
+
+  if (
+    status ===
+    "confirmed"
+  ) {
 
     return `
 
@@ -1330,9 +2987,10 @@ function statusLabel(status){
   }
 
 
-  if(
-    status === "declined"
-  ){
+  if (
+    status ===
+    "declined"
+  ) {
 
     return `
 
@@ -1347,9 +3005,10 @@ function statusLabel(status){
   }
 
 
-  if(
-    status === "maybe"
-  ){
+  if (
+    status ===
+    "maybe"
+  ) {
 
     return `
 
@@ -1381,9 +3040,14 @@ function statusLabel(status){
    CHECK-IN LABEL
 ========================================================= */
 
-function checkLabel(scannedAt){
+function checkinLabel(
+  scannedAt
+) {
 
-  if(scannedAt){
+
+  if (
+    scannedAt
+  ) {
 
     return `
 
@@ -1412,31 +3076,43 @@ function checkLabel(scannedAt){
 
 
 /* =========================================================
-   DATE
+   DATE FORMAT
 ========================================================= */
 
-function date(value){
+function formatDate(
+  value
+) {
 
-  if(!value){
+
+  if (!value) {
+
     return "-";
+
   }
 
 
-  try{
+  try {
 
     return new Date(
       value
     ).toLocaleString(
       "sw-TZ",
       {
-        dateStyle:"medium",
-        timeStyle:"short"
+
+        dateStyle:
+          "medium",
+
+        timeStyle:
+          "short"
+
       }
     );
 
-  }catch(_){
+  } catch (_) {
 
-    return String(value);
+    return String(
+      value
+    );
 
   }
 
@@ -1447,9 +3123,14 @@ function date(value){
    SECURITY
 ========================================================= */
 
-function esc(value){
+function escapeHtml(
+  value
+) {
 
-  return String(value)
+
+  return String(
+    value
+  )
 
     .replace(
       /&/g,
@@ -1480,7 +3161,7 @@ function esc(value){
 
 
 /* =========================================================
-   ENTER KEY
+   ENTER KEY FOR CHECK-IN
 ========================================================= */
 
 document
@@ -1489,11 +3170,12 @@ document
   )
   .addEventListener(
     "keydown",
-    function(event){
+    function(event) {
 
-      if(
-        event.key === "Enter"
-      ){
+      if (
+        event.key ===
+        "Enter"
+      ) {
 
         event.preventDefault();
 
@@ -1548,12 +3230,14 @@ document
 
 
 /* =========================================================
-   START
+   START DASHBOARD
 ========================================================= */
 
 loadGuests();
 
 </script>
 
+
 </body>
-</html>
+
+  </html>
