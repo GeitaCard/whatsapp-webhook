@@ -940,6 +940,134 @@ app.post("/api/check-in", async (req, res) => {
   }
   });
 /* =========================================================
+   EXPORT ATTENDANCE TO EXCEL
+========================================================= */
+
+app.get("/api/attendance/export", async (req, res) => {
+  try {
+    console.log("Exporting attendance to Excel...");
+
+    const { data, error } = await supabase
+      .from("guests")
+      .select(
+        "full_name, phone, guest_code, invitation_type, attendance_status, scanned_at, created_at"
+      )
+      .order("created_at", { ascending: false });
+
+    if (error) {
+      console.error(
+        "Excel export database error:",
+        error.message
+      );
+
+      return res.status(500).json({
+        success: false,
+        message: error.message
+      });
+    }
+
+    const rows = (data || []).map((guest, index) => ({
+      "#": index + 1,
+      "Jina": guest.full_name || "",
+      "Simu": guest.phone || "",
+      "Code": guest.guest_code || "",
+      "Aina ya Mwaliko": guest.invitation_type || "",
+      "Ushiriki":
+        guest.attendance_status === "confirmed"
+          ? "Nitashiriki"
+          : guest.attendance_status === "declined"
+          ? "Sitashiriki"
+          : guest.attendance_status === "maybe"
+          ? "Sina uhakika"
+          : "Pending",
+      "Check-in":
+        guest.scanned_at
+          ? "Checked-in"
+          : "Hajaingia",
+      "Muda wa Check-in":
+        guest.scanned_at
+          ? new Date(guest.scanned_at).toLocaleString(
+              "sw-TZ"
+            )
+          : ""
+    }));
+
+    const worksheet =
+      XLSX.utils.json_to_sheet(rows);
+
+    const workbook =
+      XLSX.utils.book_new();
+
+    XLSX.utils.book_append_sheet(
+      workbook,
+      worksheet,
+      "Wahudhuriaji"
+    );
+
+    /* -----------------------------------------------------
+       WIDTH ZA COLUMNS
+    ----------------------------------------------------- */
+
+    worksheet["!cols"] = [
+      { wch: 6 },
+      { wch: 25 },
+      { wch: 18 },
+      { wch: 20 },
+      { wch: 18 },
+      { wch: 18 },
+      { wch: 18 },
+      { wch: 25 }
+    ];
+
+    /* -----------------------------------------------------
+       TENGENEZA EXCEL BUFFER
+    ----------------------------------------------------- */
+
+    const buffer =
+      XLSX.write(
+        workbook,
+        {
+          type: "buffer",
+          bookType: "xlsx"
+        }
+      );
+
+    const filename =
+      `GeitaCard_Wahudhuriaji_${new Date()
+        .toISOString()
+        .slice(0, 10)}.xlsx`;
+
+    res.setHeader(
+      "Content-Type",
+      "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet"
+    );
+
+    res.setHeader(
+      "Content-Disposition",
+      `attachment; filename="${filename}"`
+    );
+
+    console.log(
+      "Excel export successful:",
+      filename
+    );
+
+    return res.status(200).send(buffer);
+
+  } catch (error) {
+
+    console.error(
+      "Excel export error:",
+      error.message
+    );
+
+    return res.status(500).json({
+      success: false,
+      message: error.message
+    });
+  }
+});
+/* =========================================================
    START SERVER
 ========================================================= */
 
