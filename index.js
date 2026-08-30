@@ -2218,7 +2218,220 @@ app.get(
   }
 );
 
+/* =========================================================
+   QR CODE CHECK-IN
+   ADD-ONLY FEATURE
+========================================================= */
 
+app.post(
+  "/api/check-in-qr",
+  async (req, res) => {
+
+    try {
+
+      const {
+        qr_token
+      } = req.body;
+
+
+      /* ---------------------------------------------------
+         VALIDATION
+      --------------------------------------------------- */
+
+      if (!qr_token) {
+
+        return res.status(400).json({
+
+          success: false,
+
+          message:
+            "QR Token inahitajika."
+
+        });
+
+      }
+
+
+      const qrToken =
+        String(
+          qr_token
+        ).trim();
+
+
+      /* ---------------------------------------------------
+         TAFUTA MGENI KWA QR TOKEN
+      --------------------------------------------------- */
+
+      const {
+        data: guest,
+        error: findError
+      } = await supabase
+
+        .from("guests")
+
+        .select("*")
+
+        .eq(
+          "qr_token",
+          qrToken
+        )
+
+        .limit(1)
+
+        .maybeSingle();
+
+
+      if (findError) {
+
+        console.error(
+          "QR check-in search error:",
+          findError.message
+        );
+
+
+        return res.status(500).json({
+
+          success: false,
+
+          message:
+            findError.message
+
+        });
+
+      }
+
+
+      /* ---------------------------------------------------
+         QR HAIPATIKANI
+      --------------------------------------------------- */
+
+      if (!guest) {
+
+        return res.status(404).json({
+
+          success: false,
+
+          message:
+            "QR Code hii si ya mgeni aliyesajiliwa."
+
+        });
+
+      }
+
+
+      /* ---------------------------------------------------
+         TAYARI AME-CHECK-IN
+      --------------------------------------------------- */
+
+      if (
+        guest.scanned_at
+      ) {
+
+        return res.status(409).json({
+
+          success: false,
+
+          alreadyCheckedIn: true,
+
+          message:
+            "Mgeni huyu tayari ameshaingia ukumbini.",
+
+          guest: guest
+
+        });
+
+      }
+
+
+      /* ---------------------------------------------------
+         CHECK-IN KWA QR
+      --------------------------------------------------- */
+
+      const {
+        data: updatedGuest,
+        error: updateError
+      } = await supabase
+
+        .from("guests")
+
+        .update({
+
+          scanned_at:
+            new Date().toISOString()
+
+        })
+
+        .eq(
+          "id",
+          guest.id
+        )
+
+        .select()
+
+        .single();
+
+
+      if (updateError) {
+
+        console.error(
+          "QR check-in update error:",
+          updateError.message
+        );
+
+
+        return res.status(500).json({
+
+          success: false,
+
+          message:
+            updateError.message
+
+        });
+
+      }
+
+
+      console.log(
+        "QR CHECK-IN SUCCESS:",
+        updatedGuest.full_name,
+        updatedGuest.guest_code
+      );
+
+
+      return res.status(200).json({
+
+        success: true,
+
+        message:
+          "QR Check-in imefanikiwa.",
+
+        guest:
+          updatedGuest
+
+      });
+
+
+    } catch (error) {
+
+      console.error(
+        "QR check-in error:",
+        error.message
+      );
+
+
+      return res.status(500).json({
+
+        success: false,
+
+        message:
+          error.message
+
+      });
+
+    }
+
+  }
+);
 /* =========================================================
    START SERVER
 ========================================================= */
