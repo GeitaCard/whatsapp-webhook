@@ -2,6 +2,7 @@ const express = require("express");
 const axios = require("axios");
 const XLSX = require("xlsx");
 const crypto = require("crypto");
+const QRCode = require("qrcode");
 const { createClient } = require("@supabase/supabase-js");
 
 const app = express();
@@ -20,9 +21,11 @@ const SUPABASE_SERVICE_ROLE_KEY =
   process.env.SUPABASE_SERVICE_ROLE_KEY;
 
 if (!SUPABASE_URL || !SUPABASE_SERVICE_ROLE_KEY) {
+
   console.error(
     "ERROR: SUPABASE_URL au SUPABASE_SERVICE_ROLE_KEY haipo."
   );
+
 }
 
 const supabase =
@@ -65,6 +68,22 @@ const PORT =
   10000;
 
 
+/*
+  URL ya mfumo wako.
+
+  Mfano:
+  https://whatsapp-webhook-fezd.onrender.com
+
+  Kama PUBLIC_BASE_URL haijawekwa,
+  tutatumia Render URL kama ilivyowekwa
+  kwenye environment variable.
+*/
+
+const PUBLIC_BASE_URL =
+  process.env.PUBLIC_BASE_URL ||
+  "";
+
+
 /* =========================================================
    SERVER START MESSAGE
 ========================================================= */
@@ -93,6 +112,10 @@ console.log(
 );
 
 console.log(
+  "QR System: ENABLED"
+);
+
+console.log(
   "=============================================="
 );
 
@@ -108,6 +131,31 @@ app.get(
     res.send(
       "GeitaCard system iko running!"
     );
+
+  }
+);
+
+
+/* =========================================================
+   HEALTH CHECK
+========================================================= */
+
+app.get(
+  "/health",
+  (req, res) => {
+
+    res.status(200).json({
+
+      success:
+        true,
+
+      message:
+        "GeitaCard server iko hai.",
+
+      qr:
+        true
+
+    });
 
   }
 );
@@ -181,6 +229,50 @@ function normalizePhone(phone) {
 
 
 /* =========================================================
+   GET INVITATION TYPE
+========================================================= */
+
+function getInvitationType(code) {
+
+  const value =
+    String(
+      code || ""
+    )
+      .trim()
+      .toUpperCase();
+
+
+  if (
+    value.endsWith(
+      "-KAMATI"
+    )
+  ) {
+
+    return "KAMATI";
+
+  }
+
+
+  if (
+    value.endsWith(
+      "-SINGLE"
+    )
+  ) {
+
+    return "SINGLE";
+
+  }
+
+
+  return (
+    process.env.INVITATION_TYPE ||
+    "premium"
+  );
+
+}
+
+
+/* =========================================================
    SAVE GUEST
 ========================================================= */
 
@@ -195,11 +287,9 @@ async function saveGuest(
 
 
   /*
-    QR token inaweza kubaki kwenye database
-    kwa matumizi ya baadaye.
+    QR TOKEN MPYA KWA KILA MGENI.
 
-    Lakini CHECK-IN ya sasa inatumia
-    guest_code moja kwa moja.
+    CODE HAIBADILISHWI.
   */
 
   const qrToken =
@@ -207,23 +297,10 @@ async function saveGuest(
 
 
   const invitationType =
-    code
-      .toUpperCase()
-      .endsWith("-KAMATI")
-      ? "KAMATI"
-      : code
-          .toUpperCase()
-          .endsWith("-SINGLE")
-        ? "SINGLE"
-        : (
-            process.env.INVITATION_TYPE ||
-            "premium"
-          );
+    getInvitationType(
+      code
+    );
 
-
-  /*
-    SAVE GUEST
-  */
 
   const {
     data,
@@ -251,7 +328,10 @@ async function saveGuest(
           invitationType,
 
         attendance_status:
-          "pending"
+          "pending",
+
+        scanned_at:
+          null
 
       }
     ])
@@ -277,6 +357,12 @@ async function saveGuest(
     "Guest saved:",
     data.full_name,
     data.guest_code
+  );
+
+
+  console.log(
+    "QR token:",
+    data.qr_token
   );
 
 
@@ -426,10 +512,12 @@ async function sendInvitation(
 
 
   /* -------------------------------------------------------
-     BODY VARIABLES
+     BODY
 
      {{1}} = Jina
      {{2}} = Code
+
+     CODE HAIBADILISHWI.
   ------------------------------------------------------- */
 
   components.push({
@@ -453,11 +541,6 @@ async function sendInvitation(
 
         type:
           "text",
-
-        /*
-          CODE INATUMWA EXACTLY
-          KAMA ILIVYO.
-        */
 
         text:
           String(code)
@@ -787,7 +870,7 @@ async function processAttendanceReply(
 
 
 /* =========================================================
-   WHATSAPP WEBHOOK - RECEIVE MESSAGES
+   WHATSAPP WEBHOOK
 ========================================================= */
 
 app.post(
@@ -856,7 +939,7 @@ app.post(
 
 
       /* ---------------------------------------------------
-         STATUS
+         WHATSAPP STATUS
       --------------------------------------------------- */
 
       if (
@@ -954,7 +1037,7 @@ app.post(
 
 
       /* ---------------------------------------------------
-         OLD BUTTON FORMAT
+         OLD BUTTON
       --------------------------------------------------- */
 
       if (
@@ -1043,11 +1126,6 @@ app.post(
       );
 
 
-      /*
-        WhatsApp inahitaji webhook response
-        isirudishe error loop.
-      */
-
       return res.sendStatus(200);
 
     }
@@ -1098,13 +1176,19 @@ app.post(
       */
 
       const cleanTo =
-        String(to).trim();
+        String(
+          to
+        ).trim();
 
       const cleanName =
-        String(name).trim();
+        String(
+          name
+        ).trim();
 
       const cleanCode =
-        String(code).trim();
+        String(
+          code
+        ).trim();
 
 
       console.log(
@@ -1298,13 +1382,11 @@ app.post(
 
 
         /*
-          MUHIMU SANA:
+          CODE INATOKA MOJA KWA MOJA
+          KWENYE EXCEL/CSV.
 
-          CODE HII HAPA
-          HAITENGENEZWI.
-
-          INACHUKULIWA MOJA KWA MOJA
-          KUTOKA EXCEL/CSV.
+          HATUITENGENEZI.
+          HATUIBADILISHI.
         */
 
         const code =
@@ -1377,7 +1459,7 @@ app.post(
 
 
           /* ---------------------------------------------
-             1. SEND WHATSAPP
+             SEND WHATSAPP
           --------------------------------------------- */
 
           const whatsappResult =
@@ -1389,7 +1471,7 @@ app.post(
 
 
           /* ---------------------------------------------
-             2. SAVE TO SUPABASE
+             SAVE GUEST
           --------------------------------------------- */
 
           const guest =
@@ -1401,7 +1483,7 @@ app.post(
 
 
           /* ---------------------------------------------
-             3. RESULT
+             RESULT
           --------------------------------------------- */
 
           results.push({
@@ -1466,11 +1548,9 @@ app.post(
         }
 
 
-        /*
-          Pause kati ya message.
-
-          Tunatumia sekunde 1 hapa.
-        */
+        /* -------------------------------------------------
+           DELAY
+        ------------------------------------------------- */
 
         if (
           i <
@@ -1686,10 +1766,6 @@ app.get(
       );
 
 
-      /* ---------------------------------------------------
-         GET GUESTS
-      --------------------------------------------------- */
-
       const {
         data,
         error
@@ -1698,7 +1774,7 @@ app.get(
         .from("guests")
 
         .select(
-          "full_name, phone, guest_code, invitation_type, attendance_status, scanned_at, created_at"
+          "full_name, phone, guest_code, qr_token, invitation_type, attendance_status, scanned_at, created_at"
         )
 
         .order(
@@ -1730,10 +1806,6 @@ app.get(
 
       }
 
-
-      /* ---------------------------------------------------
-         CONVERT DATA
-      --------------------------------------------------- */
 
       const rows =
         (data || []).map(
@@ -1799,19 +1871,11 @@ app.get(
         );
 
 
-      /* ---------------------------------------------------
-         CREATE WORKSHEET
-      --------------------------------------------------- */
-
       const worksheet =
         XLSX.utils.json_to_sheet(
           rows
         );
 
-
-      /* ---------------------------------------------------
-         COLUMN WIDTHS
-      --------------------------------------------------- */
 
       worksheet["!cols"] = [
 
@@ -1863,10 +1927,6 @@ app.get(
       ];
 
 
-      /* ---------------------------------------------------
-         CREATE WORKBOOK
-      --------------------------------------------------- */
-
       const workbook =
         XLSX.utils.book_new();
 
@@ -1877,10 +1937,6 @@ app.get(
         "Wahudhuriaji"
       );
 
-
-      /* ---------------------------------------------------
-         WRITE EXCEL
-      --------------------------------------------------- */
 
       const buffer =
         XLSX.write(
@@ -1896,10 +1952,6 @@ app.get(
           }
         );
 
-
-      /* ---------------------------------------------------
-         SEND FILE
-      --------------------------------------------------- */
 
       const filename =
         "GeitaCard_Wahudhuriaji.xlsx";
@@ -1952,7 +2004,7 @@ app.get(
 
 
 /* =========================================================
-   CHECK-IN GUEST API
+   CHECK-IN BY CODE
 ========================================================= */
 
 app.post(
@@ -1965,10 +2017,6 @@ app.post(
         code
       } = req.body;
 
-
-      /* ---------------------------------------------------
-         VALIDATION
-      --------------------------------------------------- */
 
       if (
         !code
@@ -1988,8 +2036,7 @@ app.post(
 
 
       /*
-        Code ya CHECK-IN
-        inatumika kama ilivyo.
+        CODE HAIJABADILISHWI.
 
         Tunatoa spaces za mwanzo/mwisho tu.
       */
@@ -2007,7 +2054,7 @@ app.post(
 
 
       /* ---------------------------------------------------
-         SEARCH GUEST BY CODE
+         SEARCH BY EXACT CODE
       --------------------------------------------------- */
 
       const {
@@ -2059,7 +2106,7 @@ app.post(
 
 
       /* ---------------------------------------------------
-         GUEST NOT FOUND
+         NOT FOUND
       --------------------------------------------------- */
 
       if (!guest) {
@@ -2128,6 +2175,7 @@ app.post(
         )
 
         .select()
+
         .single();
 
 
@@ -2167,6 +2215,9 @@ app.post(
         message:
           "Mgeni ameingia ukumbini.",
 
+        method:
+          "code",
+
         guest:
           updatedGuest
 
@@ -2198,29 +2249,314 @@ app.post(
 
 
 /* =========================================================
-   HEALTH CHECK
+   QR CODE IMAGE
 ========================================================= */
 
+/*
+  URL:
+
+  /api/qr/:token
+
+  Mfano:
+
+  https://your-domain.onrender.com/api/qr/xxxxxxxx
+
+  Endpoint hii inatengeneza picha halisi ya QR.
+*/
+
 app.get(
-  "/health",
-  (req, res) => {
+  "/api/qr/:token",
+  async (req, res) => {
 
-    res.status(200).json({
+    try {
 
-      success:
-        true,
+      const token =
+        String(
+          req.params.token || ""
+        ).trim();
 
-      message:
-        "GeitaCard server iko hai."
 
-    });
+      if (!token) {
+
+        return res.status(400).send(
+          "QR token haipo."
+        );
+
+      }
+
+
+      /* ---------------------------------------------------
+         VERIFY TOKEN EXISTS
+      --------------------------------------------------- */
+
+      const {
+        data: guest,
+        error
+      } = await supabase
+
+        .from("guests")
+
+        .select(
+          "id, full_name, guest_code, qr_token"
+        )
+
+        .eq(
+          "qr_token",
+          token
+        )
+
+        .limit(1)
+
+        .maybeSingle();
+
+
+      if (error) {
+
+        console.error(
+          "QR lookup error:",
+          error.message
+        );
+
+
+        return res.status(500).send(
+          "Imeshindikana kupata QR."
+        );
+
+      }
+
+
+      if (!guest) {
+
+        return res.status(404).send(
+          "QR haijatambuliwa."
+        );
+
+      }
+
+
+      /*
+        QR INABEBE TOKEN TU.
+
+        HATUBADILISHI CODE YA MGENI.
+      */
+
+      const qrData =
+        JSON.stringify({
+
+          type:
+            "geitacard",
+
+          qr_token:
+            guest.qr_token
+
+        });
+
+
+      const qrBuffer =
+        await QRCode.toBuffer(
+          qrData,
+          {
+
+            type:
+              "png",
+
+            width:
+              700,
+
+            margin:
+              2,
+
+            errorCorrectionLevel:
+              "H"
+
+          }
+        );
+
+
+      res.setHeader(
+        "Content-Type",
+        "image/png"
+      );
+
+
+      res.setHeader(
+        "Cache-Control",
+        "public, max-age=31536000, immutable"
+      );
+
+
+      return res.send(
+        qrBuffer
+      );
+
+
+    } catch (error) {
+
+      console.error(
+        "QR generation error:",
+        error.message
+      );
+
+
+      return res.status(500).send(
+        "Imeshindikana kutengeneza QR."
+      );
+
+    }
 
   }
 );
 
+
 /* =========================================================
-   QR CODE CHECK-IN
-   ADD-ONLY FEATURE
+   GET GUEST QR INFORMATION
+========================================================= */
+
+/*
+  Endpoint hii inaweza kutumiwa na
+  index.html au mfumo wa kadi kupata
+  QR URL ya mgeni.
+
+  GET /api/guest-qr/:code
+*/
+
+app.get(
+  "/api/guest-qr/:code",
+  async (req, res) => {
+
+    try {
+
+      const code =
+        String(
+          req.params.code || ""
+        ).trim();
+
+
+      if (!code) {
+
+        return res.status(400).json({
+
+          success:
+            false,
+
+          message:
+            "Code haipo."
+
+        });
+
+      }
+
+
+      const {
+        data: guest,
+        error
+      } = await supabase
+
+        .from("guests")
+
+        .select(
+          "id, full_name, phone, guest_code, qr_token, invitation_type, attendance_status, scanned_at"
+        )
+
+        .eq(
+          "guest_code",
+          code
+        )
+
+        .order(
+          "created_at",
+          {
+            ascending:
+              false
+          }
+        )
+
+        .limit(1)
+
+        .maybeSingle();
+
+
+      if (error) {
+
+        return res.status(500).json({
+
+          success:
+            false,
+
+          message:
+            error.message
+
+        });
+
+      }
+
+
+      if (!guest) {
+
+        return res.status(404).json({
+
+          success:
+            false,
+
+          message:
+            "Mgeni hakupatikana."
+
+        });
+
+      }
+
+
+      const baseUrl =
+        PUBLIC_BASE_URL ||
+        `${req.protocol}://${req.get("host")}`;
+
+
+      const qrUrl =
+        `${baseUrl}/api/qr/${encodeURIComponent(
+          guest.qr_token
+        )}`;
+
+
+      return res.status(200).json({
+
+        success:
+          true,
+
+        guest:
+          guest,
+
+        qr_url:
+          qrUrl
+
+      });
+
+
+    } catch (error) {
+
+      console.error(
+        "Guest QR information error:",
+        error.message
+      );
+
+
+      return res.status(500).json({
+
+        success:
+          false,
+
+        message:
+          error.message
+
+      });
+
+    }
+
+  }
+);
+
+
+/* =========================================================
+   QR CHECK-IN
 ========================================================= */
 
 app.post(
@@ -2238,11 +2574,14 @@ app.post(
          VALIDATION
       --------------------------------------------------- */
 
-      if (!qr_token) {
+      if (
+        !qr_token
+      ) {
 
         return res.status(400).json({
 
-          success: false,
+          success:
+            false,
 
           message:
             "QR Token inahitajika."
@@ -2258,8 +2597,14 @@ app.post(
         ).trim();
 
 
+      console.log(
+        "QR CHECK-IN TOKEN:",
+        qrToken
+      );
+
+
       /* ---------------------------------------------------
-         TAFUTA MGENI KWA QR TOKEN
+         SEARCH GUEST BY QR TOKEN
       --------------------------------------------------- */
 
       const {
@@ -2291,7 +2636,8 @@ app.post(
 
         return res.status(500).json({
 
-          success: false,
+          success:
+            false,
 
           message:
             findError.message
@@ -2302,14 +2648,15 @@ app.post(
 
 
       /* ---------------------------------------------------
-         QR HAIPATIKANI
+         QR NOT FOUND
       --------------------------------------------------- */
 
       if (!guest) {
 
         return res.status(404).json({
 
-          success: false,
+          success:
+            false,
 
           message:
             "QR Code hii si ya mgeni aliyesajiliwa."
@@ -2320,7 +2667,7 @@ app.post(
 
 
       /* ---------------------------------------------------
-         TAYARI AME-CHECK-IN
+         ALREADY CHECKED IN
       --------------------------------------------------- */
 
       if (
@@ -2329,14 +2676,17 @@ app.post(
 
         return res.status(409).json({
 
-          success: false,
+          success:
+            false,
 
-          alreadyCheckedIn: true,
+          alreadyCheckedIn:
+            true,
 
           message:
             "Mgeni huyu tayari ameshaingia ukumbini.",
 
-          guest: guest
+          guest:
+            guest
 
         });
 
@@ -2344,7 +2694,7 @@ app.post(
 
 
       /* ---------------------------------------------------
-         CHECK-IN KWA QR
+         CHECK-IN
       --------------------------------------------------- */
 
       const {
@@ -2381,7 +2731,8 @@ app.post(
 
         return res.status(500).json({
 
-          success: false,
+          success:
+            false,
 
           message:
             updateError.message
@@ -2392,15 +2743,40 @@ app.post(
 
 
       console.log(
-        "QR CHECK-IN SUCCESS:",
-        updatedGuest.full_name,
+        "=============================================="
+      );
+
+      console.log(
+        "QR CHECK-IN SUCCESS"
+      );
+
+      console.log(
+        "Name:",
+        updatedGuest.full_name
+      );
+
+      console.log(
+        "Code:",
         updatedGuest.guest_code
+      );
+
+      console.log(
+        "Time:",
+        updatedGuest.scanned_at
+      );
+
+      console.log(
+        "=============================================="
       );
 
 
       return res.status(200).json({
 
-        success: true,
+        success:
+          true,
+
+        method:
+          "qr",
 
         message:
           "QR Check-in imefanikiwa.",
@@ -2421,7 +2797,8 @@ app.post(
 
       return res.status(500).json({
 
-        success: false,
+        success:
+          false,
 
         message:
           error.message
@@ -2432,6 +2809,413 @@ app.post(
 
   }
 );
+
+
+/* =========================================================
+   QR CHECK-IN BY FULL URL / DATA
+========================================================= */
+
+/*
+  Hii endpoint inasaidia kama QR scanner
+  itasoma JSON kama:
+
+  {"type":"geitacard","qr_token":"..."}
+
+  au token plain text.
+
+  POST /api/check-in-qr-scan
+
+  body:
+
+  {
+    "value": "QR VALUE"
+  }
+*/
+
+app.post(
+  "/api/check-in-qr-scan",
+  async (req, res) => {
+
+    try {
+
+      let value =
+        String(
+          req.body?.value || ""
+        ).trim();
+
+
+      if (!value) {
+
+        return res.status(400).json({
+
+          success:
+            false,
+
+          message:
+            "QR value haipo."
+
+        });
+
+      }
+
+
+      /*
+        Kama QR imesoma JSON,
+        tunatoa qr_token.
+      */
+
+      try {
+
+        const parsed =
+          JSON.parse(
+            value
+          );
+
+
+        if (
+          parsed &&
+          parsed.qr_token
+        ) {
+
+          value =
+            String(
+              parsed.qr_token
+            ).trim();
+
+        }
+
+      } catch {
+
+        /*
+          Kama si JSON,
+          tunatumia value yenyewe
+          kama token.
+        */
+
+      }
+
+
+      /*
+        Kama scanner imesoma URL
+        yenye qr_token, jaribu kuitoa.
+      */
+
+      if (
+        value.includes(
+          "qr_token="
+        )
+      ) {
+
+        try {
+
+          const url =
+            new URL(
+              value
+            );
+
+
+          const token =
+            url.searchParams.get(
+              "qr_token"
+            );
+
+
+          if (token) {
+
+            value =
+              token;
+
+          }
+
+        } catch {
+
+          /*
+            Endelea na value iliyopo.
+          */
+
+        }
+
+      }
+
+
+      /* ---------------------------------------------------
+         REUSE QR CHECK-IN LOGIC
+      --------------------------------------------------- */
+
+      const {
+        data: guest,
+        error: findError
+      } = await supabase
+
+        .from("guests")
+
+        .select("*")
+
+        .eq(
+          "qr_token",
+          value
+        )
+
+        .limit(1)
+
+        .maybeSingle();
+
+
+      if (findError) {
+
+        return res.status(500).json({
+
+          success:
+            false,
+
+          message:
+            findError.message
+
+        });
+
+      }
+
+
+      if (!guest) {
+
+        return res.status(404).json({
+
+          success:
+            false,
+
+          message:
+            "QR Code hii si ya mgeni aliyesajiliwa."
+
+        });
+
+      }
+
+
+      if (
+        guest.scanned_at
+      ) {
+
+        return res.status(409).json({
+
+          success:
+            false,
+
+          alreadyCheckedIn:
+            true,
+
+          message:
+            "Mgeni huyu tayari ameshaingia ukumbini.",
+
+          guest:
+            guest
+
+        });
+
+      }
+
+
+      const {
+        data: updatedGuest,
+        error: updateError
+      } = await supabase
+
+        .from("guests")
+
+        .update({
+
+          scanned_at:
+            new Date().toISOString()
+
+        })
+
+        .eq(
+          "id",
+          guest.id
+        )
+
+        .select()
+        .single();
+
+
+      if (updateError) {
+
+        return res.status(500).json({
+
+          success:
+            false,
+
+          message:
+            updateError.message
+
+        });
+
+      }
+
+
+      return res.status(200).json({
+
+        success:
+          true,
+
+        method:
+          "qr",
+
+        message:
+          "QR Check-in imefanikiwa.",
+
+        guest:
+          updatedGuest
+
+      });
+
+
+    } catch (error) {
+
+      console.error(
+        "QR scan endpoint error:",
+        error.message
+      );
+
+
+      return res.status(500).json({
+
+        success:
+          false,
+
+        message:
+          error.message
+
+      });
+
+    }
+
+  }
+);
+
+
+/* =========================================================
+   GET SINGLE GUEST
+========================================================= */
+
+app.get(
+  "/api/guest/:code",
+  async (req, res) => {
+
+    try {
+
+      const code =
+        String(
+          req.params.code || ""
+        ).trim();
+
+
+      if (!code) {
+
+        return res.status(400).json({
+
+          success:
+            false,
+
+          message:
+            "Code haipo."
+
+        });
+
+      }
+
+
+      const {
+        data: guest,
+        error
+      } = await supabase
+
+        .from("guests")
+
+        .select("*")
+
+        .eq(
+          "guest_code",
+          code
+        )
+
+        .order(
+          "created_at",
+          {
+            ascending:
+              false
+          }
+        )
+
+        .limit(1)
+
+        .maybeSingle();
+
+
+      if (error) {
+
+        return res.status(500).json({
+
+          success:
+            false,
+
+          message:
+            error.message
+
+        });
+
+      }
+
+
+      if (!guest) {
+
+        return res.status(404).json({
+
+          success:
+            false,
+
+          message:
+            "Mgeni hakupatikana."
+
+        });
+
+      }
+
+
+      return res.status(200).json({
+
+        success:
+          true,
+
+        guest:
+          guest
+
+      });
+
+
+    } catch (error) {
+
+      console.error(
+        "Guest lookup error:",
+        error.message
+      );
+
+
+      return res.status(500).json({
+
+        success:
+          false,
+
+        message:
+          error.message
+
+      });
+
+    }
+
+  }
+);
+
+
 /* =========================================================
    START SERVER
 ========================================================= */
@@ -2460,6 +3244,18 @@ app.listen(
     console.log(
       "Language:",
       TEMPLATE_LANGUAGE
+    );
+
+    console.log(
+      "QR System: ENABLED"
+    );
+
+    console.log(
+      "Manual Code Check-in: ENABLED"
+    );
+
+    console.log(
+      "Excel Export: ENABLED"
     );
 
     console.log(
