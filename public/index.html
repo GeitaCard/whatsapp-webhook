@@ -249,6 +249,9 @@
       display:
         none;
 
+      line-height:
+        1.5;
+
     }
 
 
@@ -380,6 +383,17 @@
 
       color:
         #166534;
+
+      font-weight:
+        bold;
+
+    }
+
+
+    .type-unknown {
+
+      color:
+        #6b7280;
 
       font-weight:
         bold;
@@ -604,6 +618,9 @@
       margin-bottom:
         10px;
 
+      line-height:
+        1.6;
+
     }
 
 
@@ -623,6 +640,9 @@
 
       margin-bottom:
         10px;
+
+      line-height:
+        1.6;
 
     }
 
@@ -761,6 +781,9 @@
       border-radius:
         8px;
 
+      line-height:
+        1.6;
+
     }
 
 
@@ -778,6 +801,9 @@
       border-radius:
         8px;
 
+      line-height:
+        1.6;
+
     }
 
 
@@ -794,6 +820,9 @@
 
       border-radius:
         8px;
+
+      line-height:
+        1.6;
 
     }
 
@@ -873,6 +902,12 @@
       margin-top:
         18px;
 
+      border-radius:
+        12px;
+
+      overflow:
+        hidden;
+
     }
 
 
@@ -880,6 +915,9 @@
 
       margin-top:
         15px;
+
+      font-weight:
+        bold;
 
     }
 
@@ -921,6 +959,9 @@
       font-size:
         15px;
 
+      background:
+        white;
+
     }
 
 
@@ -955,6 +996,9 @@
 
       display:
         inline-block;
+
+      white-space:
+        nowrap;
 
     }
 
@@ -1055,6 +1099,23 @@
     }
 
 
+    .small-note {
+
+      font-size:
+        13px;
+
+      color:
+        #6b7280;
+
+      margin-top:
+        8px;
+
+      line-height:
+        1.5;
+
+    }
+
+
     /* =====================================================
        MOBILE
     ====================================================== */
@@ -1109,6 +1170,25 @@
 
       }
 
+
+      .checkin-form button {
+
+        width:
+          100%;
+
+      }
+
+
+      .controls button {
+
+        flex:
+          1;
+
+        min-width:
+          120px;
+
+      }
+
     }
 
   </style>
@@ -1145,6 +1225,7 @@
       📁 Upload Excel / CSV
     </h2>
 
+
     <p class="section-description">
 
       Chagua faili lenye columns:
@@ -1153,7 +1234,7 @@
         Namba | Jina | Code
       </strong>
 
-      <br>
+      <br><br>
 
       Mfano:
 
@@ -1169,7 +1250,7 @@
         255714567890 | Juma Mohamed | 9751-SINGLE
       </strong>
 
-      <br>
+      <br><br>
 
       Jina linaweza kuwa na First name,
       Second name, Third name au majina mengi.
@@ -1479,10 +1560,14 @@
 
       ya kadi ya mwaliko.
 
-      <br>
+      <br><br>
 
       Code itatumika ileile iliyopo
       kwenye Excel/CSV.
+
+      <br>
+
+      Mfumo hautengenezi code mpya.
 
     </p>
 
@@ -1539,9 +1624,10 @@
 
       <p>
 
-        Fungua camera ya simu,
-        kisha scan QR Code iliyopo
-        kwenye kadi ya mwaliko.
+        Bonyeza <strong>ANZA KUSCAN QR</strong>,
+        ruhusu camera ya simu,
+        kisha elekeza camera kwenye QR Code
+        iliyopo kwenye kadi ya mwaliko.
 
       </p>
 
@@ -1584,6 +1670,14 @@
       <div
         id="qrMessage"
       ></div>
+
+
+      <div class="small-note">
+
+        💡 QR lazima iwe na QR Token ya mgeni
+        iliyohifadhiwa kwenye database.
+
+      </div>
 
     </div>
 
@@ -2064,4 +2158,2680 @@ function getColumn(
       );
 
 
-    if (found
+    if (found) {
+
+      return row[found];
+
+    }
+
+  }
+
+
+  return "";
+
+}
+
+
+/* =========================================================
+   VALIDATE CONTACTS
+========================================================= */
+
+function validateContacts(
+  contacts
+) {
+
+  const errors = [];
+
+
+  contacts.forEach(
+    (contact, index) => {
+
+      const row =
+        index + 2;
+
+
+      if (!contact.to) {
+
+        errors.push(
+          `Row ${row}: Namba haipo.`
+        );
+
+      }
+
+
+      if (!contact.name) {
+
+        errors.push(
+          `Row ${row}: Jina halipo.`
+        );
+
+      }
+
+
+      if (!contact.code) {
+
+        errors.push(
+          `Row ${row}: Code haipo.`
+        );
+
+      }
+
+    }
+  );
+
+
+  if (errors.length) {
+
+    throw new Error(
+      errors
+        .slice(0, 15)
+        .join(" | ")
+      +
+      (
+        errors.length > 15
+          ? " ..."
+          : ""
+      )
+    );
+
+  }
+
+}
+
+
+/* =========================================================
+   PREVIEW
+========================================================= */
+
+function renderPreview() {
+
+  const section =
+    document.getElementById(
+      "previewSection"
+    );
+
+
+  const body =
+    document.getElementById(
+      "previewBody"
+    );
+
+
+  body.innerHTML =
+    "";
+
+
+  uploadedContacts.forEach(
+    (contact, index) => {
+
+      const row =
+        document.createElement(
+          "tr"
+        );
+
+
+      row.innerHTML = `
+
+        <td>
+          ${index + 1}
+        </td>
+
+        <td>
+          ${escapeHtml(
+            contact.to
+          )}
+        </td>
+
+        <td>
+          ${escapeHtml(
+            contact.name
+          )}
+        </td>
+
+        <td class="code">
+          ${escapeHtml(
+            contact.code
+          )}
+        </td>
+
+        <td>
+          ${typeLabel(
+            contact.code
+          )}
+        </td>
+
+      `;
+
+
+      body.appendChild(
+        row
+      );
+
+    }
+  );
+
+
+  document.getElementById(
+    "previewCount"
+  ).innerText =
+    "Wageni: " +
+    uploadedContacts.length;
+
+
+  section.classList.remove(
+    "hidden"
+  );
+
+
+  document.getElementById(
+    "resultBox"
+  ).style.display =
+    "none";
+
+}
+
+
+/* =========================================================
+   SEND BULK
+========================================================= */
+
+async function sendBulkInvitations() {
+
+  if (
+    !uploadedContacts.length
+  ) {
+
+    alert(
+      "Tafadhali chagua Excel/CSV kwanza."
+    );
+
+    return;
+
+  }
+
+
+  const confirmed =
+    confirm(
+      "Unataka kutuma mialiko kwa wageni " +
+      uploadedContacts.length +
+      "?\n\nCode zote zitatumwa kama zilivyo kwenye Excel."
+    );
+
+
+  if (!confirmed) {
+
+    return;
+
+  }
+
+
+  const button =
+    document.getElementById(
+      "sendBulkButton"
+    );
+
+
+  const progressBox =
+    document.getElementById(
+      "progressBox"
+    );
+
+
+  const progressFill =
+    document.getElementById(
+      "progressFill"
+    );
+
+
+  const progressText =
+    document.getElementById(
+      "progressText"
+    );
+
+
+  const resultBox =
+    document.getElementById(
+      "resultBox"
+    );
+
+
+  button.disabled =
+    true;
+
+
+  button.innerText =
+    "Inatuma...";
+
+
+  progressBox.style.display =
+    "block";
+
+
+  resultBox.style.display =
+    "none";
+
+
+  progressFill.style.width =
+    "5%";
+
+
+  progressText.innerText =
+    "Inatuma mialiko...";
+
+
+  try {
+
+    /*
+      MUHIMU:
+
+      HATUTENGENEZI CODE HAPA.
+
+      Code inatoka moja kwa moja
+      kwenye Excel/CSV.
+
+      Mfano:
+      9750-KAMATI
+      9751-SINGLE
+
+      itatumwa hivyo hivyo.
+    */
+
+    const contacts =
+      uploadedContacts.map(
+        contact => ({
+
+          to:
+            contact.to,
+
+          name:
+            contact.name,
+
+          code:
+            contact.code
+
+        })
+      );
+
+
+    progressFill.style.width =
+      "20%";
+
+
+    progressText.innerText =
+      "Inawasiliana na server...";
+
+
+    const response =
+      await fetch(
+        "/send-bulk",
+        {
+
+          method:
+            "POST",
+
+          headers: {
+
+            "Content-Type":
+              "application/json"
+
+          },
+
+          body:
+            JSON.stringify({
+
+              contacts:
+                contacts
+
+            })
+
+        }
+      );
+
+
+    progressFill.style.width =
+      "70%";
+
+
+    let result;
+
+
+    try {
+
+      result =
+        await response.json();
+
+    } catch {
+
+      throw new Error(
+        "Server imerudisha majibu yasiyotarajiwa."
+      );
+
+    }
+
+
+    if (
+      !response.ok ||
+      !result.success
+    ) {
+
+      throw new Error(
+        result.error ||
+        result.message ||
+        "Bulk send imeshindikana."
+      );
+
+    }
+
+
+    progressFill.style.width =
+      "100%";
+
+
+    progressText.innerText =
+      "Imekamilika.";
+
+
+    showBulkResult(
+      result
+    );
+
+
+  } catch (error) {
+
+    progressFill.style.width =
+      "0%";
+
+
+    progressText.innerText =
+      "Imeshindikana.";
+
+
+    resultBox.style.display =
+      "block";
+
+
+    resultBox.innerHTML = `
+
+      <div class="result-error">
+
+        ❌ <strong>
+          Bulk send imeshindikana
+        </strong>
+
+        <br><br>
+
+        ${escapeHtml(
+          error.message
+        )}
+
+      </div>
+
+    `;
+
+  }
+
+
+  finally {
+
+    button.disabled =
+      false;
+
+
+    button.innerText =
+      "🚀 TUMA BULK";
+
+  }
+
+}
+
+
+/* =========================================================
+   BULK RESULT
+========================================================= */
+
+function showBulkResult(
+  result
+) {
+
+  const box =
+    document.getElementById(
+      "resultBox"
+    );
+
+
+  const results =
+    result.results || [];
+
+
+  const successful =
+    Number(
+      result.successful ??
+      results.filter(
+        item =>
+          item.success
+      ).length
+    );
+
+
+  const failed =
+    Number(
+      result.failed ??
+      results.filter(
+        item =>
+          !item.success
+      ).length
+    );
+
+
+  const total =
+    Number(
+      result.total ??
+      results.length
+    );
+
+
+  let html = `
+
+    <div class="result-success">
+
+      ✅ <strong>
+        Bulk send imekamilika
+      </strong>
+
+      <br>
+
+      Jumla:
+      <strong>
+        ${total}
+      </strong>
+
+      <br>
+
+      Zilizofanikiwa:
+      <strong>
+        ${successful}
+      </strong>
+
+      <br>
+
+      Zilizoshindikana:
+      <strong>
+        ${failed}
+      </strong>
+
+    </div>
+
+  `;
+
+
+  if (failed > 0) {
+
+    html += `
+
+      <div class="result-error">
+
+        <strong>
+          ⚠️ Zilizoshindikana:
+        </strong>
+
+        <br><br>
+
+    `;
+
+
+    results
+      .filter(
+        item =>
+          !item.success
+      )
+      .slice(0, 30)
+      .forEach(
+        item => {
+
+          html += `
+
+            • ${escapeHtml(
+              item.name || "-"
+            )}
+
+            -
+
+            ${escapeHtml(
+              item.to || "-"
+            )}
+
+            -
+
+            ${escapeHtml(
+              item.code || "-"
+            )}
+
+            <br>
+
+            ${escapeHtml(
+              getErrorText(
+                item.error
+              )
+            )}
+
+            <br><br>
+
+          `;
+
+        }
+      );
+
+
+    html += `
+
+      </div>
+
+    `;
+
+  }
+
+
+  box.innerHTML =
+    html;
+
+
+  box.style.display =
+    "block";
+
+
+  /*
+    Refresh dashboard
+    baada ya bulk send.
+  */
+
+  loadGuests();
+
+}
+
+
+/* =========================================================
+   GET ERROR TEXT
+========================================================= */
+
+function getErrorText(
+  error
+) {
+
+  if (!error) {
+
+    return "Unknown error";
+
+  }
+
+
+  if (
+    typeof error ===
+    "string"
+  ) {
+
+    return error;
+
+  }
+
+
+  try {
+
+    return JSON.stringify(
+      error
+    );
+
+  } catch {
+
+    return String(
+      error
+    );
+
+  }
+
+}
+
+
+/* =========================================================
+   CLEAR EXCEL
+========================================================= */
+
+function clearExcel() {
+
+  uploadedContacts =
+    [];
+
+
+  document.getElementById(
+    "excelFile"
+  ).value =
+    "";
+
+
+  document.getElementById(
+    "fileName"
+  ).innerText =
+    "";
+
+
+  document.getElementById(
+    "previewBody"
+  ).innerHTML =
+    "";
+
+
+  document.getElementById(
+    "previewSection"
+  ).classList.add(
+    "hidden"
+  );
+
+
+  document.getElementById(
+    "uploadError"
+  ).style.display =
+    "none";
+
+
+  document.getElementById(
+    "uploadError"
+  ).innerText =
+    "";
+
+
+  document.getElementById(
+    "resultBox"
+  ).style.display =
+    "none";
+
+
+  document.getElementById(
+    "progressBox"
+  ).style.display =
+    "none";
+
+
+  document.getElementById(
+    "progressFill"
+  ).style.width =
+    "0%";
+
+
+  document.getElementById(
+    "progressText"
+  ).innerText =
+    "Inaanza...";
+
+}
+
+
+/* =========================================================
+   DOWNLOAD ATTENDANCE EXCEL
+========================================================= */
+
+function downloadAttendance() {
+
+  window.location.href =
+    "/api/attendance/export";
+
+}
+
+
+/* =========================================================
+   LOAD GUESTS
+========================================================= */
+
+async function loadGuests() {
+
+  const loading =
+    document.getElementById(
+      "loading"
+    );
+
+
+  const error =
+    document.getElementById(
+      "error"
+    );
+
+
+  const table =
+    document.getElementById(
+      "guestTable"
+    );
+
+
+  loading.style.display =
+    "block";
+
+
+  error.innerText =
+    "";
+
+
+  table.style.display =
+    "none";
+
+
+  try {
+
+    const response =
+      await fetch(
+        "/api/attendance",
+        {
+          cache:
+            "no-store"
+        }
+      );
+
+
+    let result;
+
+
+    try {
+
+      result =
+        await response.json();
+
+    } catch {
+
+      throw new Error(
+        "Server imerudisha majibu yasiyo sahihi."
+      );
+
+    }
+
+
+    if (
+      !response.ok ||
+      !result.success
+    ) {
+
+      throw new Error(
+        result.error ||
+        result.message ||
+        "Imeshindikana kupakia data."
+      );
+
+    }
+
+
+    guests =
+      Array.isArray(
+        result.guests
+      )
+        ? result.guests
+        : [];
+
+
+    updateStats();
+
+    renderGuests();
+
+
+    loading.style.display =
+      "none";
+
+
+    table.style.display =
+      "table";
+
+
+  } catch (err) {
+
+    loading.style.display =
+      "none";
+
+
+    error.innerText =
+      "❌ Imeshindikana kupakia wageni: " +
+      err.message;
+
+  }
+
+}
+
+
+/* =========================================================
+   UPDATE STATS
+========================================================= */
+
+function updateStats() {
+
+  document.getElementById(
+    "total"
+  ).innerText =
+    guests.length;
+
+
+  document.getElementById(
+    "confirmed"
+  ).innerText =
+    guests.filter(
+      guest =>
+        guest.attendance_status ===
+        "confirmed"
+    ).length;
+
+
+  document.getElementById(
+    "declined"
+  ).innerText =
+    guests.filter(
+      guest =>
+        guest.attendance_status ===
+        "declined"
+    ).length;
+
+
+  document.getElementById(
+    "maybe"
+  ).innerText =
+    guests.filter(
+      guest =>
+        guest.attendance_status ===
+        "maybe"
+    ).length;
+
+
+  document.getElementById(
+    "pending"
+  ).innerText =
+    guests.filter(
+      guest =>
+        guest.attendance_status ===
+        "pending"
+    ).length;
+
+
+  document.getElementById(
+    "checkedIn"
+  ).innerText =
+    guests.filter(
+      guest =>
+        Boolean(
+          guest.scanned_at
+        )
+    ).length;
+
+}
+
+
+/* =========================================================
+   RENDER GUESTS
+========================================================= */
+
+function renderGuests() {
+
+  const search =
+    document
+      .getElementById(
+        "search"
+      )
+      .value
+      .toLowerCase()
+      .trim();
+
+
+  const statusFilter =
+    document.getElementById(
+      "statusFilter"
+    ).value;
+
+
+  const checkinFilter =
+    document.getElementById(
+      "checkinFilter"
+    ).value;
+
+
+  const filtered =
+    guests.filter(
+      guest => {
+
+        const searchableText =
+
+          (
+            guest.full_name ||
+            ""
+          )
+            .toString()
+            .toLowerCase()
+
+          + " "
+
+          + (
+            guest.phone ||
+            ""
+          )
+            .toString()
+            .toLowerCase()
+
+          + " "
+
+          + (
+            guest.guest_code ||
+            ""
+          )
+            .toString()
+            .toLowerCase();
+
+
+        const matchesSearch =
+          searchableText.includes(
+            search
+          );
+
+
+        const matchesStatus =
+          statusFilter ===
+            "all"
+
+          ||
+
+          guest.attendance_status ===
+            statusFilter;
+
+
+        const isChecked =
+          Boolean(
+            guest.scanned_at
+          );
+
+
+        const matchesCheckin =
+          checkinFilter ===
+            "all"
+
+          ||
+
+          (
+            checkinFilter ===
+              "checked"
+
+            &&
+            
+            isChecked
+          )
+
+          ||
+
+          (
+            checkinFilter ===
+              "not_checked"
+
+            &&
+
+            !isChecked
+          );
+
+
+        return (
+
+          matchesSearch &&
+
+          matchesStatus &&
+
+          matchesCheckin
+
+        );
+
+      }
+    );
+
+
+  const body =
+    document.getElementById(
+      "guestBody"
+    );
+
+
+  body.innerHTML =
+    "";
+
+
+  if (
+    filtered.length ===
+    0
+  ) {
+
+    body.innerHTML = `
+
+      <tr>
+
+        <td
+          colspan="7"
+          style="
+            text-align:center;
+            padding:30px
+          "
+        >
+
+          Hakuna mgeni aliyepatikana.
+
+        </td>
+
+      </tr>
+
+    `;
+
+    return;
+
+  }
+
+
+  filtered.forEach(
+    (guest, index) => {
+
+      const row =
+        document.createElement(
+          "tr"
+        );
+
+
+      row.innerHTML = `
+
+        <td>
+          ${index + 1}
+        </td>
+
+        <td>
+          ${escapeHtml(
+            guest.full_name ||
+            "-"
+          )}
+        </td>
+
+        <td>
+          ${escapeHtml(
+            guest.phone ||
+            "-"
+          )}
+        </td>
+
+        <td class="code">
+          ${escapeHtml(
+            guest.guest_code ||
+            "-"
+          )}
+        </td>
+
+        <td>
+          ${typeLabel(
+            guest.guest_code
+          )}
+        </td>
+
+        <td>
+          ${statusLabel(
+            guest.attendance_status
+          )}
+        </td>
+
+        <td>
+          ${checkinLabel(
+            guest.scanned_at
+          )}
+        </td>
+
+      `;
+
+
+      body.appendChild(
+        row
+      );
+
+    }
+  );
+
+}
+
+
+/* =========================================================
+   TYPE LABEL
+========================================================= */
+
+function typeLabel(
+  code
+) {
+
+  const value =
+    String(
+      code || ""
+    )
+      .trim()
+      .toUpperCase();
+
+
+  if (
+    value.endsWith(
+      "-KAMATI"
+    )
+  ) {
+
+    return `
+
+      <span class="type-kamati">
+        KAMATI
+      </span>
+
+    `;
+
+  }
+
+
+  if (
+    value.endsWith(
+      "-SINGLE"
+    )
+  ) {
+
+    return `
+
+      <span class="type-single">
+        SINGLE
+      </span>
+
+    `;
+
+  }
+
+
+  return `
+
+    <span class="type-unknown">
+      -
+    </span>
+
+  `;
+
+}
+
+
+/* =========================================================
+   STATUS LABEL
+========================================================= */
+
+function statusLabel(
+  status
+) {
+
+  if (
+    status ===
+    "confirmed"
+  ) {
+
+    return `
+
+      <span class="status confirmed">
+
+        Nitashiriki
+
+      </span>
+
+    `;
+
+  }
+
+
+  if (
+    status ===
+    "declined"
+  ) {
+
+    return `
+
+      <span class="status declined">
+
+        Sitashiriki
+
+      </span>
+
+    `;
+
+  }
+
+
+  if (
+    status ===
+    "maybe"
+  ) {
+
+    return `
+
+      <span class="status maybe">
+
+        Sina uhakika
+
+      </span>
+
+    `;
+
+  }
+
+
+  return `
+
+    <span class="status pending">
+
+      Pending
+
+    </span>
+
+  `;
+
+}
+
+
+/* =========================================================
+   CHECK-IN LABEL
+========================================================= */
+
+function checkinLabel(
+  scannedAt
+) {
+
+  if (scannedAt) {
+
+    return `
+
+      <span class="status checked">
+
+        ✅ Checked-in
+
+      </span>
+
+    `;
+
+  }
+
+
+  return `
+
+    <span class="not-checked">
+
+      —
+
+    </span>
+
+  `;
+
+}
+
+
+/* =========================================================
+   MANUAL CHECK-IN
+========================================================= */
+
+async function checkInGuest() {
+
+  const input =
+    document.getElementById(
+      "checkinCode"
+    );
+
+
+  const button =
+    document.getElementById(
+      "checkinButton"
+    );
+
+
+  const message =
+    document.getElementById(
+      "checkinMessage"
+    );
+
+
+  const code =
+    input.value.trim();
+
+
+  message.innerHTML =
+    "";
+
+
+  if (!code) {
+
+    message.innerHTML = `
+
+      <div class="error-message">
+
+        ⚠️ Tafadhali andika Code ya mgeni.
+
+      </div>
+
+    `;
+
+
+    input.focus();
+
+
+    return;
+
+  }
+
+
+  button.disabled =
+    true;
+
+
+  button.innerText =
+    "Inachakata...";
+
+
+  try {
+
+    const response =
+      await fetch(
+        "/api/check-in",
+        {
+
+          method:
+            "POST",
+
+          headers: {
+
+            "Content-Type":
+              "application/json"
+
+          },
+
+          body:
+            JSON.stringify({
+
+              code:
+                code
+
+            })
+
+        }
+      );
+
+
+    let result;
+
+
+    try {
+
+      result =
+        await response.json();
+
+    } catch {
+
+      throw new Error(
+        "Server imerudisha majibu yasiyo sahihi."
+      );
+
+    }
+
+
+    /* ===================================================
+       SUCCESS
+    ==================================================== */
+
+    if (
+      response.ok &&
+      result.success
+    ) {
+
+      const guest =
+        result.guest || {};
+
+
+      message.innerHTML = `
+
+        <div class="success-message">
+
+          ✅ <strong>
+            CHECK-IN IMEFANIKIWA!
+          </strong>
+
+          <br><br>
+
+          Jina:
+
+          <strong>
+            ${escapeHtml(
+              guest.full_name ||
+              "-"
+            )}
+          </strong>
+
+          <br>
+
+          Code:
+
+          <strong>
+            ${escapeHtml(
+              guest.guest_code ||
+              code
+            )}
+          </strong>
+
+          <br>
+
+          Aina:
+
+          <strong>
+            ${escapeHtml(
+              getInvitationType(
+                guest.guest_code
+              )
+            )}
+          </strong>
+
+          <br>
+
+          Muda:
+
+          ${formatDate(
+            guest.scanned_at
+          )}
+
+        </div>
+
+      `;
+
+
+      input.value =
+        "";
+
+
+      await loadGuests();
+
+
+      return;
+
+    }
+
+
+    /* ===================================================
+       ALREADY CHECKED IN
+    ==================================================== */
+
+    if (
+      response.status ===
+      409
+    ) {
+
+      const guest =
+        result.guest || {};
+
+
+      message.innerHTML = `
+
+        <div class="warning-message">
+
+          ⚠️ <strong>
+            MGENI HUYU AMESHA-CHECK-IN!
+          </strong>
+
+          <br><br>
+
+          Jina:
+
+          <strong>
+            ${escapeHtml(
+              guest.full_name ||
+              "-"
+            )}
+          </strong>
+
+          <br>
+
+          Code:
+
+          <strong>
+            ${escapeHtml(
+              guest.guest_code ||
+              code
+            )}
+          </strong>
+
+          <br>
+
+          Aliingia:
+
+          ${formatDate(
+            guest.scanned_at
+          )}
+
+        </div>
+
+      `;
+
+
+      input.value =
+        "";
+
+
+      return;
+
+    }
+
+
+    /* ===================================================
+       NOT FOUND / ERROR
+    ==================================================== */
+
+    message.innerHTML = `
+
+      <div class="error-message">
+
+        ❌ ${escapeHtml(
+          result.message ||
+          result.error ||
+          "Mgeni hakupatikana."
+        )}
+
+      </div>
+
+    `;
+
+
+  } catch (error) {
+
+    message.innerHTML = `
+
+      <div class="error-message">
+
+        ❌ Kuna tatizo la kuwasiliana
+        na server.
+
+        <br><br>
+
+        ${escapeHtml(
+          error.message
+        )}
+
+      </div>
+
+    `;
+
+  }
+
+
+  finally {
+
+    button.disabled =
+      false;
+
+
+    button.innerText =
+      "CHECK-IN";
+
+  }
+
+}
+
+
+/* =========================================================
+   START QR SCANNER
+========================================================= */
+
+async function startQRScanner() {
+
+  const reader =
+    document.getElementById(
+      "qr-reader"
+    );
+
+
+  const startButton =
+    document.getElementById(
+      "startQrButton"
+    );
+
+
+  const stopButton =
+    document.getElementById(
+      "stopQrButton"
+    );
+
+
+  const message =
+    document.getElementById(
+      "qrMessage"
+    );
+
+
+  message.innerHTML =
+    "";
+
+
+  if (
+    typeof Html5Qrcode ===
+    "undefined"
+  ) {
+
+    message.innerHTML = `
+
+      <div class="error-message">
+
+        ❌ QR Scanner library haijapakia.
+        Refresh ukurasa ujaribu tena.
+
+      </div>
+
+    `;
+
+
+    return;
+
+  }
+
+
+  if (qrScanner) {
+
+    message.innerHTML = `
+
+      <div class="warning-message">
+
+        ⚠️ Camera tayari imewashwa.
+
+      </div>
+
+    `;
+
+
+    return;
+
+  }
+
+
+  reader.style.display =
+    "block";
+
+
+  startButton.style.display =
+    "none";
+
+
+  stopButton.style.display =
+    "inline-block";
+
+
+  qrProcessing =
+    false;
+
+
+  qrScanner =
+    new Html5Qrcode(
+      "qr-reader"
+    );
+
+
+  try {
+
+    const config = {
+
+      fps:
+        10,
+
+      qrbox:
+        {
+          width:
+            250,
+
+          height:
+            250
+        },
+
+      aspectRatio:
+        1.0
+
+    };
+
+
+    await qrScanner.start(
+
+      {
+        facingMode:
+          "environment"
+      },
+
+      config,
+
+      onQRCodeSuccess,
+
+      onQRCodeError
+
+    );
+
+
+    message.innerHTML = `
+
+      <div class="success-message">
+
+        📷 Camera imewashwa.
+        Elekeza camera kwenye QR Code.
+
+      </div>
+
+    `;
+
+
+  } catch (error) {
+
+    console.error(
+      "QR camera error:",
+      error
+    );
+
+
+    qrScanner =
+      null;
+
+
+    reader.style.display =
+      "none";
+
+
+    startButton.style.display =
+      "inline-block";
+
+
+    stopButton.style.display =
+      "none";
+
+
+    message.innerHTML = `
+
+      <div class="error-message">
+
+        ❌ Imeshindikana kuwasha camera.
+
+        <br><br>
+
+        Hakikisha:
+
+        <br>
+        1. Umeruhusu camera kwenye browser.
+        <br>
+        2. Unatumia HTTPS.
+        <br>
+        3. Camera haijatumika na app nyingine.
+
+        <br><br>
+
+        ${escapeHtml(
+          error?.message ||
+          String(error)
+        )}
+
+      </div>
+
+    `;
+
+  }
+
+}
+
+
+/* =========================================================
+   QR SUCCESS
+========================================================= */
+
+async function onQRCodeSuccess(
+  decodedText
+) {
+
+  if (
+    qrProcessing
+  ) {
+
+    return;
+
+  }
+
+
+  if (
+    !decodedText
+  ) {
+
+    return;
+
+  }
+
+
+  qrProcessing =
+    true;
+
+
+  const message =
+    document.getElementById(
+      "qrMessage"
+    );
+
+
+  message.innerHTML = `
+
+    <div class="warning-message">
+
+      ⏳ QR imeonekana.
+      Inathibitisha mgeni...
+
+    </div>
+
+  `;
+
+
+  try {
+
+    /*
+      QR inaweza kuwa:
+
+      1. QR Token moja kwa moja
+
+      au
+
+      2. URL yenye qr_token
+
+      Tunajaribu zote.
+    */
+
+    const qrToken =
+      extractQRToken(
+        decodedText
+      );
+
+
+    if (!qrToken) {
+
+      throw new Error(
+        "QR hii haina QR Token inayotambulika."
+      );
+
+    }
+
+
+    const response =
+      await fetch(
+        "/api/check-in-qr",
+        {
+
+          method:
+            "POST",
+
+          headers: {
+
+            "Content-Type":
+              "application/json"
+
+          },
+
+          body:
+            JSON.stringify({
+
+              qr_token:
+                qrToken
+
+            })
+
+        }
+      );
+
+
+    let result;
+
+
+    try {
+
+      result =
+        await response.json();
+
+    } catch {
+
+      throw new Error(
+        "Server imerudisha majibu yasiyo sahihi."
+      );
+
+    }
+
+
+    /* ===================================================
+       SUCCESS
+    ==================================================== */
+
+    if (
+      response.ok &&
+      result.success
+    ) {
+
+      const guest =
+        result.guest || {};
+
+
+      message.innerHTML = `
+
+        <div class="success-message">
+
+          🎉 <strong>
+            QR CHECK-IN IMEFANIKIWA!
+          </strong>
+
+          <br><br>
+
+          Jina:
+
+          <strong>
+            ${escapeHtml(
+              guest.full_name ||
+              "-"
+            )}
+          </strong>
+
+          <br>
+
+          Code:
+
+          <strong>
+            ${escapeHtml(
+              guest.guest_code ||
+              "-"
+            )}
+          </strong>
+
+          <br>
+
+          Aina:
+
+          <strong>
+            ${escapeHtml(
+              getInvitationType(
+                guest.guest_code
+              )
+            )}
+          </strong>
+
+          <br>
+
+          Muda:
+
+          ${formatDate(
+            guest.scanned_at
+          )}
+
+        </div>
+
+      `;
+
+
+      await loadGuests();
+
+
+      /*
+        Baada ya mafanikio,
+        subiri kidogo kabla ya kuruhusu
+        scan nyingine.
+      */
+
+      setTimeout(
+        () => {
+
+          qrProcessing =
+            false;
+
+        },
+        1500
+      );
+
+
+      return;
+
+    }
+
+
+    /* ===================================================
+       ALREADY CHECKED
+    ==================================================== */
+
+    if (
+      response.status ===
+      409
+    ) {
+
+      const guest =
+        result.guest || {};
+
+
+      message.innerHTML = `
+
+        <div class="warning-message">
+
+          ⚠️ <strong>
+            MGENI HUYU AMESHA-CHECK-IN!
+          </strong>
+
+          <br><br>
+
+          Jina:
+
+          <strong>
+            ${escapeHtml(
+              guest.full_name ||
+              "-"
+            )}
+          </strong>
+
+          <br>
+
+          Code:
+
+          <strong>
+            ${escapeHtml(
+              guest.guest_code ||
+              "-"
+            )}
+          </strong>
+
+          <br>
+
+          Aliingia:
+
+          ${formatDate(
+            guest.scanned_at
+          )}
+
+        </div>
+
+      `;
+
+
+      setTimeout(
+        () => {
+
+          qrProcessing =
+            false;
+
+        },
+        2000
+      );
+
+
+      return;
+
+    }
+
+
+    /* ===================================================
+       QR NOT FOUND
+    ==================================================== */
+
+    message.innerHTML = `
+
+      <div class="error-message">
+
+        ❌ ${escapeHtml(
+          result.message ||
+          result.error ||
+          "QR Code haijatambuliwa."
+        )}
+
+      </div>
+
+    `;
+
+
+    setTimeout(
+      () => {
+
+        qrProcessing =
+          false;
+
+      },
+      2000
+    );
+
+
+  } catch (error) {
+
+    console.error(
+      "QR check-in error:",
+      error
+    );
+
+
+    message.innerHTML = `
+
+      <div class="error-message">
+
+        ❌ ${escapeHtml(
+          error.message ||
+          "QR Check-in imeshindikana."
+        )}
+
+      </div>
+
+    `;
+
+
+    setTimeout(
+      () => {
+
+        qrProcessing =
+          false;
+
+      },
+      2000
+    );
+
+  }
+
+}
+
+
+/* =========================================================
+   QR ERROR CALLBACK
+========================================================= */
+
+function onQRCodeError(
+  errorMessage
+) {
+
+  /*
+    Usionyeshe error kila frame.
+
+    html5-qrcode huita function hii
+    mara nyingi wakati QR bado haijasomwa.
+
+    Kwa hiyo tunaacha kimya.
+  */
+
+}
+
+
+/* =========================================================
+   EXTRACT QR TOKEN
+========================================================= */
+
+function extractQRToken(
+  value
+) {
+
+  const text =
+    String(
+      value || ""
+    ).trim();
+
+
+  if (!text) {
+
+    return "";
+
+  }
+
+
+  /*
+    CASE 1:
+    QR yenye token moja kwa moja.
+  */
+
+  if (
+    !text.startsWith(
+      "http://"
+    ) &&
+    !text.startsWith(
+      "https://"
+    )
+  ) {
+
+    return text;
+
+  }
+
+
+  /*
+    CASE 2:
+    QR yenye URL.
+
+    Mfano:
+
+    https://example.com/checkin?qr_token=XXXX
+  */
+
+  try {
+
+    const url =
+      new URL(
+        text
+      );
+
+
+    const token =
+      url.searchParams.get(
+        "qr_token"
+      );
+
+
+    if (token) {
+
+      return token.trim();
+
+    }
+
+
+    /*
+      Jaribu pia parameter:
+      token
+    */
+
+    const token2 =
+      url.searchParams.get(
+        "token"
+      );
+
+
+    if (token2) {
+
+      return token2.trim();
+
+    }
+
+
+    /*
+      Kama URL yenyewe ni token route,
+      tunaweza kutumia mwisho wa URL.
+    */
+
+    const parts =
+      url.pathname
+        .split("/")
+        .filter(
+          part =>
+            part
+        );
+
+
+    if (
+      parts.length
+    ) {
+
+      const last =
+        parts[
+          parts.length - 1
+        ];
+
+
+      if (
+        last &&
+        last.length >= 10
+      ) {
+
+        return last.trim();
+
+      }
+
+    }
+
+  } catch {
+
+    return text;
+
+  }
+
+
+  return "";
+
+}
+
+
+/* =========================================================
+   STOP QR SCANNER
+========================================================= */
+
+async function stopQRScanner() {
+
+  const reader =
+    document.getElementById(
+      "qr-reader"
+    );
+
+
+  const startButton =
+    document.getElementById(
+      "startQrButton"
+    );
+
+
+  const stopButton =
+    document.getElementById(
+      "stopQrButton"
+    );
+
+
+  const message =
+    document.getElementById(
+      "qrMessage"
+    );
+
+
+  qrProcessing =
+    false;
+
+
+  if (!qrScanner) {
+
+    reader.style.display =
+      "none";
+
+
+    startButton.style.display =
+      "inline-block";
+
+
+    stopButton.style.display =
+      "none";
+
+
+    return;
+
+  }
+
+
+  try {
+
+    await qrScanner.stop();
+
+  } catch (error) {
+
+    console.log(
+      "QR scanner stop:",
+      error
+    );
+
+  }
+
+
+  try {
+
+    qrScanner.clear();
+
+  } catch {
+
+    /*
+      Nothing
+    */
+
+  }
+
+
+  qrScanner =
+    null;
+
+
+  reader.innerHTML =
+    "";
+
+
+  reader.style.display =
+    "none";
+
+
+  startButton.style.display =
+    "inline-block";
+
+
+  stopButton.style.display =
+    "none";
+
+
+  message.innerHTML = `
+
+    <div class="success-message">
+
+      📷 Camera imesimamishwa.
+
+    </div>
+
+  `;
+
+}
+
+
+/* =========================================================
+   GET INVITATION TYPE
+========================================================= */
+
+function getInvitationType(
+  code
+) {
+
+  const value =
+    String(
+      code || ""
+    )
+      .trim()
+      .toUpperCase();
+
+
+  if (
+    value.endsWith(
+      "-KAMATI"
+    )
+  ) {
+
+    return "KAMATI";
+
+  }
+
+
+  if (
+    value.endsWith(
+      "-SINGLE"
+    )
+  ) {
+
+    return "SINGLE";
+
+  }
+
+
+  return "-";
+
+}
+
+
+/* =========================================================
+   FORMAT DATE
+========================================================= */
+
+function formatDate(
+  value
+) {
+
+  if (!value) {
+
+    return "-";
+
+  }
+
+
+  try {
+
+    const date =
+      new Date(
+        value
+      );
+
+
+    if (
+      Number.isNaN(
+        date.getTime()
+      )
+    ) {
+
+      return String(
+        value
+      );
+
+    }
+
+
+    return date.toLocaleString(
+      "sw-TZ",
+      {
+
+        dateStyle:
+          "medium",
+
+        timeStyle:
+          "short"
+
+      }
+    );
+
+  } catch {
+
+    return String(
+      value
+    );
+
+  }
+
+}
+
+
+/* =========================================================
+   SECURITY
+========================================================= */
+
+function escapeHtml(
+  value
+) {
+
+  return String(
+    value ?? ""
+  )
+
+    .replace(
+      /&/g,
+      "&amp;"
+    )
+
+    .replace(
+      /</g,
+      "&lt;"
+    )
+
+    .replace(
+      />/g,
+      "&gt;"
+    )
+
+    .replace(
+      /"/g,
+      "&quot;"
+    )
+
+    .replace(
+      /'/g,
+      "&#039;"
+    );
+
+}
+
+
+/* =========================================================
+   ENTER KEY - MANUAL CHECK-IN
+========================================================= */
+
+document
+  .getElementById(
+    "checkinCode"
+  )
+  .addEventListener(
+    "keydown",
+    function(event) {
+
+      if (
+        event.key ===
+        "Enter"
+      ) {
+
+        event.preventDefault();
+
+        checkInGuest();
+
+      }
+
+    }
+  );
+
+
+/* =========================================================
+   SEARCH
+========================================================= */
+
+document
+  .getElementById(
+    "search"
+  )
+  .addEventListener(
+    "input",
+    renderGuests
+  );
+
+
+/* =========================================================
+   STATUS FILTER
+========================================================= */
+
+document
+  .getElementById(
+    "statusFilter"
+  )
+  .addEventListener(
+    "change",
+    renderGuests
+  );
+
+
+/* =========================================================
+   CHECK-IN FILTER
+========================================================= */
+
+document
+  .getElementById(
+    "checkinFilter"
+  )
+  .addEventListener(
+    "change",
+    renderGuests
+  );
+
+
+/* =========================================================
+   STOP CAMERA WHEN LEAVING PAGE
+========================================================= */
+
+window.addEventListener(
+  "beforeunload",
+  function() {
+
+    if (qrScanner) {
+
+      qrScanner
+        .stop()
+        .catch(
+          () => {}
+        );
+
+    }
+
+  }
+);
+
+
+/* =========================================================
+   START DASHBOARD
+========================================================= */
+
+loadGuests();
+
+</script>
+
+
+</body>
+
+  </html>
