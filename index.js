@@ -75,9 +75,8 @@ const STORAGE_BUCKET =
 /*
   EVENT YA DEFAULT
 
-  Hii inasaidia mfumo wa zamani
-  kuendelea kufanya kazi kama frontend
-  bado haijaanza kutuma event_key.
+  Kama frontend haitumi event_key,
+  mfumo utatumia DEFAULT_EVENT.
 */
 
 const DEFAULT_EVENT =
@@ -104,7 +103,7 @@ const QR_SIZE =
   );
 
 /* =========================================================
-   SERVER START
+   SERVER START LOG
 ========================================================= */
 
 console.log(
@@ -257,6 +256,19 @@ function normalizeEvent(eventKey) {
       .trim();
 
   return value || DEFAULT_EVENT;
+
+}
+
+/* =========================================================
+   NORMALIZE CODE
+========================================================= */
+
+function normalizeCode(code) {
+
+  return String(
+    code || ""
+  )
+    .trim();
 
 }
 
@@ -594,7 +606,9 @@ async function deleteCardFromStorage(
   if (
     !filePath
   ) {
+
     return;
+
   }
 
   try {
@@ -639,7 +653,8 @@ async function deleteCardFromStorage(
 }
 
 /* =========================================================
-   CHECK DUPLICATE EVENT + CODE
+   CHECK DUPLICATE:
+   EVENT + CODE
 ========================================================= */
 
 async function findExistingGuest(
@@ -653,16 +668,28 @@ async function findExistingGuest(
     );
 
   const cleanCode =
-    String(
-      code || ""
-    )
-      .trim();
+    normalizeCode(
+      code
+    );
 
   if (
     !cleanCode
   ) {
+
     return null;
+
   }
+
+  console.log(
+    "Duplicate check:",
+    {
+      event_key:
+        cleanEvent,
+
+      guest_code:
+        cleanCode
+    }
+  );
 
   const {
     data,
@@ -673,7 +700,7 @@ async function findExistingGuest(
         "guests"
       )
       .select(
-        "id, full_name, phone, guest_code, event_key, qr_token, card_image_url, created_at"
+        "id, full_name, phone, guest_code, event_key, qr_token, card_image_url, invitation_type, attendance_status, scanned_at, created_at"
       )
       .eq(
         "event_key",
@@ -687,6 +714,11 @@ async function findExistingGuest(
       .maybeSingle();
 
   if (error) {
+
+    console.error(
+      "Duplicate lookup error:",
+      error.message
+    );
 
     throw error;
 
@@ -788,10 +820,13 @@ async function saveGuest(
       eventKey
     );
 
+  const cleanCode =
+    normalizeCode(
+      code
+    );
+
   const invitationType =
-    String(
-      code || ""
-    )
+    cleanCode
       .toUpperCase()
       .endsWith(
         "-KAMATI"
@@ -799,9 +834,7 @@ async function saveGuest(
 
       ? "KAMATI"
 
-      : String(
-          code || ""
-        )
+      : cleanCode
           .toUpperCase()
           .endsWith(
             "-SINGLE"
@@ -825,8 +858,48 @@ async function saveGuest(
 
   console.log(
     "Code:",
-    code
+    cleanCode
   );
+
+  /*
+    MUHIMU:
+
+    Database sasa inatakiwa kuwa na:
+
+    UNIQUE(event_key, guest_code)
+
+    badala ya:
+
+    UNIQUE(guest_code)
+  */
+
+  const guestPayload = {
+
+    full_name:
+      name,
+
+    phone:
+      phone,
+
+    guest_code:
+      cleanCode,
+
+    event_key:
+      cleanEvent,
+
+    qr_token:
+      qrToken,
+
+    card_image_url:
+      cardImageUrl,
+
+    invitation_type:
+      invitationType,
+
+    attendance_status:
+      "pending"
+
+  };
 
   const {
     data,
@@ -837,33 +910,7 @@ async function saveGuest(
         "guests"
       )
       .insert([
-        {
-
-          full_name:
-            name,
-
-          phone:
-            phone,
-
-          guest_code:
-            code,
-
-          event_key:
-            cleanEvent,
-
-          qr_token:
-            qrToken,
-
-          card_image_url:
-            cardImageUrl,
-
-          invitation_type:
-            invitationType,
-
-          attendance_status:
-            "pending"
-
-        }
+        guestPayload
       ])
       .select()
       .single();
@@ -874,6 +921,49 @@ async function saveGuest(
       "Supabase save guest error:",
       error.message
     );
+
+    /*
+      PostgreSQL unique violation.
+
+      Hii inalinda pia dhidi ya
+      requests mbili kuingia kwa wakati mmoja.
+    */
+
+    if (
+      error.code === "23505"
+    ) {
+
+      console.error(
+        "DUPLICATE DATABASE RECORD:",
+        {
+          event_key:
+            cleanEvent,
+
+          guest_code:
+            cleanCode
+        }
+      );
+
+      const existing =
+        await findExistingGuest(
+          cleanEvent,
+          cleanCode
+        );
+
+      const duplicateError =
+        new Error(
+          `Code ${cleanCode} tayari ipo kwenye event ${cleanEvent}.`
+        );
+
+      duplicateError.code =
+        "GUEST_EVENT_CODE_DUPLICATE";
+
+      duplicateError.existingGuest =
+        existing;
+
+      throw duplicateError;
+
+    }
 
     throw error;
 
@@ -1180,17 +1270,12 @@ async function updateAttendance(
         "guests"
       )
       .select(
-        "id, full_name, phone, guest_code, event_key"
+        "id, full_name, phone, guest_code, event_key, created_at"
       )
       .eq(
         "phone",
         normalizedPhone
       );
-
-  /*
-    Kama event imejulikana,
-    tumia phone + event.
-  */
 
   if (
     eventKey
@@ -1310,20 +1395,6 @@ async function processAttendanceReply(
     )
       .toLowerCase()
       .trim();
-
-  /*
-    NOTE:
-
-    Kwa sasa WhatsApp button reply
-    haina event_key moja kwa moja.
-
-    Kwa hiyo tutatumia guest wa mwisho
-    wa namba hiyo.
-
-    Baadaye tunaweza kuongeza message_id
-    ili Event A na Event B zitambuliwe
-    kwa usahihi 100%.
-  */
 
   if (
     normalizedId ===
@@ -1681,9 +1752,9 @@ app.post(
         ).trim();
 
       const cleanCode =
-        String(
+        normalizeCode(
           code
-        ).trim();
+        );
 
       const cleanEvent =
         normalizeEvent(
@@ -1722,7 +1793,14 @@ app.post(
         "=============================================="
       );
 
-      /* CHECK DUPLICATE BEFORE WHATSAPP */
+      /* =====================================================
+         CHECK DUPLICATE:
+
+         EVENT + CODE
+
+         Event A + X = duplicate
+         Event B + X = allowed
+      ===================================================== */
 
       const existingGuest =
         await findExistingGuest(
@@ -1824,6 +1902,31 @@ app.post(
 
       }
 
+      if (
+        error.code ===
+        "GUEST_EVENT_CODE_DUPLICATE"
+      ) {
+
+        return res.status(
+          409
+        ).json({
+
+          success:
+            false,
+
+          duplicate:
+            true,
+
+          message:
+            error.message,
+
+          guest:
+            error.existingGuest || null
+
+        });
+
+      }
+
       return res.status(
         500
       ).json({
@@ -1895,17 +1998,11 @@ app.post(
       }
 
       /*
-        EVENT YA JUMLA
+        Event inaweza kuwa:
 
-        Frontend inaweza kutuma:
-
-        {
-          "event_key": "EVENT_A",
-          "contacts": [...]
-        }
-
-        Au kila contact inaweza kuwa
-        na event_key yake.
+        1. contact.event_key
+        2. req.body.event_key
+        3. DEFAULT_EVENT
       */
 
       const requestEvent =
@@ -1964,16 +2061,17 @@ app.post(
 
         const code =
           contact.code
-            ? String(
+            ? normalizeCode(
                 contact.code
-              ).trim()
+              )
             : "";
 
         /*
-          Event inaweza kutoka:
-          1. contact.event_key
-          2. request.event_key
-          3. DEFAULT_EVENT
+          Event order:
+
+          contact.event_key
+          request.event_key
+          DEFAULT_EVENT
         */
 
         const eventKey =
@@ -2048,19 +2146,19 @@ app.post(
           );
 
           /*
-            CHECK DUPLICATE
-
-            Hapa ndipo tunazuia:
-            Event A + Code X
-            kurudiwa ndani ya Event A.
-
-            Lakini:
+            =================================================
+            DUPLICATE CHECK
 
             Event A + Code X
-            na
             Event B + Code X
 
-            zitaruhusiwa.
+            Zitaruhusiwa zote.
+
+            Event A + Code X
+            Event A + Code X
+
+            Haitaruhusiwa.
+            =================================================
           */
 
           const existingGuest =
@@ -2201,6 +2299,10 @@ app.post(
 
           }
 
+          const isDuplicate =
+            error.code ===
+            "GUEST_EVENT_CODE_DUPLICATE";
+
           results.push({
 
             to:
@@ -2218,9 +2320,16 @@ app.post(
             success:
               false,
 
+            duplicate:
+              isDuplicate,
+
             error:
-              error.response?.data ||
-              error.message
+              isDuplicate
+                ? error.message
+                : (
+                    error.response?.data ||
+                    error.message
+                  )
 
           });
 
@@ -2259,6 +2368,12 @@ app.post(
             !item.success
         ).length;
 
+      const duplicates =
+        results.filter(
+          item =>
+            item.duplicate
+        ).length;
+
       console.log(
         "=============================================="
       );
@@ -2283,6 +2398,11 @@ app.post(
       );
 
       console.log(
+        "Duplicates:",
+        duplicates
+      );
+
+      console.log(
         "=============================================="
       );
 
@@ -2301,6 +2421,9 @@ app.post(
 
         failed:
           failed,
+
+        duplicates:
+          duplicates,
 
         results:
           results
@@ -2413,7 +2536,7 @@ app.get(
         error:
           error.message
 
-        });
+      });
 
     }
 
@@ -2657,9 +2780,9 @@ app.post(
       }
 
       const guestCode =
-        String(
+        normalizeCode(
           code
-        ).trim();
+        );
 
       const cleanEvent =
         normalizeEvent(
