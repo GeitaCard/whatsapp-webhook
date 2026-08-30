@@ -146,6 +146,10 @@ console.log(
 );
 
 console.log(
+  "Multi Event Cards: ENABLED"
+);
+
+console.log(
   "Default Event:",
   DEFAULT_EVENT
 );
@@ -253,9 +257,11 @@ function normalizeEvent(eventKey) {
       eventKey ||
       DEFAULT_EVENT
     )
-      .trim();
+      .trim()
+      .toUpperCase();
 
-  return value || DEFAULT_EVENT;
+  return value ||
+    DEFAULT_EVENT;
 
 }
 
@@ -269,6 +275,109 @@ function normalizeCode(code) {
     code || ""
   )
     .trim();
+
+}
+
+/* =========================================================
+   GET EVENT CONFIGURATION
+   Kila Event inaweza kuwa na Kadi yake
+========================================================= */
+
+async function getEventConfig(
+  eventKey
+) {
+
+  const cleanEvent =
+    normalizeEvent(
+      eventKey
+    );
+
+  console.log(
+    "Looking for Event Configuration:",
+    cleanEvent
+  );
+
+  const {
+    data,
+    error
+  } =
+    await supabase
+      .from(
+        "events"
+      )
+      .select(
+        "id, event_key, event_name, card_image_url, template_name, template_language, is_active"
+      )
+      .eq(
+        "event_key",
+        cleanEvent
+      )
+      .eq(
+        "is_active",
+        true
+      )
+      .maybeSingle();
+
+  if (error) {
+
+    console.error(
+      "Event configuration error:",
+      error.message
+    );
+
+    throw new Error(
+      "Imeshindikana kupata taarifa za Event: " +
+      error.message
+    );
+
+  }
+
+  if (!data) {
+
+    throw new Error(
+      `Event "${cleanEvent}" haipo kwenye events table au haijawekwa active.`
+    );
+
+  }
+
+  if (
+    !data.card_image_url
+  ) {
+
+    throw new Error(
+      `Event "${cleanEvent}" haina card_image_url.`
+    );
+
+  }
+
+  console.log(
+    "Event found:",
+    data.event_name
+  );
+
+  console.log(
+    "Event Key:",
+    data.event_key
+  );
+
+  console.log(
+    "Card:",
+    data.card_image_url
+  );
+
+  console.log(
+    "Template:",
+    data.template_name ||
+    TEMPLATE_NAME
+  );
+
+  console.log(
+    "Language:",
+    data.template_language ||
+    TEMPLATE_LANGUAGE
+  );
+
+  return data;
 
 }
 
@@ -294,10 +403,17 @@ async function createQRImage(
     await QRCode.toBuffer(
       qrToken,
       {
-        type: "png",
-        width: QR_SIZE,
-        margin: 2,
-        errorCorrectionLevel: "H"
+        type:
+          "png",
+
+        width:
+          QR_SIZE,
+
+        margin:
+          2,
+
+        errorCorrectionLevel:
+          "H"
       }
     );
 
@@ -307,6 +423,7 @@ async function createQRImage(
 
 /* =========================================================
    DOWNLOAD ORIGINAL CARD
+   LEGACY / FALLBACK
 ========================================================= */
 
 async function downloadInvitationImage() {
@@ -322,15 +439,18 @@ async function downloadInvitationImage() {
   }
 
   console.log(
-    "Downloading invitation template..."
+    "Downloading default invitation template..."
   );
 
   const response =
     await axios.get(
       INVITE_IMAGE_URL,
       {
-        responseType: "arraybuffer",
-        timeout: 30000
+        responseType:
+          "arraybuffer",
+
+        timeout:
+          30000
       }
     );
 
@@ -352,14 +472,73 @@ async function downloadInvitationImage() {
 
 /* =========================================================
    CREATE CARD WITH QR
+   HUTUMIA CARD YA EVENT HUSIKA
 ========================================================= */
 
 async function createCardWithQR(
-  qrToken
+  qrToken,
+  cardImageUrl
 ) {
 
-  const originalImage =
-    await downloadInvitationImage();
+  let originalImage;
+
+  /*
+    Kama Event ina card_image_url,
+    tumia hiyo.
+
+    Hii ndiyo mfumo mpya wa Multi Event.
+  */
+
+  if (
+    cardImageUrl
+  ) {
+
+    console.log(
+      "Downloading Event card..."
+    );
+
+    console.log(
+      "Card URL:",
+      cardImageUrl
+    );
+
+    const response =
+      await axios.get(
+        cardImageUrl,
+        {
+          responseType:
+            "arraybuffer",
+
+          timeout:
+            30000
+        }
+      );
+
+    if (
+      !response.data
+    ) {
+
+      throw new Error(
+        "Kadi ya Event haikupatikana."
+      );
+
+    }
+
+    originalImage =
+      Buffer.from(
+        response.data
+      );
+
+  } else {
+
+    /*
+      Fallback ya mfumo wa zamani.
+    */
+
+    originalImage =
+      await downloadInvitationImage();
+
+  }
 
   const qrImage =
     await createQRImage(
@@ -398,7 +577,8 @@ async function createCardWithQR(
     Math.max(
       0,
       Math.round(
-        QR_X * scaleX
+        QR_X *
+        scaleX
       )
     );
 
@@ -406,7 +586,8 @@ async function createCardWithQR(
     Math.max(
       0,
       Math.round(
-        QR_Y * scaleY
+        QR_Y *
+        scaleY
       )
     );
 
@@ -430,7 +611,8 @@ async function createCardWithQR(
         finalSize,
         finalSize,
         {
-          fit: "contain"
+          fit:
+            "contain"
         }
       )
       .png()
@@ -442,9 +624,14 @@ async function createCardWithQR(
     )
       .composite([
         {
-          input: resizedQR,
-          left: finalX,
-          top: finalY
+          input:
+            resizedQR,
+
+          left:
+            finalX,
+
+          top:
+            finalY
         }
       ])
       .png()
@@ -653,7 +840,7 @@ async function deleteCardFromStorage(
 }
 
 /* =========================================================
-   CHECK DUPLICATE:
+   CHECK DUPLICATE
    EVENT + CODE
 ========================================================= */
 
@@ -724,7 +911,8 @@ async function findExistingGuest(
 
   }
 
-  return data || null;
+  return data ||
+    null;
 
 }
 
@@ -738,11 +926,33 @@ async function preparePersonalCard(
   eventKey
 ) {
 
+  const cleanEvent =
+    normalizeEvent(
+      eventKey
+    );
+
+  /*
+    Pata configuration ya Event.
+  */
+
+  const eventConfig =
+    await getEventConfig(
+      cleanEvent
+    );
+
+  /*
+    QR Token mpya kabisa.
+  */
+
   const qrToken =
     createQRToken();
 
   console.log(
-    "Creating unique QR token"
+    "=============================================="
+  );
+
+  console.log(
+    "Creating personal card"
   );
 
   console.log(
@@ -757,7 +967,17 @@ async function preparePersonalCard(
 
   console.log(
     "Event:",
-    eventKey
+    cleanEvent
+  );
+
+  console.log(
+    "Event Name:",
+    eventConfig.event_name
+  );
+
+  console.log(
+    "Event Card:",
+    eventConfig.card_image_url
   );
 
   console.log(
@@ -765,9 +985,14 @@ async function preparePersonalCard(
     qrToken
   );
 
+  console.log(
+    "=============================================="
+  );
+
   const cardBuffer =
     await createCardWithQR(
-      qrToken
+      qrToken,
+      eventConfig.card_image_url
     );
 
   const storage =
@@ -775,7 +1000,7 @@ async function preparePersonalCard(
       cardBuffer,
       name,
       code,
-      eventKey,
+      cleanEvent,
       qrToken
     );
 
@@ -791,7 +1016,24 @@ async function preparePersonalCard(
       storage.publicUrl,
 
     storagePath:
-      storage.filePath
+      storage.filePath,
+
+    eventKey:
+      cleanEvent,
+
+    eventName:
+      eventConfig.event_name,
+
+    eventCardUrl:
+      eventConfig.card_image_url,
+
+    templateName:
+      eventConfig.template_name ||
+      TEMPLATE_NAME,
+
+    templateLanguage:
+      eventConfig.template_language ||
+      TEMPLATE_LANGUAGE
 
   };
 
@@ -864,13 +1106,16 @@ async function saveGuest(
   /*
     MUHIMU:
 
-    Database sasa inatakiwa kuwa na:
+    UNIQUE inapaswa kuwa:
 
-    UNIQUE(event_key, guest_code)
+    (event_key, guest_code)
 
-    badala ya:
+    Hivyo:
 
-    UNIQUE(guest_code)
+    EVENT_A + 1001
+    EVENT_B + 1001
+
+    Zote zinaruhusiwa.
   */
 
   const guestPayload = {
@@ -924,13 +1169,11 @@ async function saveGuest(
 
     /*
       PostgreSQL unique violation.
-
-      Hii inalinda pia dhidi ya
-      requests mbili kuingia kwa wakati mmoja.
     */
 
     if (
-      error.code === "23505"
+      error.code ===
+      "23505"
     ) {
 
       console.error(
@@ -992,6 +1235,102 @@ async function saveGuest(
   return data;
 
 }
+
+/* =========================================================
+   GET ACTIVE EVENTS
+   FRONTEND ITATUMIA API HII
+========================================================= */
+
+app.get(
+  "/api/events",
+  async (req, res) => {
+
+    try {
+
+      const {
+        data,
+        error
+      } =
+        await supabase
+          .from(
+            "events"
+          )
+          .select(
+            "id, event_key, event_name, card_image_url, template_name, template_language, is_active"
+          )
+          .eq(
+            "is_active",
+            true
+          )
+          .order(
+            "created_at",
+            {
+              ascending:
+                false
+            }
+          );
+
+      if (error) {
+
+        console.error(
+          "Events API error:",
+          error.message
+        );
+
+        return res.status(
+          500
+        ).json({
+
+          success:
+            false,
+
+          error:
+            error.message
+
+        });
+
+      }
+
+      return res.status(
+        200
+      ).json({
+
+        success:
+          true,
+
+        total:
+          data?.length ||
+          0,
+
+        events:
+          data ||
+          []
+
+      });
+
+    } catch (error) {
+
+      console.error(
+        "Events API exception:",
+        error.message
+      );
+
+      return res.status(
+        500
+      ).json({
+
+        success:
+          false,
+
+        error:
+          error.message
+
+      });
+
+    }
+
+  }
+);
 
 /* =========================================================
    SEND TEXT
@@ -1084,7 +1423,9 @@ async function sendInvitation(
   to,
   name,
   code,
-  cardImageUrl
+  cardImageUrl,
+  templateName,
+  templateLanguage
 ) {
 
   const url =
@@ -1095,6 +1436,10 @@ async function sendInvitation(
   const imageUrl =
     cardImageUrl ||
     INVITE_IMAGE_URL;
+
+  /*
+    HEADER IMAGE
+  */
 
   if (
     imageUrl
@@ -1126,6 +1471,13 @@ async function sendInvitation(
     });
 
   }
+
+  /*
+    BODY VARIABLES
+
+    {{1}} = Name
+    {{2}} = Code
+  */
 
   components.push({
 
@@ -1162,6 +1514,40 @@ async function sendInvitation(
 
   });
 
+  const finalTemplateName =
+    templateName ||
+    TEMPLATE_NAME;
+
+  const finalTemplateLanguage =
+    templateLanguage ||
+    TEMPLATE_LANGUAGE;
+
+  console.log(
+    "Sending WhatsApp template..."
+  );
+
+  console.log(
+    "Template:",
+    finalTemplateName
+  );
+
+  console.log(
+    "Language:",
+    finalTemplateLanguage
+  );
+
+  console.log(
+    "To:",
+    normalizePhone(
+      to
+    )
+  );
+
+  console.log(
+    "Card:",
+    imageUrl
+  );
+
   try {
 
     const response =
@@ -1188,12 +1574,12 @@ async function sendInvitation(
           template: {
 
             name:
-              TEMPLATE_NAME,
+              finalTemplateName,
 
             language: {
 
               code:
-                TEMPLATE_LANGUAGE
+                finalTemplateLanguage
 
             },
 
@@ -1259,11 +1645,6 @@ async function updateAttendance(
       phone
     );
 
-  const cleanEvent =
-    normalizeEvent(
-      eventKey
-    );
-
   let query =
     supabase
       .from(
@@ -1277,9 +1658,19 @@ async function updateAttendance(
         normalizedPhone
       );
 
+  /*
+    Kama event imejulikana,
+    tumia phone + event.
+  */
+
   if (
     eventKey
   ) {
+
+    const cleanEvent =
+      normalizeEvent(
+        eventKey
+      );
 
     query =
       query.eq(
@@ -1321,8 +1712,7 @@ async function updateAttendance(
 
     console.log(
       "Guest not found:",
-      normalizedPhone,
-      cleanEvent
+      normalizedPhone
     );
 
     return null;
@@ -1793,14 +2183,14 @@ app.post(
         "=============================================="
       );
 
-      /* =====================================================
-         CHECK DUPLICATE:
+      /*
+        CHECK DUPLICATE:
 
-         EVENT + CODE
+        EVENT + CODE
 
-         Event A + X = duplicate
-         Event B + X = allowed
-      ===================================================== */
+        Event A + X = duplicate
+        Event B + X = allowed
+      */
 
       const existingGuest =
         await findExistingGuest(
@@ -1835,7 +2225,9 @@ app.post(
 
       }
 
-      /* CREATE PERSONAL CARD */
+      /*
+        CREATE PERSONAL CARD
+      */
 
       preparedCard =
         await preparePersonalCard(
@@ -1844,17 +2236,26 @@ app.post(
           cleanEvent
         );
 
-      /* SEND WHATSAPP */
+      /*
+        SEND WHATSAPP
+
+        Template na language
+        vinatoka kwenye Event.
+      */
 
       const result =
         await sendInvitation(
           cleanTo,
           cleanName,
           cleanCode,
-          preparedCard.cardImageUrl
+          preparedCard.cardImageUrl,
+          preparedCard.templateName,
+          preparedCard.templateLanguage
         );
 
-      /* SAVE DATABASE */
+      /*
+        SAVE DATABASE
+      */
 
       const guest =
         await saveGuest(
@@ -1875,6 +2276,9 @@ app.post(
 
         event_key:
           cleanEvent,
+
+        event_name:
+          preparedCard.eventName,
 
         result:
           result,
@@ -1921,7 +2325,8 @@ app.post(
             error.message,
 
           guest:
-            error.existingGuest || null
+            error.existingGuest ||
+            null
 
         });
 
@@ -2219,6 +2624,8 @@ app.post(
 
           /*
             SEND WHATSAPP
+
+            Tumia template ya Event.
           */
 
           const whatsappResult =
@@ -2226,7 +2633,9 @@ app.post(
               to,
               name,
               code,
-              preparedCard.cardImageUrl
+              preparedCard.cardImageUrl,
+              preparedCard.templateName,
+              preparedCard.templateLanguage
             );
 
           /*
@@ -2256,6 +2665,9 @@ app.post(
 
             event_key:
               eventKey,
+
+            event_name:
+              preparedCard.eventName,
 
             success:
               true,
@@ -2336,7 +2748,7 @@ app.post(
         }
 
         /*
-          Pause kati ya message
+          Pause kati ya message.
         */
 
         if (
@@ -2512,10 +2924,12 @@ app.get(
           true,
 
         total:
-          data?.length || 0,
+          data?.length ||
+          0,
 
         guests:
-          data || []
+          data ||
+          []
 
       });
 
@@ -2596,25 +3010,32 @@ app.get(
               index + 1,
 
             "Jina":
-              guest.full_name || "",
+              guest.full_name ||
+              "",
 
             "Simu":
-              guest.phone || "",
+              guest.phone ||
+              "",
 
             "Event":
-              guest.event_key || "",
+              guest.event_key ||
+              "",
 
             "Code":
-              guest.guest_code || "",
+              guest.guest_code ||
+              "",
 
             "QR Token":
-              guest.qr_token || "",
+              guest.qr_token ||
+              "",
 
             "Card URL":
-              guest.card_image_url || "",
+              guest.card_image_url ||
+              "",
 
             "Aina":
-              guest.invitation_type || "",
+              guest.invitation_type ||
+              "",
 
             "Ushiriki":
               guest.attendance_status ===
@@ -3192,6 +3613,9 @@ app.get(
       event_system:
         "enabled",
 
+      multi_event_cards:
+        "enabled",
+
       default_event:
         DEFAULT_EVENT,
 
@@ -3247,6 +3671,10 @@ app.listen(
 
     console.log(
       "Event System: ENABLED"
+    );
+
+    console.log(
+      "Multi Event Cards: ENABLED"
     );
 
     console.log(
