@@ -4,27 +4,12 @@ const XLSX = require("xlsx");
 const crypto = require("crypto");
 const QRCode = require("qrcode");
 const sharp = require("sharp");
-
-const {
-  createClient
-} = require("@supabase/supabase-js");
+const { createClient } = require("@supabase/supabase-js");
 
 const app = express();
 
-
-/* =========================================================
-   EXPRESS
-========================================================= */
-
-app.use(
-  express.json({
-    limit: "20mb"
-  })
-);
-
-app.use(
-  express.static("public")
-);
+app.use(express.json({ limit: "20mb" }));
+app.use(express.static("public"));
 
 
 /* =========================================================
@@ -37,7 +22,6 @@ const SUPABASE_URL =
 const SUPABASE_SERVICE_ROLE_KEY =
   process.env.SUPABASE_SERVICE_ROLE_KEY;
 
-
 if (
   !SUPABASE_URL ||
   !SUPABASE_SERVICE_ROLE_KEY
@@ -48,7 +32,6 @@ if (
   );
 
 }
-
 
 const supabase =
   createClient(
@@ -91,67 +74,38 @@ const PORT =
 
 
 /* =========================================================
-   QR SETTINGS
+   SUPABASE STORAGE
 ========================================================= */
 
-/*
-  Personalized QR imewashwa.
-
-  Ukiweka:
-  ENABLE_PERSONALIZED_QR=false
-
-  mfumo utarudi kutumia INVITE_IMAGE_URL
-  kama picha ya kawaida.
-*/
-
-const ENABLE_PERSONALIZED_QR =
-  String(
-    process.env.ENABLE_PERSONALIZED_QR ||
-    "true"
-  )
-    .toLowerCase() ===
-  "true";
-
-
-/*
-  Jina la Supabase Storage bucket.
-
-  Tutaiweka:
-  guest-cards
-*/
-
-const INVITE_BUCKET =
-  process.env.INVITE_BUCKET ||
+const STORAGE_BUCKET =
+  process.env.STORAGE_BUCKET ||
   "guest-cards";
 
 
+/* =========================================================
+   QR POSITION
+========================================================= */
+
 /*
-  QR size kwa kadi hii.
+   Hizi ni position za QR kwenye kadi yako ya sasa
+   yenye ukubwa wa 1024 x 1536.
 
-  Kadi yako ni 1024 x 1536.
-
-  QR inawekwa kwenye kisanduku
-  cha cream kilicho chini upande wa kulia.
+   Zinaweza kubadilishwa baadaye bila kugusa mfumo mwingine.
 */
-
-const QR_SIZE =
-  Number(
-    process.env.QR_SIZE ||
-    150
-  );
-
 
 const QR_X =
   Number(
-    process.env.QR_X ||
-    505
+    process.env.QR_X || 495
   );
-
 
 const QR_Y =
   Number(
-    process.env.QR_Y ||
-    1205
+    process.env.QR_Y || 1185
+  );
+
+const QR_SIZE =
+  Number(
+    process.env.QR_SIZE || 175
   );
 
 
@@ -183,35 +137,26 @@ console.log(
 );
 
 console.log(
-  "QR System:",
-  ENABLE_PERSONALIZED_QR
-    ? "ENABLED"
-    : "DISABLED"
+  "QR System: ENABLED"
 );
 
 console.log(
-  "Manual Code Check-in:",
-  "ENABLED"
+  "Manual Code Check-in: ENABLED"
 );
 
 console.log(
-  "QR Check-in:",
-  "ENABLED"
+  "QR Check-in: ENABLED"
 );
 
 console.log(
   "Storage Bucket:",
-  INVITE_BUCKET
+  STORAGE_BUCKET
 );
 
 console.log(
   "QR Position:",
   QR_X,
-  QR_Y
-);
-
-console.log(
-  "QR Size:",
+  QR_Y,
   QR_SIZE
 );
 
@@ -231,28 +176,6 @@ app.get(
     res.send(
       "GeitaCard system iko running!"
     );
-
-  }
-);
-
-
-/* =========================================================
-   HEALTH CHECK
-========================================================= */
-
-app.get(
-  "/health",
-  (req, res) => {
-
-    res.status(200).json({
-
-      success:
-        true,
-
-      message:
-        "GeitaCard server iko hai."
-
-    });
 
   }
 );
@@ -312,9 +235,7 @@ app.get(
    NORMALIZE PHONE
 ========================================================= */
 
-function normalizePhone(
-  phone
-) {
+function normalizePhone(phone) {
 
   return String(
     phone || ""
@@ -328,69 +249,15 @@ function normalizePhone(
 
 
 /* =========================================================
-   GET INVITATION TYPE
+   CREATE UNIQUE QR TOKEN
 ========================================================= */
 
-function getInvitationType(
-  code
-) {
-
-  const value =
-    String(
-      code || ""
-    )
-      .trim()
-      .toUpperCase();
-
-
-  if (
-    value.endsWith(
-      "-KAMATI"
-    )
-  ) {
-
-    return "KAMATI";
-
-  }
-
-
-  if (
-    value.endsWith(
-      "-SINGLE"
-    )
-  ) {
-
-    return "SINGLE";
-
-  }
-
-
-  return (
-    process.env.INVITATION_TYPE ||
-    "premium"
-  );
-
-}
-
-
-/* =========================================================
-   CREATE QR TOKEN
-========================================================= */
-
-function createQrToken() {
+function createQRToken() {
 
   /*
-    randomUUID ni token ya kipekee sana.
+    UUID ni unique.
 
-    Token hii ndiyo itawekwa ndani ya QR.
-
-    HAITUMII CODE.
-
-    Mfano:
-
-    9750-KAMATI
-        ↓
-    qr_token = UUID tofauti kabisa
+    Kila mgeni anapata token yake binafsi.
   */
 
   return crypto.randomUUID();
@@ -399,36 +266,24 @@ function createQrToken() {
 
 
 /* =========================================================
-   GENERATE QR BUFFER
+   CREATE QR IMAGE
 ========================================================= */
 
-async function generateQrBuffer(
+async function createQRImage(
   qrToken
 ) {
 
-  if (!qrToken) {
-
-    throw new Error(
-      "QR Token haipo."
-    );
-
-  }
-
-
   /*
-    QR ina token tu.
+    QR itabeba QR TOKEN ya mgeni huyu.
 
-    Hatuweki jina au code ndani ya QR.
-
-    Token ndiyo inayotafuta mgeni
-    kwenye database.
+    Hakuna QR mbili zinazotakiwa
+    kuwa na token moja.
   */
 
   const qrBuffer =
     await QRCode.toBuffer(
-      String(qrToken),
+      qrToken,
       {
-
         type:
           "png",
 
@@ -439,18 +294,7 @@ async function generateQrBuffer(
           2,
 
         errorCorrectionLevel:
-          "H",
-
-        color: {
-
-          dark:
-            "#000000",
-
-          light:
-            "#FFFFFF"
-
-        }
-
+          "H"
       }
     );
 
@@ -461,22 +305,24 @@ async function generateQrBuffer(
 
 
 /* =========================================================
-   FETCH BASE INVITATION IMAGE
+   DOWNLOAD ORIGINAL CARD
 ========================================================= */
 
-async function fetchBaseInvitationImage() {
+async function downloadInvitationImage() {
 
-  if (!INVITE_IMAGE_URL) {
+  if (
+    !INVITE_IMAGE_URL
+  ) {
 
     throw new Error(
-      "INVITE_IMAGE_URL haijawekwa kwenye Render Environment."
+      "INVITE_IMAGE_URL haijawekwa kwenye Render."
     );
 
   }
 
 
   console.log(
-    "Downloading base invitation image..."
+    "Downloading invitation template..."
   );
 
 
@@ -484,13 +330,11 @@ async function fetchBaseInvitationImage() {
     await axios.get(
       INVITE_IMAGE_URL,
       {
-
         responseType:
           "arraybuffer",
 
         timeout:
           30000
-
       }
     );
 
@@ -514,159 +358,203 @@ async function fetchBaseInvitationImage() {
 
 
 /* =========================================================
-   CREATE PERSONALIZED CARD
+   CREATE CARD WITH QR
 ========================================================= */
 
-async function createPersonalizedCard(
+async function createCardWithQR(
   qrToken
 ) {
 
-  if (
-    !ENABLE_PERSONALIZED_QR
-  ) {
+  /*
+    1. Download background/template
+    2. Generate QR
+    3. Put QR juu ya kadi
+    4. Return PNG buffer
+  */
 
-    return null;
-
-  }
-
-
-  console.log(
-    "Creating personalized QR card..."
-  );
+  const originalImage =
+    await downloadInvitationImage();
 
 
-  const baseImage =
-    await fetchBaseInvitationImage();
-
-
-  const qrBuffer =
-    await generateQrBuffer(
+  const qrImage =
+    await createQRImage(
       qrToken
     );
 
 
+  const imageMetadata =
+    await sharp(
+      originalImage
+    )
+      .metadata();
+
+
+  const imageWidth =
+    imageMetadata.width ||
+    1024;
+
+  const imageHeight =
+    imageMetadata.height ||
+    1536;
+
+
   /*
-    Tunatumia Sharp kuweka QR
-    juu ya kadi.
-
-    Coordinates zimetengenezwa
-    kwa kadi yako ya 1024x1536.
-
-    QR inaingia kwenye box
-    ya cream iliyo chini.
+    Kama template itakuwa na size
+    tofauti, position inascaling.
   */
 
-  const output =
+  const baseWidth =
+    1024;
+
+  const baseHeight =
+    1536;
+
+
+  const scaleX =
+    imageWidth /
+    baseWidth;
+
+  const scaleY =
+    imageHeight /
+    baseHeight;
+
+
+  const finalX =
+    Math.max(
+      0,
+      Math.round(
+        QR_X * scaleX
+      )
+    );
+
+
+  const finalY =
+    Math.max(
+      0,
+      Math.round(
+        QR_Y * scaleY
+      )
+    );
+
+
+  const finalSize =
+    Math.max(
+      80,
+      Math.round(
+        QR_SIZE *
+        Math.min(
+          scaleX,
+          scaleY
+        )
+      )
+    );
+
+
+  const resizedQR =
     await sharp(
-      baseImage
+      qrImage
+    )
+      .resize(
+        finalSize,
+        finalSize,
+        {
+          fit:
+            "contain"
+        }
+      )
+      .png()
+      .toBuffer();
+
+
+  const cardImage =
+    await sharp(
+      originalImage
     )
       .composite([
-
         {
-
           input:
-            qrBuffer,
+            resizedQR,
 
           left:
-            QR_X,
+            finalX,
 
           top:
-            QR_Y
-
+            finalY
         }
-
       ])
-      .jpeg({
-
-        quality:
-          95,
-
-        mozjpeg:
-          true
-
-      })
+      .png()
       .toBuffer();
 
 
   console.log(
-    "Personalized QR card created."
+    "Card with QR created:",
+    finalX,
+    finalY,
+    finalSize
   );
 
 
-  return output;
+  return cardImage;
 
 }
 
 
 /* =========================================================
-   GET PUBLIC STORAGE URL
+   CREATE SAFE STORAGE FILE NAME
 ========================================================= */
 
-function getStoragePublicUrl(
-  path
+function safeFileName(
+  value
 ) {
 
-  return (
-    `${SUPABASE_URL}` +
-    `/storage/v1/object/public/` +
-    `${INVITE_BUCKET}/` +
-    `${path}`
-  );
+  return String(
+    value || "guest"
+  )
+    .replace(
+      /[^a-zA-Z0-9_-]/g,
+      "_"
+    )
+    .substring(
+      0,
+      80
+    );
 
 }
 
 
 /* =========================================================
-   UPLOAD PERSONALIZED CARD
+   UPLOAD CARD TO SUPABASE STORAGE
 ========================================================= */
 
-async function uploadPersonalizedCard(
+async function uploadCardToStorage(
   cardBuffer,
-  guestId,
+  name,
+  code,
   qrToken
 ) {
 
-  if (!cardBuffer) {
+  const safeName =
+    safeFileName(
+      name
+    );
 
-    return null;
-
-  }
+  const safeCode =
+    safeFileName(
+      code
+    );
 
 
   /*
-    Kila mgeni anapata filename
-    yake.
-
-    Hivyo picha za wageni
-    hazitachanganyika.
+    Token inafanya file name
+    isiwe sawa na ya mgeni mwingine.
   */
 
-  const safeGuestId =
-    String(
-      guestId
-    )
-      .replace(
-        /[^a-zA-Z0-9_-]/g,
-        ""
-      );
-
-
-  const safeQrToken =
-    String(
-      qrToken
-    )
-      .replace(
-        /[^a-zA-Z0-9_-]/g,
-        ""
-      );
-
-
   const filePath =
-    `guest-cards/${safeGuestId}-${safeQrToken}.jpg`;
+    `guest-cards/${safeCode}-${safeName}-${qrToken}.png`;
 
 
   console.log(
-    "Uploading personalized card:",
+    "Uploading card to Storage:",
     filePath
   );
 
@@ -676,22 +564,17 @@ async function uploadPersonalizedCard(
   } = await supabase
     .storage
     .from(
-      INVITE_BUCKET
+      STORAGE_BUCKET
     )
     .upload(
       filePath,
       cardBuffer,
       {
-
         contentType:
-          "image/jpeg",
+          "image/png",
 
         upsert:
-          true,
-
-        cacheControl:
-          "31536000"
-
+          false
       }
     );
 
@@ -708,25 +591,172 @@ async function uploadPersonalizedCard(
   }
 
 
+  const {
+    data
+  } =
+    supabase
+      .storage
+      .from(
+        STORAGE_BUCKET
+      )
+      .getPublicUrl(
+        filePath
+      );
+
+
   const publicUrl =
-    getStoragePublicUrl(
-      filePath
+    data?.publicUrl;
+
+
+  if (
+    !publicUrl
+  ) {
+
+    throw new Error(
+      "Public URL ya kadi haikupatikana."
     );
+
+  }
 
 
   console.log(
-    "Personalized card URL:",
+    "Card uploaded successfully."
+  );
+
+  console.log(
+    "Card URL:",
     publicUrl
   );
 
 
   return {
+    filePath,
+    publicUrl
+  };
 
-    path:
-      filePath,
+}
 
-    url:
-      publicUrl
+
+/* =========================================================
+   DELETE CARD FROM STORAGE
+========================================================= */
+
+async function deleteCardFromStorage(
+  filePath
+) {
+
+  if (
+    !filePath
+  ) {
+
+    return;
+
+  }
+
+
+  try {
+
+    const {
+      error
+    } = await supabase
+      .storage
+      .from(
+        STORAGE_BUCKET
+      )
+      .remove([
+        filePath
+      ]);
+
+
+    if (error) {
+
+      console.error(
+        "Storage cleanup error:",
+        error.message
+      );
+
+      return;
+
+    }
+
+
+    console.log(
+      "Unused card removed from Storage:",
+      filePath
+    );
+
+
+  } catch (error) {
+
+    console.error(
+      "Storage cleanup exception:",
+      error.message
+    );
+
+  }
+
+}
+
+
+/* =========================================================
+   PREPARE PERSONAL CARD
+========================================================= */
+
+async function preparePersonalCard(
+  name,
+  code
+) {
+
+  /*
+    QR TOKEN inatengenezwa hapa.
+
+    HII NDIYO TOKEN YA KIPEKEE YA MGENI.
+  */
+
+  const qrToken =
+    createQRToken();
+
+
+  console.log(
+    "Creating unique QR token for:",
+    name,
+    code
+  );
+
+  console.log(
+    "QR Token:",
+    qrToken
+  );
+
+
+  const cardBuffer =
+    await createCardWithQR(
+      qrToken
+    );
+
+
+  const storage =
+    await uploadCardToStorage(
+      cardBuffer,
+      name,
+      code,
+      qrToken
+    );
+
+
+  return {
+
+    qrToken:
+      qrToken,
+
+    cardBuffer:
+      cardBuffer,
+
+    cardImageUrl:
+      storage.publicUrl,
+
+    storagePath:
+      storage.filePath
 
   };
 
@@ -740,7 +770,9 @@ async function uploadPersonalizedCard(
 async function saveGuest(
   to,
   name,
-  code
+  code,
+  qrToken,
+  cardImageUrl
 ) {
 
   const phone =
@@ -749,25 +781,41 @@ async function saveGuest(
     );
 
 
-  /*
-    MUHIMU:
-
-    Kila mgeni anapata QR TOKEN
-    yake tofauti.
-
-    QR token hii ndiyo itakayohifadhiwa
-    kwenye database.
-  */
-
-  const qrToken =
-    createQrToken();
-
-
   const invitationType =
-    getInvitationType(
-      code
-    );
+    String(
+      code || ""
+    )
+      .toUpperCase()
+      .endsWith(
+        "-KAMATI"
+      )
 
+      ? "KAMATI"
+
+      : String(
+          code || ""
+        )
+          .toUpperCase()
+          .endsWith(
+            "-SINGLE"
+          )
+
+        ? "SINGLE"
+
+        : (
+            process.env.INVITATION_TYPE ||
+            "premium"
+          );
+
+
+  /*
+    SAVE GUEST
+
+    Code inahifadhiwa EXACTLY
+    kama ilivyoingia.
+
+    QR Token ni tofauti na Code.
+  */
 
   const {
     data,
@@ -779,7 +827,6 @@ async function saveGuest(
     )
 
     .insert([
-
       {
 
         full_name:
@@ -794,6 +841,9 @@ async function saveGuest(
         qr_token:
           qrToken,
 
+        card_image_url:
+          cardImageUrl,
+
         invitation_type:
           invitationType,
 
@@ -801,7 +851,6 @@ async function saveGuest(
           "pending"
 
       }
-
     ])
 
     .select()
@@ -824,68 +873,21 @@ async function saveGuest(
   console.log(
     "Guest saved:",
     data.full_name,
-    data.guest_code,
-    "QR:",
+    data.guest_code
+  );
+
+  console.log(
+    "QR Token saved:",
     data.qr_token
+  );
+
+  console.log(
+    "Card URL saved:",
+    data.card_image_url
   );
 
 
   return data;
-
-}
-
-
-/* =========================================================
-   DELETE GUEST
-   USED WHEN SEND FAILS
-========================================================= */
-
-async function deleteGuest(
-  guestId
-) {
-
-  if (!guestId) {
-
-    return;
-
-  }
-
-
-  try {
-
-    const {
-      error
-    } = await supabase
-
-      .from(
-        "guests"
-      )
-
-      .delete()
-
-      .eq(
-        "id",
-        guestId
-      );
-
-
-    if (error) {
-
-      console.error(
-        "Delete guest error:",
-        error.message
-      );
-
-    }
-
-  } catch (error) {
-
-    console.error(
-      "Delete guest exception:",
-      error.message
-    );
-
-  }
 
 }
 
@@ -963,6 +965,7 @@ async function sendText(
 
     return response.data;
 
+
   } catch (error) {
 
     console.error(
@@ -986,7 +989,7 @@ async function sendInvitation(
   to,
   name,
   code,
-  customImageUrl = null
+  cardImageUrl
 ) {
 
   const url =
@@ -996,24 +999,21 @@ async function sendInvitation(
   const components = [];
 
 
-  /*
-    Tumia personalized image
-    ikiwa ipo.
+  /* -------------------------------------------------------
+     HEADER IMAGE
 
-    Kama haipo, tumia
-    INVITE_IMAGE_URL ya kawaida.
-  */
+     HAPA TUNATUMIA KADI YA HUYO MGENI
+     ILIYO NA QR YAKE BINAFSI.
+  ------------------------------------------------------- */
 
   const imageUrl =
-    customImageUrl ||
+    cardImageUrl ||
     INVITE_IMAGE_URL;
 
 
-  /* -------------------------------------------------------
-     HEADER IMAGE
-  ------------------------------------------------------- */
-
-  if (imageUrl) {
+  if (
+    imageUrl
+  ) {
 
     components.push({
 
@@ -1075,10 +1075,7 @@ async function sendInvitation(
           "text",
 
         /*
-          CODE HAIBADILISHWI.
-
-          Inatumwa exactly kama
-          ilivyo kwenye Excel.
+          CODE HAIJABADILISHWA.
         */
 
         text:
@@ -1160,6 +1157,7 @@ async function sendInvitation(
 
     return response.data;
 
+
   } catch (error) {
 
     console.error(
@@ -1171,189 +1169,6 @@ async function sendInvitation(
         2
       )
     );
-
-    throw error;
-
-  }
-
-}
-
-
-/* =========================================================
-   CREATE + SEND PERSONALIZED INVITATION
-========================================================= */
-
-async function createAndSendInvitation(
-  to,
-  name,
-  code
-) {
-
-  let guest =
-    null;
-
-
-  try {
-
-    /*
-      STEP 1
-
-      Save guest first.
-
-      Sababu tunahitaji
-      qr_token kutoka database.
-    */
-
-    guest =
-      await saveGuest(
-        to,
-        name,
-        code
-      );
-
-
-    let personalizedImageUrl =
-      null;
-
-
-    /*
-      STEP 2
-
-      Tengeneza QR card.
-    */
-
-    if (
-      ENABLE_PERSONALIZED_QR
-    ) {
-
-      const cardBuffer =
-        await createPersonalizedCard(
-          guest.qr_token
-        );
-
-
-      /*
-        STEP 3
-
-        Upload card kwa Supabase Storage.
-      */
-
-      const storageResult =
-        await uploadPersonalizedCard(
-          cardBuffer,
-          guest.id,
-          guest.qr_token
-        );
-
-
-      personalizedImageUrl =
-        storageResult.url;
-
-
-      /*
-        STEP 4
-
-        Hifadhi URL ya kadi
-        kwenye database.
-
-        Ikiwa column haipo,
-        mfumo hautavunja send.
-      */
-
-      try {
-
-        const {
-          error
-        } = await supabase
-
-          .from(
-            "guests"
-          )
-
-          .update({
-
-            card_image_url:
-              personalizedImageUrl
-
-          })
-
-          .eq(
-            "id",
-            guest.id
-          );
-
-
-        if (error) {
-
-          console.warn(
-            "card_image_url haiku-save:",
-            error.message
-          );
-
-        }
-
-      } catch (error) {
-
-        console.warn(
-          "card_image_url update skipped:",
-          error.message
-        );
-
-      }
-
-    }
-
-
-    /*
-      STEP 5
-
-      Send WhatsApp.
-
-      Kadi personalized ndiyo
-      itatumwa.
-    */
-
-    const whatsappResult =
-      await sendInvitation(
-        to,
-        name,
-        code,
-        personalizedImageUrl
-      );
-
-
-    return {
-
-      guest:
-        guest,
-
-      result:
-        whatsappResult,
-
-      card_image_url:
-        personalizedImageUrl
-
-    };
-
-  } catch (error) {
-
-    /*
-      Kama send imefail baada ya
-      guest ku-save, tunajaribu
-      kuondoa record ili tabia
-      ya mfumo wa zamani ibaki:
-      SAVE ONLY IF SEND SUCCESS.
-    */
-
-    if (
-      guest?.id
-    ) {
-
-      await deleteGuest(
-        guest.id
-      );
-
-    }
 
 
     throw error;
@@ -1601,7 +1416,7 @@ async function processAttendanceReply(
 
 
 /* =========================================================
-   WHATSAPP WEBHOOK
+   WHATSAPP WEBHOOK - RECEIVE MESSAGES
 ========================================================= */
 
 app.post(
@@ -1642,7 +1457,9 @@ app.post(
         !body.entry[0]
       ) {
 
-        return res.sendStatus(200);
+        return res.sendStatus(
+          200
+        );
 
       }
 
@@ -1656,7 +1473,9 @@ app.post(
         !changes[0]
       ) {
 
-        return res.sendStatus(200);
+        return res.sendStatus(
+          200
+        );
 
       }
 
@@ -1700,7 +1519,9 @@ app.post(
         }
 
 
-        return res.sendStatus(200);
+        return res.sendStatus(
+          200
+        );
 
       }
 
@@ -1714,7 +1535,9 @@ app.post(
         !value.messages[0]
       ) {
 
-        return res.sendStatus(200);
+        return res.sendStatus(
+          200
+        );
 
       }
 
@@ -1758,13 +1581,15 @@ app.post(
         );
 
 
-        return res.sendStatus(200);
+        return res.sendStatus(
+          200
+        );
 
       }
 
 
       /* ---------------------------------------------------
-         OLD BUTTON
+         OLD BUTTON FORMAT
       --------------------------------------------------- */
 
       if (
@@ -1789,7 +1614,9 @@ app.post(
         );
 
 
-        return res.sendStatus(200);
+        return res.sendStatus(
+          200
+        );
 
       }
 
@@ -1826,14 +1653,12 @@ app.post(
         );
 
 
-        return res.sendStatus(200);
+        return res.sendStatus(
+          200
+        );
 
       }
 
-
-      /* ---------------------------------------------------
-         OTHER MESSAGE TYPES
-      --------------------------------------------------- */
 
       console.log(
         "Unhandled message type:",
@@ -1841,7 +1666,9 @@ app.post(
       );
 
 
-      return res.sendStatus(200);
+      return res.sendStatus(
+        200
+      );
 
 
     } catch (error) {
@@ -1853,7 +1680,9 @@ app.post(
       );
 
 
-      return res.sendStatus(200);
+      return res.sendStatus(
+        200
+      );
 
     }
 
@@ -1868,6 +1697,10 @@ app.post(
 app.post(
   "/send-invitation",
   async (req, res) => {
+
+    let preparedCard =
+      null;
+
 
     try {
 
@@ -1884,7 +1717,9 @@ app.post(
         !code
       ) {
 
-        return res.status(400).json({
+        return res.status(
+          400
+        ).json({
 
           success:
             false,
@@ -1897,17 +1732,20 @@ app.post(
       }
 
 
+      /*
+        CODE INABAKI EXACTLY
+        KAMA ILIVYO.
+      */
+
       const cleanTo =
         String(
           to
         ).trim();
 
-
       const cleanName =
         String(
           name
         ).trim();
-
 
       const cleanCode =
         String(
@@ -1943,27 +1781,56 @@ app.post(
       );
 
 
-      const result =
-        await createAndSendInvitation(
-          cleanTo,
+      /* ---------------------------------------------------
+         1. CREATE PERSONAL QR + CARD
+      --------------------------------------------------- */
+
+      preparedCard =
+        await preparePersonalCard(
           cleanName,
           cleanCode
         );
 
 
-      return res.status(200).json({
+      /* ---------------------------------------------------
+         2. SEND PERSONAL CARD
+      --------------------------------------------------- */
+
+      const result =
+        await sendInvitation(
+          cleanTo,
+          cleanName,
+          cleanCode,
+          preparedCard.cardImageUrl
+        );
+
+
+      /* ---------------------------------------------------
+         3. SAVE GUEST
+      --------------------------------------------------- */
+
+      const guest =
+        await saveGuest(
+          cleanTo,
+          cleanName,
+          cleanCode,
+          preparedCard.qrToken,
+          preparedCard.cardImageUrl
+        );
+
+
+      return res.status(
+        200
+      ).json({
 
         success:
           true,
 
         result:
-          result.result,
+          result,
 
         guest:
-          result.guest,
-
-        card_image_url:
-          result.card_image_url
+          guest
 
       });
 
@@ -1977,7 +1844,26 @@ app.post(
       );
 
 
-      return res.status(500).json({
+      /*
+        Kama WhatsApp au database
+        imeshindikana, futa card ambayo
+        haikutumika.
+      */
+
+      if (
+        preparedCard?.storagePath
+      ) {
+
+        await deleteCardFromStorage(
+          preparedCard.storagePath
+        );
+
+      }
+
+
+      return res.status(
+        500
+      ).json({
 
         success:
           false,
@@ -2011,7 +1897,9 @@ app.post(
         )
       ) {
 
-        return res.status(400).json({
+        return res.status(
+          400
+        ).json({
 
           success:
             false,
@@ -2032,7 +1920,9 @@ app.post(
         contacts.length === 0
       ) {
 
-        return res.status(400).json({
+        return res.status(
+          400
+        ).json({
 
           success:
             false,
@@ -2099,8 +1989,8 @@ app.post(
         /*
           CODE HAITENGENEZWI.
 
-          Inachukuliwa moja kwa moja
-          kutoka Excel/CSV.
+          Inatoka moja kwa moja
+          kwenye Excel/CSV.
         */
 
         const code =
@@ -2146,6 +2036,10 @@ app.post(
         }
 
 
+        let preparedCard =
+          null;
+
+
         try {
 
           console.log(
@@ -2172,21 +2066,56 @@ app.post(
           );
 
 
-          /*
-            CREATE UNIQUE QR
-            SAVE DATABASE
-            CREATE PERSONALIZED CARD
-            UPLOAD STORAGE
-            SEND WHATSAPP
-          */
+          /* ---------------------------------------------
+             1. CREATE UNIQUE QR + PERSONAL CARD
+          --------------------------------------------- */
 
-          const sendResult =
-            await createAndSendInvitation(
-              to,
+          preparedCard =
+            await preparePersonalCard(
               name,
               code
             );
 
+
+          console.log(
+            "Unique QR generated:"
+          );
+
+          console.log(
+            preparedCard.qrToken
+          );
+
+
+          /* ---------------------------------------------
+             2. SEND PERSONAL CARD
+          --------------------------------------------- */
+
+          const whatsappResult =
+            await sendInvitation(
+              to,
+              name,
+              code,
+              preparedCard.cardImageUrl
+            );
+
+
+          /* ---------------------------------------------
+             3. SAVE GUEST
+          --------------------------------------------- */
+
+          const guest =
+            await saveGuest(
+              to,
+              name,
+              code,
+              preparedCard.qrToken,
+              preparedCard.cardImageUrl
+            );
+
+
+          /* ---------------------------------------------
+             4. RESULT
+          --------------------------------------------- */
 
           results.push({
 
@@ -2202,14 +2131,17 @@ app.post(
             success:
               true,
 
-            guest:
-              sendResult.guest,
+            qr_token:
+              preparedCard.qrToken,
 
             card_image_url:
-              sendResult.card_image_url,
+              preparedCard.cardImageUrl,
+
+            guest:
+              guest,
 
             result:
-              sendResult.result
+              whatsappResult
 
           });
 
@@ -2228,6 +2160,22 @@ app.post(
             error.response?.data ||
             error.message
           );
+
+
+          /*
+            Ondoa card ikiwa
+            item imeshindikana.
+          */
+
+          if (
+            preparedCard?.storagePath
+          ) {
+
+            await deleteCardFromStorage(
+              preparedCard.storagePath
+            );
+
+          }
 
 
           results.push({
@@ -2254,10 +2202,10 @@ app.post(
 
 
         /*
-          Pause kati ya messages.
+          Pause kati ya message.
 
-          Sekunde 1 kama mfumo wako
-          wa zamani.
+          Tunaacha sekunde 1 kama
+          mfumo wako wa mwanzo.
         */
 
         if (
@@ -2324,7 +2272,9 @@ app.post(
       );
 
 
-      return res.status(200).json({
+      return res.status(
+        200
+      ).json({
 
         success:
           true,
@@ -2353,7 +2303,9 @@ app.post(
       );
 
 
-      return res.status(500).json({
+      return res.status(
+        500
+      ).json({
 
         success:
           false,
@@ -2408,7 +2360,9 @@ app.get(
         );
 
 
-        return res.status(500).json({
+        return res.status(
+          500
+        ).json({
 
           success:
             false,
@@ -2421,7 +2375,9 @@ app.get(
       }
 
 
-      return res.status(200).json({
+      return res.status(
+        200
+      ).json({
 
         success:
           true,
@@ -2443,7 +2399,9 @@ app.get(
       );
 
 
-      return res.status(500).json({
+      return res.status(
+        500
+      ).json({
 
         success:
           false,
@@ -2484,7 +2442,7 @@ app.get(
         )
 
         .select(
-          "full_name, phone, guest_code, invitation_type, attendance_status, qr_token, scanned_at, created_at"
+          "full_name, phone, guest_code, qr_token, card_image_url, invitation_type, attendance_status, scanned_at, created_at"
         )
 
         .order(
@@ -2504,7 +2462,9 @@ app.get(
         );
 
 
-        return res.status(500).json({
+        return res.status(
+          500
+        ).json({
 
           success:
             false,
@@ -2518,36 +2478,29 @@ app.get(
 
 
       const rows =
-        (
-          data || []
-        ).map(
-          (
-            guest,
-            index
-          ) => ({
+        (data || []).map(
+          (guest, index) => ({
 
             "#":
               index + 1,
 
             "Jina":
-              guest.full_name ||
-              "",
+              guest.full_name || "",
 
             "Simu":
-              guest.phone ||
-              "",
+              guest.phone || "",
 
             "Code":
-              guest.guest_code ||
-              "",
-
-            "Aina":
-              guest.invitation_type ||
-              "",
+              guest.guest_code || "",
 
             "QR Token":
-              guest.qr_token ||
-              "",
+              guest.qr_token || "",
+
+            "Card URL":
+              guest.card_image_url || "",
+
+            "Aina":
+              guest.invitation_type || "",
 
             "Ushiriki":
               guest.attendance_status ===
@@ -2624,12 +2577,17 @@ app.get(
 
         {
           wch:
-            15
+            40
         },
 
         {
           wch:
-            40
+            60
+        },
+
+        {
+          wch:
+            15
         },
 
         {
@@ -2715,7 +2673,9 @@ app.get(
       );
 
 
-      return res.status(500).json({
+      return res.status(
+        500
+      ).json({
 
         success:
           false,
@@ -2746,9 +2706,13 @@ app.post(
       } = req.body;
 
 
-      if (!code) {
+      if (
+        !code
+      ) {
 
-        return res.status(400).json({
+        return res.status(
+          400
+        ).json({
 
           success:
             false,
@@ -2762,10 +2726,10 @@ app.post(
 
 
       /*
-        Code haibadilishwi.
+        Code haitabadilishwa.
 
-        Spaces za mwanzo/mwisho tu
-        ndizo zinaondolewa.
+        Spaces za mwanzo/mwisho
+        tu zinaondolewa.
       */
 
       const guestCode =
@@ -2817,7 +2781,9 @@ app.post(
         );
 
 
-        return res.status(500).json({
+        return res.status(
+          500
+        ).json({
 
           success:
             false,
@@ -2832,7 +2798,9 @@ app.post(
 
       if (!guest) {
 
-        return res.status(404).json({
+        return res.status(
+          404
+        ).json({
 
           success:
             false,
@@ -2849,7 +2817,9 @@ app.post(
         guest.scanned_at
       ) {
 
-        return res.status(409).json({
+        return res.status(
+          409
+        ).json({
 
           success:
             false,
@@ -2901,7 +2871,9 @@ app.post(
         );
 
 
-        return res.status(500).json({
+        return res.status(
+          500
+        ).json({
 
           success:
             false,
@@ -2921,7 +2893,9 @@ app.post(
       );
 
 
-      return res.status(200).json({
+      return res.status(
+        200
+      ).json({
 
         success:
           true,
@@ -2943,7 +2917,9 @@ app.post(
       );
 
 
-      return res.status(500).json({
+      return res.status(
+        500
+      ).json({
 
         success:
           false,
@@ -2974,13 +2950,13 @@ app.post(
       } = req.body;
 
 
-      /* ---------------------------------------------------
-         VALIDATION
-      --------------------------------------------------- */
+      if (
+        !qr_token
+      ) {
 
-      if (!qr_token) {
-
-        return res.status(400).json({
+        return res.status(
+          400
+        ).json({
 
           success:
             false,
@@ -2994,10 +2970,8 @@ app.post(
 
 
       /*
-        QR token inatumika
-        kama ilivyo.
-
-        Hatuibadilishi.
+        QR lazima iwe na token
+        iliyohifadhiwa kwenye database.
       */
 
       const qrToken =
@@ -3013,7 +2987,7 @@ app.post(
 
 
       /* ---------------------------------------------------
-         SEARCH BY QR TOKEN
+         SEARCH BY UNIQUE QR TOKEN
       --------------------------------------------------- */
 
       const {
@@ -3045,7 +3019,9 @@ app.post(
         );
 
 
-        return res.status(500).json({
+        return res.status(
+          500
+        ).json({
 
           success:
             false,
@@ -3064,7 +3040,9 @@ app.post(
 
       if (!guest) {
 
-        return res.status(404).json({
+        return res.status(
+          404
+        ).json({
 
           success:
             false,
@@ -3085,7 +3063,9 @@ app.post(
         guest.scanned_at
       ) {
 
-        return res.status(409).json({
+        return res.status(
+          409
+        ).json({
 
           success:
             false,
@@ -3105,7 +3085,7 @@ app.post(
 
 
       /* ---------------------------------------------------
-         CHECK-IN
+         CHECK-IN KWA QR
       --------------------------------------------------- */
 
       const {
@@ -3142,7 +3122,9 @@ app.post(
         );
 
 
-        return res.status(500).json({
+        return res.status(
+          500
+        ).json({
 
           success:
             false,
@@ -3162,7 +3144,9 @@ app.post(
       );
 
 
-      return res.status(200).json({
+      return res.status(
+        200
+      ).json({
 
         success:
           true,
@@ -3184,7 +3168,9 @@ app.post(
       );
 
 
-      return res.status(500).json({
+      return res.status(
+        500
+      ).json({
 
         success:
           false,
@@ -3201,112 +3187,30 @@ app.post(
 
 
 /* =========================================================
-   OPTIONAL: CHECK QR TOKEN
+   HEALTH CHECK
 ========================================================= */
 
 app.get(
-  "/api/qr/:token",
-  async (req, res) => {
+  "/health",
+  (req, res) => {
 
-    try {
+    res.status(
+      200
+    ).json({
 
-      const token =
-        String(
-          req.params.token ||
-          ""
-        ).trim();
+      success:
+        true,
 
+      message:
+        "GeitaCard server iko hai.",
 
-      if (!token) {
+      qr_system:
+        "enabled",
 
-        return res.status(400).json({
+      storage_bucket:
+        STORAGE_BUCKET
 
-          success:
-            false,
-
-          message:
-            "QR token haipo."
-
-        });
-
-      }
-
-
-      const {
-        data: guest,
-        error
-      } = await supabase
-
-        .from(
-          "guests"
-        )
-
-        .select(
-          "id, full_name, phone, guest_code, invitation_type, attendance_status, scanned_at"
-        )
-
-        .eq(
-          "qr_token",
-          token
-        )
-
-        .maybeSingle();
-
-
-      if (error) {
-
-        return res.status(500).json({
-
-          success:
-            false,
-
-          message:
-            error.message
-
-        });
-
-      }
-
-
-      if (!guest) {
-
-        return res.status(404).json({
-
-          success:
-            false,
-
-          message:
-            "QR Token haijatambuliwa."
-
-        });
-
-      }
-
-
-      return res.status(200).json({
-
-        success:
-          true,
-
-        guest:
-          guest
-
-      });
-
-
-    } catch (error) {
-
-      return res.status(500).json({
-
-        success:
-          false,
-
-        message:
-          error.message
-
-      });
-
-    }
+    });
 
   }
 );
@@ -3343,15 +3247,20 @@ app.listen(
     );
 
     console.log(
-      "QR System:",
-      ENABLE_PERSONALIZED_QR
-        ? "ENABLED"
-        : "DISABLED"
+      "QR System: ENABLED"
+    );
+
+    console.log(
+      "Manual Code Check-in: ENABLED"
+    );
+
+    console.log(
+      "QR Check-in: ENABLED"
     );
 
     console.log(
       "Storage Bucket:",
-      INVITE_BUCKET
+      STORAGE_BUCKET
     );
 
     console.log(
