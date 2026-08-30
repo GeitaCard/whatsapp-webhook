@@ -12,10 +12,24 @@
 
   <title>GeitaCard - Dashboard</title>
 
-  <!-- XLSX LIBRARY -->
+
+  <!-- =====================================================
+       XLSX LIBRARY
+  ====================================================== -->
+
   <script
     src="https://cdn.jsdelivr.net/npm/xlsx@0.18.5/dist/xlsx.full.min.js">
   </script>
+
+
+  <!-- =====================================================
+       QR CODE SCANNER LIBRARY
+  ====================================================== -->
+
+  <script
+    src="https://unpkg.com/html5-qrcode">
+  </script>
+
 
   <style>
 
@@ -25,432 +39,1074 @@
       padding: 0;
     }
 
+
     body {
-      font-family: Arial, sans-serif;
-      background: #f4f6f8;
-      color: #222;
+
+      font-family:
+        Arial,
+        sans-serif;
+
+      background:
+        #f4f6f8;
+
+      color:
+        #222;
+
     }
+
 
     header {
-      background: #111827;
-      color: white;
-      padding: 20px;
+
+      background:
+        #111827;
+
+      color:
+        white;
+
+      padding:
+        20px;
+
     }
+
 
     header h1 {
-      font-size: 25px;
+
+      font-size:
+        25px;
+
     }
+
 
     header p {
-      margin-top: 6px;
-      opacity: 0.8;
+
+      margin-top:
+        6px;
+
+      opacity:
+        0.8;
+
     }
+
 
     .container {
-      max-width: 1250px;
-      margin: auto;
-      padding: 20px;
+
+      max-width:
+        1250px;
+
+      margin:
+        auto;
+
+      padding:
+        20px;
+
     }
+
 
     .section {
-      background: white;
-      padding: 20px;
-      border-radius: 14px;
-      margin-bottom: 20px;
-      box-shadow: 0 2px 8px rgba(0,0,0,0.08);
+
+      background:
+        white;
+
+      padding:
+        20px;
+
+      border-radius:
+        14px;
+
+      margin-bottom:
+        20px;
+
+      box-shadow:
+        0 2px 8px
+        rgba(0,0,0,0.08);
+
     }
+
 
     .section h2 {
-      margin-bottom: 8px;
-      font-size: 21px;
+
+      margin-bottom:
+        8px;
+
+      font-size:
+        21px;
+
     }
+
 
     .section-description {
-      color: #666;
-      margin-bottom: 18px;
-      line-height: 1.5;
+
+      color:
+        #666;
+
+      margin-bottom:
+        18px;
+
+      line-height:
+        1.5;
+
     }
 
-    /* =========================
+
+    /* =====================================================
        UPLOAD
-    ========================= */
+    ====================================================== */
 
     .upload-area {
-      border: 2px dashed #9ca3af;
-      border-radius: 12px;
-      padding: 30px;
-      text-align: center;
-      background: #f9fafb;
+
+      border:
+        2px dashed
+        #9ca3af;
+
+      border-radius:
+        12px;
+
+      padding:
+        30px;
+
+      text-align:
+        center;
+
+      background:
+        #f9fafb;
+
     }
+
 
     .upload-area input {
-      display: none;
+
+      display:
+        none;
+
     }
+
 
     .upload-label {
-      display: inline-block;
-      background: #111827;
-      color: white;
-      padding: 14px 22px;
-      border-radius: 9px;
-      cursor: pointer;
-      font-weight: bold;
+
+      display:
+        inline-block;
+
+      background:
+        #111827;
+
+      color:
+        white;
+
+      padding:
+        14px 22px;
+
+      border-radius:
+        9px;
+
+      cursor:
+        pointer;
+
+      font-weight:
+        bold;
+
     }
+
 
     .upload-label:hover {
-      opacity: 0.9;
+
+      opacity:
+        0.9;
+
     }
+
 
     #fileName {
-      margin-top: 14px;
-      color: #555;
-      font-weight: bold;
+
+      margin-top:
+        14px;
+
+      color:
+        #555;
+
+      font-weight:
+        bold;
+
     }
+
 
     .upload-error {
-      margin-top: 12px;
-      color: #991b1b;
-      background: #fee2e2;
-      padding: 12px;
-      border-radius: 8px;
-      display: none;
+
+      margin-top:
+        12px;
+
+      color:
+        #991b1b;
+
+      background:
+        #fee2e2;
+
+      padding:
+        12px;
+
+      border-radius:
+        8px;
+
+      display:
+        none;
+
     }
 
-    /* =========================
+
+    /* =====================================================
        PREVIEW
-    ========================= */
+    ====================================================== */
 
     .preview-header {
-      display: flex;
-      justify-content: space-between;
-      align-items: center;
-      gap: 10px;
-      flex-wrap: wrap;
-      margin-bottom: 15px;
+
+      display:
+        flex;
+
+      justify-content:
+        space-between;
+
+      align-items:
+        center;
+
+      gap:
+        10px;
+
+      flex-wrap:
+        wrap;
+
+      margin-bottom:
+        15px;
+
     }
+
 
     .preview-count {
-      font-weight: bold;
-      color: #374151;
+
+      font-weight:
+        bold;
+
+      color:
+        #374151;
+
     }
+
 
     .table-container {
-      overflow-x: auto;
-      border: 1px solid #e5e7eb;
-      border-radius: 10px;
+
+      overflow-x:
+        auto;
+
+      border:
+        1px solid
+        #e5e7eb;
+
+      border-radius:
+        10px;
+
     }
 
+
     table {
-      width: 100%;
-      border-collapse: collapse;
-      min-width: 750px;
+
+      width:
+        100%;
+
+      border-collapse:
+        collapse;
+
+      min-width:
+        750px;
+
     }
+
 
     th,
     td {
-      padding: 13px;
-      border-bottom: 1px solid #eee;
-      text-align: left;
+
+      padding:
+        13px;
+
+      border-bottom:
+        1px solid
+        #eee;
+
+      text-align:
+        left;
+
     }
+
 
     th {
-      background: #f9fafb;
-      font-weight: bold;
+
+      background:
+        #f9fafb;
+
+      font-weight:
+        bold;
+
     }
+
 
     tr:last-child td {
-      border-bottom: none;
+
+      border-bottom:
+        none;
+
     }
+
 
     .code {
-      font-weight: bold;
-      white-space: nowrap;
+
+      font-weight:
+        bold;
+
+      white-space:
+        nowrap;
+
     }
+
 
     .type-kamati {
-      color: #1d4ed8;
-      font-weight: bold;
+
+      color:
+        #1d4ed8;
+
+      font-weight:
+        bold;
+
     }
+
 
     .type-single {
-      color: #166534;
-      font-weight: bold;
+
+      color:
+        #166534;
+
+      font-weight:
+        bold;
+
     }
 
-    /* =========================
+
+    /* =====================================================
        BUTTONS
-    ========================= */
+    ====================================================== */
 
     .button-row {
-      display: flex;
-      gap: 10px;
-      flex-wrap: wrap;
-      margin-top: 18px;
+
+      display:
+        flex;
+
+      gap:
+        10px;
+
+      flex-wrap:
+        wrap;
+
+      margin-top:
+        18px;
+
     }
+
 
     button {
-      border: none;
-      border-radius: 8px;
-      padding: 13px 18px;
-      font-size: 15px;
-      font-weight: bold;
-      cursor: pointer;
+
+      border:
+        none;
+
+      border-radius:
+        8px;
+
+      padding:
+        13px 18px;
+
+      font-size:
+        15px;
+
+      font-weight:
+        bold;
+
+      cursor:
+        pointer;
+
     }
+
 
     button:disabled {
-      opacity: 0.55;
-      cursor: not-allowed;
+
+      opacity:
+        0.55;
+
+      cursor:
+        not-allowed;
+
     }
+
 
     .primary {
-      background: #111827;
-      color: white;
+
+      background:
+        #111827;
+
+      color:
+        white;
+
     }
+
 
     .success {
-      background: #166534;
-      color: white;
+
+      background:
+        #166534;
+
+      color:
+        white;
+
     }
+
 
     .danger {
-      background: #991b1b;
-      color: white;
+
+      background:
+        #991b1b;
+
+      color:
+        white;
+
     }
+
 
     .secondary {
-      background: #e5e7eb;
-      color: #111827;
+
+      background:
+        #e5e7eb;
+
+      color:
+        #111827;
+
     }
 
-    /* =========================
+
+    .qr-button {
+
+      background:
+        #2563eb;
+
+      color:
+        white;
+
+    }
+
+
+    .qr-stop-button {
+
+      background:
+        #dc2626;
+
+      color:
+        white;
+
+    }
+
+
+    /* =====================================================
        PROGRESS
-    ========================= */
+    ====================================================== */
 
     .progress-box {
-      margin-top: 18px;
-      display: none;
+
+      margin-top:
+        18px;
+
+      display:
+        none;
+
     }
+
 
     .progress-bar {
-      width: 100%;
-      height: 18px;
-      background: #e5e7eb;
-      border-radius: 20px;
-      overflow: hidden;
+
+      width:
+        100%;
+
+      height:
+        18px;
+
+      background:
+        #e5e7eb;
+
+      border-radius:
+        20px;
+
+      overflow:
+        hidden;
+
     }
+
 
     .progress-fill {
-      width: 0%;
-      height: 100%;
-      background: #166534;
-      transition: width 0.3s ease;
+
+      width:
+        0%;
+
+      height:
+        100%;
+
+      background:
+        #166534;
+
+      transition:
+        width
+        0.3s ease;
+
     }
+
 
     .progress-text {
-      margin-top: 8px;
-      font-weight: bold;
+
+      margin-top:
+        8px;
+
+      font-weight:
+        bold;
+
     }
 
-    /* =========================
+
+    /* =====================================================
        RESULT
-    ========================= */
+    ====================================================== */
 
     .result-box {
-      margin-top: 18px;
-      display: none;
+
+      margin-top:
+        18px;
+
+      display:
+        none;
+
     }
+
 
     .result-success {
-      background: #dcfce7;
-      color: #166534;
-      padding: 13px;
-      border-radius: 8px;
-      margin-bottom: 10px;
+
+      background:
+        #dcfce7;
+
+      color:
+        #166534;
+
+      padding:
+        13px;
+
+      border-radius:
+        8px;
+
+      margin-bottom:
+        10px;
+
     }
+
 
     .result-error {
-      background: #fee2e2;
-      color: #991b1b;
-      padding: 13px;
-      border-radius: 8px;
-      margin-bottom: 10px;
+
+      background:
+        #fee2e2;
+
+      color:
+        #991b1b;
+
+      padding:
+        13px;
+
+      border-radius:
+        8px;
+
+      margin-bottom:
+        10px;
+
     }
 
-    /* =========================
+
+    /* =====================================================
        STATS
-    ========================= */
+    ====================================================== */
 
     .stats {
-      display: grid;
+
+      display:
+        grid;
+
       grid-template-columns:
-        repeat(auto-fit, minmax(170px, 1fr));
-      gap: 15px;
-      margin-bottom: 20px;
+        repeat(
+          auto-fit,
+          minmax(170px, 1fr)
+        );
+
+      gap:
+        15px;
+
+      margin-bottom:
+        20px;
+
     }
+
 
     .card {
-      background: white;
-      padding: 20px;
-      border-radius: 12px;
-      box-shadow: 0 2px 8px rgba(0,0,0,0.08);
+
+      background:
+        white;
+
+      padding:
+        20px;
+
+      border-radius:
+        12px;
+
+      box-shadow:
+        0 2px 8px
+        rgba(0,0,0,0.08);
+
     }
+
 
     .card h3 {
-      font-size: 14px;
-      color: #666;
-      margin-bottom: 10px;
+
+      font-size:
+        14px;
+
+      color:
+        #666;
+
+      margin-bottom:
+        10px;
+
     }
+
 
     .number {
-      font-size: 30px;
-      font-weight: bold;
+
+      font-size:
+        30px;
+
+      font-weight:
+        bold;
+
     }
 
-    /* =========================
+
+    /* =====================================================
        CHECK-IN
-    ========================= */
+    ====================================================== */
 
     .checkin-form {
-      display: flex;
-      gap: 10px;
-      flex-wrap: wrap;
+
+      display:
+        flex;
+
+      gap:
+        10px;
+
+      flex-wrap:
+        wrap;
+
     }
+
 
     .checkin-form input {
-      flex: 1;
-      min-width: 220px;
-      padding: 14px;
-      border: 1px solid #ddd;
-      border-radius: 8px;
-      font-size: 16px;
+
+      flex:
+        1;
+
+      min-width:
+        220px;
+
+      padding:
+        14px;
+
+      border:
+        1px solid
+        #ddd;
+
+      border-radius:
+        8px;
+
+      font-size:
+        16px;
+
     }
+
 
     #checkinMessage {
-      margin-top: 15px;
-      font-weight: bold;
+
+      margin-top:
+        15px;
+
+      font-weight:
+        bold;
+
     }
+
 
     .success-message {
-      color: #166534;
-      background: #dcfce7;
-      padding: 12px;
-      border-radius: 8px;
+
+      color:
+        #166534;
+
+      background:
+        #dcfce7;
+
+      padding:
+        12px;
+
+      border-radius:
+        8px;
+
     }
+
 
     .error-message {
-      color: #991b1b;
-      background: #fee2e2;
-      padding: 12px;
-      border-radius: 8px;
+
+      color:
+        #991b1b;
+
+      background:
+        #fee2e2;
+
+      padding:
+        12px;
+
+      border-radius:
+        8px;
+
     }
+
 
     .warning-message {
-      color: #92400e;
-      background: #fef3c7;
-      padding: 12px;
-      border-radius: 8px;
+
+      color:
+        #92400e;
+
+      background:
+        #fef3c7;
+
+      padding:
+        12px;
+
+      border-radius:
+        8px;
+
     }
 
-    /* =========================
+
+    /* =====================================================
+       QR SCANNER
+    ====================================================== */
+
+    .qr-scanner-box {
+
+      margin-top:
+        22px;
+
+      padding:
+        18px;
+
+      border:
+        1px solid
+        #e5e7eb;
+
+      border-radius:
+        12px;
+
+      background:
+        #f9fafb;
+
+    }
+
+
+    .qr-scanner-box h3 {
+
+      font-size:
+        19px;
+
+      margin-bottom:
+        8px;
+
+    }
+
+
+    .qr-scanner-box p {
+
+      color:
+        #666;
+
+      line-height:
+        1.5;
+
+      margin-bottom:
+        15px;
+
+    }
+
+
+    .qr-buttons {
+
+      display:
+        flex;
+
+      gap:
+        10px;
+
+      flex-wrap:
+        wrap;
+
+    }
+
+
+    #qr-reader {
+
+      width:
+        100%;
+
+      max-width:
+        450px;
+
+      margin-top:
+        18px;
+
+    }
+
+
+    #qrMessage {
+
+      margin-top:
+        15px;
+
+    }
+
+
+    /* =====================================================
        FILTERS
-    ========================= */
+    ====================================================== */
 
     .controls {
-      display: flex;
-      gap: 10px;
-      flex-wrap: wrap;
-      margin-bottom: 15px;
+
+      display:
+        flex;
+
+      gap:
+        10px;
+
+      flex-wrap:
+        wrap;
+
+      margin-bottom:
+        15px;
+
     }
+
 
     .controls input,
     .controls select {
-      padding: 12px;
-      border-radius: 8px;
-      border: 1px solid #ddd;
-      font-size: 15px;
+
+      padding:
+        12px;
+
+      border-radius:
+        8px;
+
+      border:
+        1px solid
+        #ddd;
+
+      font-size:
+        15px;
+
     }
+
 
     .controls input {
-      flex: 1;
-      min-width: 220px;
+
+      flex:
+        1;
+
+      min-width:
+        220px;
+
     }
 
-    /* =========================
+
+    /* =====================================================
        STATUS
-    ========================= */
+    ====================================================== */
 
     .status {
-      padding: 6px 10px;
-      border-radius: 20px;
-      font-size: 13px;
-      font-weight: bold;
-      display: inline-block;
+
+      padding:
+        6px 10px;
+
+      border-radius:
+        20px;
+
+      font-size:
+        13px;
+
+      font-weight:
+        bold;
+
+      display:
+        inline-block;
+
     }
+
 
     .confirmed {
-      background: #dcfce7;
-      color: #166534;
+
+      background:
+        #dcfce7;
+
+      color:
+        #166534;
+
     }
+
 
     .declined {
-      background: #fee2e2;
-      color: #991b1b;
+
+      background:
+        #fee2e2;
+
+      color:
+        #991b1b;
+
     }
+
 
     .maybe {
-      background: #fef3c7;
-      color: #92400e;
+
+      background:
+        #fef3c7;
+
+      color:
+        #92400e;
+
     }
+
 
     .pending {
-      background: #e5e7eb;
-      color: #374151;
+
+      background:
+        #e5e7eb;
+
+      color:
+        #374151;
+
     }
+
 
     .checked {
-      background: #dbeafe;
-      color: #1e40af;
+
+      background:
+        #dbeafe;
+
+      color:
+        #1e40af;
+
     }
+
 
     .not-checked {
-      color: #777;
+
+      color:
+        #777;
+
     }
+
 
     .loading {
-      text-align: center;
-      padding: 30px;
+
+      text-align:
+        center;
+
+      padding:
+        30px;
+
     }
+
 
     .error {
-      color: #b91c1c;
-      padding: 20px;
-      text-align: center;
+
+      color:
+        #b91c1c;
+
+      padding:
+        20px;
+
+      text-align:
+        center;
+
     }
 
+
     .hidden {
-      display: none !important;
+
+      display:
+        none !important;
+
     }
+
+
+    /* =====================================================
+       MOBILE
+    ====================================================== */
 
     @media (max-width: 600px) {
 
       .container {
-        padding: 12px;
+
+        padding:
+          12px;
+
       }
+
 
       header {
-        padding: 15px;
+
+        padding:
+          15px;
+
       }
+
 
       header h1 {
-        font-size: 21px;
+
+        font-size:
+          21px;
+
       }
+
 
       .section {
-        padding: 15px;
+
+        padding:
+          15px;
+
       }
 
+
       .upload-area {
-        padding: 20px 12px;
+
+        padding:
+          20px 12px;
+
+      }
+
+
+      .qr-button,
+      .qr-stop-button {
+
+        width:
+          100%;
+
       }
 
     }
@@ -465,7 +1121,9 @@
 
 <header>
 
-  <h1>GeitaCard</h1>
+  <h1>
+    GeitaCard
+  </h1>
 
   <p>
     Mfumo wa Mialiko na Dashboard ya Wahudhuriaji
@@ -490,10 +1148,37 @@
     <p class="section-description">
 
       Chagua faili lenye columns:
-      <strong>Namba | Jina | Code</strong>.
 
-      Code uliyoandika kwenye faili
-      <strong>haitabadilishwa.</strong>
+      <strong>
+        Namba | Jina | Code
+      </strong>
+
+      <br>
+
+      Mfano:
+
+      <strong>
+        255712345678 | Asha Rajabu | 9750-KAMATI
+      </strong>
+
+      <br>
+
+      au
+
+      <strong>
+        255714567890 | Juma Mohamed | 9751-SINGLE
+      </strong>
+
+      <br>
+
+      Jina linaweza kuwa na First name,
+      Second name, Third name au majina mengi.
+
+      <br>
+
+      <strong>
+        Code uliyoandika kwenye Excel haitabadilishwa.
+      </strong>
 
     </p>
 
@@ -504,8 +1189,11 @@
         for="excelFile"
         class="upload-label"
       >
+
         📁 CHAGUA EXCEL / CSV
+
       </label>
+
 
       <input
         type="file"
@@ -513,7 +1201,9 @@
         accept=".xlsx,.xls,.csv"
       >
 
+
       <div id="fileName"></div>
+
 
       <div
         id="uploadError"
@@ -522,6 +1212,10 @@
 
     </div>
 
+
+    <!-- ===================================================
+         PREVIEW
+    ==================================================== -->
 
     <div
       id="previewSection"
@@ -535,11 +1229,14 @@
           👀 Preview ya Wageni
         </h3>
 
+
         <div
           id="previewCount"
           class="preview-count"
         >
+
           Wageni: 0
+
         </div>
 
       </div>
@@ -553,14 +1250,30 @@
 
             <tr>
 
-              <th>#</th>
-              <th>Namba</th>
-              <th>Jina</th>
-              <th>Code</th>
+              <th>
+                #
+              </th>
+
+              <th>
+                Namba
+              </th>
+
+              <th>
+                Jina
+              </th>
+
+              <th>
+                Code
+              </th>
+
+              <th>
+                Aina
+              </th>
 
             </tr>
 
           </thead>
+
 
           <tbody
             id="previewBody"
@@ -578,7 +1291,9 @@
           id="sendBulkButton"
           onclick="sendBulkInvitations()"
         >
+
           🚀 TUMA BULK
+
         </button>
 
 
@@ -586,7 +1301,9 @@
           class="secondary"
           onclick="clearExcel()"
         >
+
           🗑️ Ondoa Excel
+
         </button>
 
       </div>
@@ -606,11 +1323,14 @@
 
         </div>
 
+
         <div
           id="progressText"
           class="progress-text"
         >
+
           Inaanza...
+
         </div>
 
       </div>
@@ -742,12 +1462,40 @@
       🎟️ CHECK-IN YA MGENI
     </h2>
 
+
     <p class="section-description">
 
-      Ingiza <strong>Code ileile iliyopo kwenye Excel/CSV</strong>.
-      Mfumo hautengenezi code mpya.
+      Unaweza kutumia
+
+      <strong>
+        Code
+      </strong>
+
+      au
+
+      <strong>
+        QR Code
+      </strong>
+
+      ya kadi ya mwaliko.
+
+      <br>
+
+      Code itatumika ileile iliyopo
+      kwenye Excel/CSV.
 
     </p>
+
+
+    <!-- ===================================================
+         MANUAL CODE CHECK-IN
+    ==================================================== -->
+
+    <h3 style="margin-bottom:10px">
+
+      🔢 Check-in kwa Code
+
+    </h3>
 
 
     <div class="checkin-form">
@@ -765,7 +1513,9 @@
         id="checkinButton"
         onclick="checkInGuest()"
       >
+
         CHECK-IN
+
       </button>
 
     </div>
@@ -774,6 +1524,68 @@
     <div
       id="checkinMessage"
     ></div>
+
+
+    <!-- ===================================================
+         QR SCANNER
+    ==================================================== -->
+
+    <div class="qr-scanner-box">
+
+      <h3>
+        📷 Check-in kwa QR Code
+      </h3>
+
+
+      <p>
+
+        Fungua camera ya simu,
+        kisha scan QR Code iliyopo
+        kwenye kadi ya mwaliko.
+
+      </p>
+
+
+      <div class="qr-buttons">
+
+        <button
+          type="button"
+          class="qr-button"
+          id="startQrButton"
+          onclick="startQRScanner()"
+        >
+
+          📷 ANZA KUSCAN QR
+
+        </button>
+
+
+        <button
+          type="button"
+          class="qr-stop-button"
+          id="stopQrButton"
+          onclick="stopQRScanner()"
+          style="display:none"
+        >
+
+          ✖ SIMAMISHA CAMERA
+
+        </button>
+
+      </div>
+
+
+      <div
+        id="qr-reader"
+        style="display:none"
+      ></div>
+
+
+      <div
+        id="qrMessage"
+      ></div>
+
+    </div>
 
   </div>
 
@@ -787,6 +1599,7 @@
     <h2>
       👥 Wahudhuriaji
     </h2>
+
 
     <div class="controls">
 
@@ -843,7 +1656,9 @@
         class="primary"
         onclick="loadGuests()"
       >
+
         🔄 Refresh
+
       </button>
 
 
@@ -851,7 +1666,9 @@
         class="success"
         onclick="downloadAttendance()"
       >
+
         📥 Pakua Excel
+
       </button>
 
     </div>
@@ -863,7 +1680,9 @@
         id="loading"
         class="loading"
       >
+
         Inapakia wageni...
+
       </div>
 
 
@@ -882,13 +1701,33 @@
 
           <tr>
 
-            <th>#</th>
-            <th>Jina</th>
-            <th>Simu</th>
-            <th>Code</th>
-            <th>Aina</th>
-            <th>Ushiriki</th>
-            <th>Check-in</th>
+            <th>
+              #
+            </th>
+
+            <th>
+              Jina
+            </th>
+
+            <th>
+              Simu
+            </th>
+
+            <th>
+              Code
+            </th>
+
+            <th>
+              Aina
+            </th>
+
+            <th>
+              Ushiriki
+            </th>
+
+            <th>
+              Check-in
+            </th>
 
           </tr>
 
@@ -920,6 +1759,10 @@ let guests = [];
 
 let uploadedContacts = [];
 
+let qrScanner = null;
+
+let qrProcessing = false;
+
 
 /* =========================================================
    FILE UPLOAD
@@ -938,20 +1781,25 @@ async function handleExcelFile(event) {
   const file =
     event.target.files[0];
 
+
   const errorBox =
     document.getElementById(
       "uploadError"
     );
 
+
   errorBox.style.display =
     "none";
+
 
   errorBox.innerText =
     "";
 
 
   if (!file) {
+
     return;
+
   }
 
 
@@ -959,6 +1807,7 @@ async function handleExcelFile(event) {
     document.getElementById(
       "fileName"
     );
+
 
   fileName.innerText =
     "📄 " + file.name;
@@ -998,7 +1847,8 @@ async function handleExcelFile(event) {
       XLSX.read(
         arrayBuffer,
         {
-          type: "array"
+          type:
+            "array"
         }
       );
 
@@ -1025,7 +1875,8 @@ async function handleExcelFile(event) {
       XLSX.utils.sheet_to_json(
         sheet,
         {
-          defval: ""
+          defval:
+            ""
         }
       );
 
@@ -1040,7 +1891,9 @@ async function handleExcelFile(event) {
 
 
     uploadedContacts =
-      normalizeContacts(rows);
+      normalizeContacts(
+        rows
+      );
 
 
     validateContacts(
@@ -1050,10 +1903,11 @@ async function handleExcelFile(event) {
 
     renderPreview();
 
-
   } catch (error) {
 
-    uploadedContacts = [];
+    uploadedContacts =
+      [];
+
 
     document
       .getElementById(
@@ -1062,6 +1916,7 @@ async function handleExcelFile(event) {
       .classList.add(
         "hidden"
       );
+
 
     showUploadError(
       "❌ " + error.message
@@ -1073,10 +1928,36 @@ async function handleExcelFile(event) {
 
 
 /* =========================================================
+   SHOW UPLOAD ERROR
+========================================================= */
+
+function showUploadError(
+  message
+) {
+
+  const box =
+    document.getElementById(
+      "uploadError"
+    );
+
+
+  box.innerText =
+    message;
+
+
+  box.style.display =
+    "block";
+
+}
+
+
+/* =========================================================
    NORMALIZE COLUMNS
 ========================================================= */
 
-function normalizeContacts(rows) {
+function normalizeContacts(
+  rows
+) {
 
   return rows.map(
     row => {
@@ -1108,7 +1989,9 @@ function normalizeContacts(rows) {
             "Name",
             "name",
             "Full Name",
-            "full_name"
+            "full_name",
+            "FullName",
+            "fullname"
           ]
         );
 
@@ -1160,7 +2043,9 @@ function getColumn(
 ) {
 
   const keys =
-    Object.keys(row);
+    Object.keys(
+      row
+    );
 
 
   for (
@@ -1179,1528 +2064,4 @@ function getColumn(
       );
 
 
-    if (found) {
-
-      return row[found];
-
-    }
-
-  }
-
-
-  return "";
-
-}
-
-
-/* =========================================================
-   VALIDATE CONTACTS
-========================================================= */
-
-function validateContacts(
-  contacts
-) {
-
-  const errors = [];
-
-
-  contacts.forEach(
-    (contact, index) => {
-
-      const row =
-        index + 2;
-
-
-      if (!contact.to) {
-
-        errors.push(
-          `Row ${row}: Namba haipo.`
-        );
-
-      }
-
-
-      if (!contact.name) {
-
-        errors.push(
-          `Row ${row}: Jina halipo.`
-        );
-
-      }
-
-
-      if (!contact.code) {
-
-        errors.push(
-          `Row ${row}: Code haipo.`
-        );
-
-      }
-
-    }
-  );
-
-
-  if (errors.length) {
-
-    throw new Error(
-      errors
-        .slice(0, 15)
-        .join(" | ")
-      +
-      (
-        errors.length > 15
-          ? " ..."
-          : ""
-      )
-    );
-
-  }
-
-}
-
-
-/* =========================================================
-   PREVIEW
-========================================================= */
-
-function renderPreview() {
-
-  const section =
-    document.getElementById(
-      "previewSection"
-    );
-
-  const body =
-    document.getElementById(
-      "previewBody"
-    );
-
-
-  body.innerHTML =
-    "";
-
-
-  uploadedContacts.forEach(
-    (contact, index) => {
-
-      const row =
-        document.createElement(
-          "tr"
-        );
-
-
-      row.innerHTML = `
-
-        <td>
-          ${index + 1}
-        </td>
-
-        <td>
-          ${escapeHtml(
-            contact.to
-          )}
-        </td>
-
-        <td>
-          ${escapeHtml(
-            contact.name
-          )}
-        </td>
-
-        <td class="code">
-          ${escapeHtml(
-            contact.code
-          )}
-        </td>
-
-      `;
-
-
-      body.appendChild(
-        row
-      );
-
-    }
-  );
-
-
-  document.getElementById(
-    "previewCount"
-  ).innerText =
-    "Wageni: " +
-    uploadedContacts.length;
-
-
-  section.classList.remove(
-    "hidden"
-  );
-
-
-  document.getElementById(
-    "resultBox"
-  ).style.display =
-    "none";
-
-}
-
-
-/* =========================================================
-   SEND BULK
-========================================================= */
-
-async function sendBulkInvitations() {
-
-  if (
-    !uploadedContacts.length
-  ) {
-
-    alert(
-      "Tafadhali chagua Excel/CSV kwanza."
-    );
-
-    return;
-
-  }
-
-
-  const button =
-    document.getElementById(
-      "sendBulkButton"
-    );
-
-
-  const progressBox =
-    document.getElementById(
-      "progressBox"
-    );
-
-
-  const progressFill =
-    document.getElementById(
-      "progressFill"
-    );
-
-
-  const progressText =
-    document.getElementById(
-      "progressText"
-    );
-
-
-  const resultBox =
-    document.getElementById(
-      "resultBox"
-    );
-
-
-  button.disabled =
-    true;
-
-  button.innerText =
-    "Inatuma...";
-
-
-  progressBox.style.display =
-    "block";
-
-
-  resultBox.style.display =
-    "none";
-
-
-  progressFill.style.width =
-    "10%";
-
-
-  progressText.innerText =
-    "Inatuma mialiko...";
-
-
-  try {
-
-    /*
-      IMPORTANT:
-
-      Code kutoka Excel
-      inatumwa kama ilivyo.
-
-      HATUBADILISHI CODE.
-    */
-
-    const contacts =
-      uploadedContacts.map(
-        contact => ({
-
-          to:
-            contact.to,
-
-          name:
-            contact.name,
-
-          code:
-            contact.code
-
-        })
-      );
-
-
-    const response =
-      await fetch(
-        "/send-bulk",
-        {
-          method: "POST",
-
-          headers: {
-            "Content-Type":
-              "application/json"
-          },
-
-          body:
-            JSON.stringify({
-              contacts:
-                contacts
-            })
-        }
-      );
-
-
-    progressFill.style.width =
-      "70%";
-
-
-    const result =
-      await response.json();
-
-
-    if (
-      !response.ok ||
-      !result.success
-    ) {
-
-      throw new Error(
-        result.error ||
-        result.message ||
-        "Bulk send imeshindikana."
-      );
-
-    }
-
-
-    progressFill.style.width =
-      "100%";
-
-
-    progressText.innerText =
-      "Imekamilika.";
-
-
-    showBulkResult(
-      result
-    );
-
-
-  } catch (error) {
-
-    progressFill.style.width =
-      "0%";
-
-
-    progressText.innerText =
-      "Imeshindikana.";
-
-
-    resultBox.style.display =
-      "block";
-
-
-    resultBox.innerHTML = `
-
-      <div class="result-error">
-
-        ❌ <strong>
-          Bulk send imeshindikana
-        </strong>
-
-        <br><br>
-
-        ${escapeHtml(
-          error.message
-        )}
-
-      </div>
-
-    `;
-
-  }
-
-
-  finally {
-
-    button.disabled =
-      false;
-
-    button.innerText =
-      "🚀 TUMA BULK";
-
-  }
-
-}
-
-
-/* =========================================================
-   BULK RESULT
-========================================================= */
-
-function showBulkResult(
-  result
-) {
-
-  const box =
-    document.getElementById(
-      "resultBox"
-    );
-
-
-  const results =
-    result.results || [];
-
-
-  const successful =
-    results.filter(
-      item =>
-        item.success
-    ).length;
-
-
-  const failed =
-    results.filter(
-      item =>
-        !item.success
-    ).length;
-
-
-  let html = `
-
-    <div class="result-success">
-
-      ✅ <strong>
-        Bulk send imekamilika
-      </strong>
-
-      <br><br>
-
-      Jumla:
-      <strong>
-        ${result.total || results.length}
-      </strong>
-
-      <br>
-
-      Zilizofanikiwa:
-      <strong>
-        ${successful}
-      </strong>
-
-      <br>
-
-      Zilizoshindikana:
-      <strong>
-        ${failed}
-      </strong>
-
-    </div>
-
-  `;
-
-
-  if (failed > 0) {
-
-    html += `
-
-      <div class="result-error">
-
-        <strong>
-          ⚠️ Zilizoshindikana:
-        </strong>
-
-        <br><br>
-
-    `;
-
-
-    results
-      .filter(
-        item =>
-          !item.success
-      )
-      .slice(0, 20)
-      .forEach(
-        item => {
-
-          html += `
-
-            • ${escapeHtml(
-              item.name || "-"
-            )}
-            -
-            ${escapeHtml(
-              item.code || "-"
-            )}
-
-            <br>
-
-            ${escapeHtml(
-              getErrorText(
-                item.error
-              )
-            )}
-
-            <br><br>
-
-          `;
-
-        }
-      );
-
-
-    html += `
-      </div>
-    `;
-
-  }
-
-
-  box.innerHTML =
-    html;
-
-
-  box.style.display =
-    "block";
-
-
-  /*
-    Refresh dashboard
-    baada ya kutuma.
-  */
-
-  loadGuests();
-
-}
-
-
-/* =========================================================
-   GET ERROR TEXT
-========================================================= */
-
-function getErrorText(
-  error
-) {
-
-  if (!error) {
-    return "Unknown error";
-  }
-
-
-  if (
-    typeof error ===
-    "string"
-  ) {
-
-    return error;
-
-  }
-
-
-  try {
-
-    return JSON.stringify(
-      error
-    );
-
-  } catch {
-
-    return String(
-      error
-    );
-
-  }
-
-}
-
-
-/* =========================================================
-   CLEAR EXCEL
-========================================================= */
-
-function clearExcel() {
-
-  uploadedContacts = [];
-
-
-  document.getElementById(
-    "excelFile"
-  ).value =
-    "";
-
-
-  document.getElementById(
-    "fileName"
-  ).innerText =
-    "";
-
-
-  document.getElementById(
-    "previewBody"
-  ).innerHTML =
-    "";
-
-
-  document.getElementById(
-    "previewSection"
-  ).classList.add(
-    "hidden"
-  );
-
-
-  document.getElementById(
-    "uploadError"
-  ).style.display =
-    "none";
-
-
-  document.getElementById(
-    "resultBox"
-  ).style.display =
-    "none";
-
-
-  document.getElementById(
-    "progressBox"
-  ).style.display =
-    "none";
-
-}
-
-
-/* =========================================================
-   DOWNLOAD ATTENDANCE EXCEL
-========================================================= */
-
-function downloadAttendance() {
-
-  window.location.href =
-    "/api/attendance/export";
-
-}
-
-
-/* =========================================================
-   LOAD GUESTS
-========================================================= */
-
-async function loadGuests() {
-
-  const loading =
-    document.getElementById(
-      "loading"
-    );
-
-  const error =
-    document.getElementById(
-      "error"
-    );
-
-  const table =
-    document.getElementById(
-      "guestTable"
-    );
-
-
-  loading.style.display =
-    "block";
-
-
-  error.innerText =
-    "";
-
-
-  table.style.display =
-    "none";
-
-
-  try {
-
-    const response =
-      await fetch(
-        "/api/attendance"
-      );
-
-
-    const result =
-      await response.json();
-
-
-    if (
-      !response.ok ||
-      !result.success
-    ) {
-
-      throw new Error(
-        result.error ||
-        "Imeshindikana kupakia data."
-      );
-
-    }
-
-
-    guests =
-      result.guests || [];
-
-
-    updateStats();
-
-    renderGuests();
-
-
-    loading.style.display =
-      "none";
-
-
-    table.style.display =
-      "table";
-
-
-  } catch (err) {
-
-    loading.style.display =
-      "none";
-
-
-    error.innerText =
-      "❌ Imeshindikana kupakia wageni: "
-      +
-      err.message;
-
-  }
-
-}
-
-
-/* =========================================================
-   UPDATE STATS
-========================================================= */
-
-function updateStats() {
-
-  document.getElementById(
-    "total"
-  ).innerText =
-    guests.length;
-
-
-  document.getElementById(
-    "confirmed"
-  ).innerText =
-    guests.filter(
-      guest =>
-        guest.attendance_status ===
-        "confirmed"
-    ).length;
-
-
-  document.getElementById(
-    "declined"
-  ).innerText =
-    guests.filter(
-      guest =>
-        guest.attendance_status ===
-        "declined"
-    ).length;
-
-
-  document.getElementById(
-    "maybe"
-  ).innerText =
-    guests.filter(
-      guest =>
-        guest.attendance_status ===
-        "maybe"
-    ).length;
-
-
-  document.getElementById(
-    "pending"
-  ).innerText =
-    guests.filter(
-      guest =>
-        guest.attendance_status ===
-        "pending"
-    ).length;
-
-
-  document.getElementById(
-    "checkedIn"
-  ).innerText =
-    guests.filter(
-      guest =>
-        guest.scanned_at
-    ).length;
-
-}
-
-
-/* =========================================================
-   RENDER GUESTS
-========================================================= */
-
-function renderGuests() {
-
-  const search =
-    document
-      .getElementById(
-        "search"
-      )
-      .value
-      .toLowerCase()
-      .trim();
-
-
-  const statusFilter =
-    document.getElementById(
-      "statusFilter"
-    ).value;
-
-
-  const checkinFilter =
-    document.getElementById(
-      "checkinFilter"
-    ).value;
-
-
-  const filtered =
-    guests.filter(
-      guest => {
-
-        const searchableText =
-
-          (
-            guest.full_name ||
-            ""
-          ).toLowerCase()
-
-          + " "
-
-          + (
-            guest.phone ||
-            ""
-          ).toLowerCase()
-
-          + " "
-
-          + (
-            guest.guest_code ||
-            ""
-          ).toLowerCase();
-
-
-        const matchesSearch =
-          searchableText.includes(
-            search
-          );
-
-
-        const matchesStatus =
-          statusFilter === "all"
-          ||
-          guest.attendance_status ===
-          statusFilter;
-
-
-        const isChecked =
-          Boolean(
-            guest.scanned_at
-          );
-
-
-        const matchesCheckin =
-          checkinFilter === "all"
-
-          ||
-
-          (
-            checkinFilter ===
-            "checked"
-            &&
-            isChecked
-          )
-
-          ||
-
-          (
-            checkinFilter ===
-            "not_checked"
-            &&
-            !isChecked
-          );
-
-
-        return (
-          matchesSearch &&
-          matchesStatus &&
-          matchesCheckin
-        );
-
-      }
-    );
-
-
-  const body =
-    document.getElementById(
-      "guestBody"
-    );
-
-
-  body.innerHTML =
-    "";
-
-
-  if (
-    filtered.length === 0
-  ) {
-
-    body.innerHTML = `
-
-      <tr>
-
-        <td
-          colspan="7"
-          style="
-            text-align:center;
-            padding:30px
-          "
-        >
-          Hakuna mgeni aliyepatikana.
-
-        </td>
-
-      </tr>
-
-    `;
-
-    return;
-
-  }
-
-
-  filtered.forEach(
-    (guest, index) => {
-
-      const row =
-        document.createElement(
-          "tr"
-        );
-
-
-      row.innerHTML = `
-
-        <td>
-          ${index + 1}
-        </td>
-
-        <td>
-          ${escapeHtml(
-            guest.full_name || "-"
-          )}
-        </td>
-
-        <td>
-          ${escapeHtml(
-            guest.phone || "-"
-          )}
-        </td>
-
-        <td class="code">
-          ${escapeHtml(
-            guest.guest_code || "-"
-          )}
-        </td>
-
-        <td>
-          ${typeLabel(
-            guest.guest_code
-          )}
-        </td>
-
-        <td>
-          ${statusLabel(
-            guest.attendance_status
-          )}
-        </td>
-
-        <td>
-          ${checkinLabel(
-            guest.scanned_at
-          )}
-        </td>
-
-      `;
-
-
-      body.appendChild(
-        row
-      );
-
-    }
-  );
-
-}
-
-
-/* =========================================================
-   TYPE LABEL
-========================================================= */
-
-function typeLabel(
-  code
-) {
-
-  const value =
-    String(
-      code || ""
-    )
-    .toUpperCase();
-
-
-  if (
-    value.endsWith(
-      "-KAMATI"
-    )
-  ) {
-
-    return `
-      <span class="type-kamati">
-        KAMATI
-      </span>
-    `;
-
-  }
-
-
-  if (
-    value.endsWith(
-      "-SINGLE"
-    )
-  ) {
-
-    return `
-      <span class="type-single">
-        SINGLE
-      </span>
-    `;
-
-  }
-
-
-  return "-";
-
-}
-
-
-/* =========================================================
-   STATUS LABEL
-========================================================= */
-
-function statusLabel(
-  status
-) {
-
-  if (
-    status ===
-    "confirmed"
-  ) {
-
-    return `
-      <span class="status confirmed">
-        Nitashiriki
-      </span>
-    `;
-
-  }
-
-
-  if (
-    status ===
-    "declined"
-  ) {
-
-    return `
-      <span class="status declined">
-        Sitashiriki
-      </span>
-    `;
-
-  }
-
-
-  if (
-    status ===
-    "maybe"
-  ) {
-
-    return `
-      <span class="status maybe">
-        Sina uhakika
-      </span>
-    `;
-
-  }
-
-
-  return `
-    <span class="status pending">
-      Pending
-    </span>
-  `;
-
-}
-
-
-/* =========================================================
-   CHECK-IN LABEL
-========================================================= */
-
-function checkinLabel(
-  scannedAt
-) {
-
-  if (scannedAt) {
-
-    return `
-      <span class="status checked">
-        ✅ Checked-in
-      </span>
-    `;
-
-  }
-
-
-  return `
-    <span class="not-checked">
-      —
-    </span>
-  `;
-
-}
-
-
-/* =========================================================
-   CHECK-IN
-========================================================= */
-
-async function checkInGuest() {
-
-  const input =
-    document.getElementById(
-      "checkinCode"
-    );
-
-
-  const button =
-    document.getElementById(
-      "checkinButton"
-    );
-
-
-  const message =
-    document.getElementById(
-      "checkinMessage"
-    );
-
-
-  const code =
-    input.value.trim();
-
-
-  message.innerHTML =
-    "";
-
-
-  if (!code) {
-
-    message.innerHTML = `
-
-      <div class="error-message">
-
-        ⚠️ Tafadhali andika Code ya mgeni.
-
-      </div>
-
-    `;
-
-    input.focus();
-
-    return;
-
-  }
-
-
-  button.disabled =
-    true;
-
-
-  button.innerText =
-    "Inachakata...";
-
-
-  try {
-
-    const response =
-      await fetch(
-        "/api/check-in",
-        {
-
-          method:
-            "POST",
-
-          headers: {
-            "Content-Type":
-              "application/json"
-          },
-
-          body:
-            JSON.stringify({
-              code:
-                code
-            })
-
-        }
-      );
-
-
-    const result =
-      await response.json();
-
-
-    /* SUCCESS */
-
-    if (
-      response.ok &&
-      result.success
-    ) {
-
-      const guest =
-        result.guest;
-
-
-      message.innerHTML = `
-
-        <div class="success-message">
-
-          ✅ <strong>
-            CHECK-IN IMEFANIKIWA!
-          </strong>
-
-          <br><br>
-
-          Jina:
-          <strong>
-            ${escapeHtml(
-              guest.full_name
-            )}
-          </strong>
-
-          <br>
-
-          Code:
-          <strong>
-            ${escapeHtml(
-              guest.guest_code
-            )}
-          </strong>
-
-          <br>
-
-          Muda:
-          ${formatDate(
-            guest.scanned_at
-          )}
-
-        </div>
-
-      `;
-
-
-      input.value =
-        "";
-
-
-      await loadGuests();
-
-
-      return;
-
-    }
-
-
-    /* ALREADY CHECKED */
-
-    if (
-      response.status ===
-      409
-    ) {
-
-      const guest =
-        result.guest;
-
-
-      message.innerHTML = `
-
-        <div class="warning-message">
-
-          ⚠️ <strong>
-            MGENI HUYU AMESHA-CHECK-IN!
-          </strong>
-
-          <br><br>
-
-          Jina:
-          <strong>
-            ${escapeHtml(
-              guest?.full_name ||
-              "-"
-            )}
-          </strong>
-
-          <br>
-
-          Code:
-          <strong>
-            ${escapeHtml(
-              guest?.guest_code ||
-              code
-            )}
-          </strong>
-
-          <br>
-
-          Aliingia:
-          ${formatDate(
-            guest?.scanned_at
-          )}
-
-        </div>
-
-      `;
-
-
-      input.value =
-        "";
-
-
-      return;
-
-    }
-
-
-    /* NOT FOUND */
-
-    message.innerHTML = `
-
-      <div class="error-message">
-
-        ❌ ${
-          escapeHtml(
-            result.message ||
-            "Mgeni hakupatikana."
-          )
-        }
-
-      </div>
-
-    `;
-
-
-  } catch (error) {
-
-    message.innerHTML = `
-
-      <div class="error-message">
-
-        ❌ Kuna tatizo la kuwasiliana
-        na server.
-
-        <br>
-
-        ${escapeHtml(
-          error.message
-        )}
-
-      </div>
-
-    `;
-
-  }
-
-
-  finally {
-
-    button.disabled =
-      false;
-
-    button.innerText =
-      "CHECK-IN";
-
-  }
-
-}
-
-
-/* =========================================================
-   FORMAT DATE
-========================================================= */
-
-function formatDate(
-  value
-) {
-
-  if (!value) {
-    return "-";
-  }
-
-
-  try {
-
-    return new Date(
-      value
-    ).toLocaleString(
-      "sw-TZ",
-      {
-        dateStyle:
-          "medium",
-
-        timeStyle:
-          "short"
-      }
-    );
-
-  } catch {
-
-    return value;
-
-  }
-
-}
-
-
-/* =========================================================
-   SECURITY
-========================================================= */
-
-function escapeHtml(
-  value
-) {
-
-  return String(
-    value
-  )
-
-    .replace(
-      /&/g,
-      "&amp;"
-    )
-
-    .replace(
-      /</g,
-      "&lt;"
-    )
-
-    .replace(
-      />/g,
-      "&gt;"
-    )
-
-    .replace(
-      /"/g,
-      "&quot;"
-    )
-
-    .replace(
-      /'/g,
-      "&#039;"
-    );
-
-}
-
-
-/* =========================================================
-   ENTER KEY - CHECK-IN
-========================================================= */
-
-document
-  .getElementById(
-    "checkinCode"
-  )
-  .addEventListener(
-    "keydown",
-    function(event) {
-
-      if (
-        event.key ===
-        "Enter"
-      ) {
-
-        checkInGuest();
-
-      }
-
-    }
-  );
-
-
-/* =========================================================
-   SEARCH
-========================================================= */
-
-document
-  .getElementById(
-    "search"
-  )
-  .addEventListener(
-    "input",
-    renderGuests
-  );
-
-
-document
-  .getElementById(
-    "statusFilter"
-  )
-  .addEventListener(
-    "change",
-    renderGuests
-  );
-
-
-document
-  .getElementById(
-    "checkinFilter"
-  )
-  .addEventListener(
-    "change",
-    renderGuests
-  );
-
-
-/* =========================================================
-   START
-========================================================= */
-
-loadGuests();
-
-</script>
-
-
-</body>
-
-</html>
+    if (found
