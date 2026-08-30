@@ -16,7 +16,6 @@ app.use(express.static("public"));
 ========================================================= */
 
 const SUPABASE_URL = process.env.SUPABASE_URL;
-
 const SUPABASE_SERVICE_ROLE_KEY =
   process.env.SUPABASE_SERVICE_ROLE_KEY;
 
@@ -36,113 +35,55 @@ const supabase = createClient(
 ========================================================= */
 
 const VERIFY_TOKEN = process.env.VERIFY_TOKEN;
-
 const WHATSAPP_TOKEN = process.env.WHATSAPP_TOKEN;
-
 const PHONE_NUMBER_ID = process.env.PHONE_NUMBER_ID;
 
-const INVITE_IMAGE_URL = process.env.INVITE_IMAGE_URL;
+const INVITE_IMAGE_URL =
+  process.env.INVITE_IMAGE_URL;
 
 const TEMPLATE_NAME =
   process.env.TEMPLATE_NAME ||
   "geitacard_invitation";
 
 const TEMPLATE_LANGUAGE =
-  process.env.TEMPLATE_LANGUAGE ||
-  "sw";
+  process.env.TEMPLATE_LANGUAGE || "sw";
 
 const GRAPH_VERSION =
-  process.env.GRAPH_VERSION ||
-  "v26.0";
+  process.env.GRAPH_VERSION || "v26.0";
 
 const PORT =
-  process.env.PORT ||
-  10000;
-
-/* =========================================================
-   EVENT SYSTEM
-========================================================= */
-
-/*
-   EVENT HII NDIYO EVENT YA DEFAULT.
-
-   Kama Excel/CSV itakuwa na event_key,
-   event hiyo itatumika.
-
-   Kama event_key haipo,
-   DEFAULT_EVENT itatumika.
-*/
-
-const DEFAULT_EVENT =
-  process.env.DEFAULT_EVENT ||
-  "DEFAULT_EVENT";
-
-
-/*
-   Safisha event key.
-
-   Mfano:
-   " Harusi 2026 "
-   ->
-   "Harusi_2026"
-*/
-
-function normalizeEventKey(eventKey) {
-
-  const value =
-    String(
-      eventKey ||
-      DEFAULT_EVENT
-    )
-      .trim();
-
-  if (!value) {
-    return DEFAULT_EVENT;
-  }
-
-  return value
-    .replace(
-      /\s+/g,
-      "_"
-    )
-    .substring(
-      0,
-      100
-    );
-}
-
-/* =========================================================
-   STORAGE
-========================================================= */
+  process.env.PORT || 10000;
 
 const STORAGE_BUCKET =
-  process.env.STORAGE_BUCKET ||
-  "guest-cards";
+  process.env.STORAGE_BUCKET || "guest-cards";
+
+/*
+  Event default.
+  Kama event_key haijatumwa kutoka frontend/Excel,
+  mfumo utatumia hii.
+*/
+const DEFAULT_EVENT_KEY =
+  process.env.DEFAULT_EVENT_KEY ||
+  "DEFAULT_EVENT";
 
 /* =========================================================
    QR POSITION
 ========================================================= */
 
-const QR_X =
-  Number(
-    process.env.QR_X ||
-    495
-  );
+const QR_X = Number(
+  process.env.QR_X || 495
+);
 
-const QR_Y =
-  Number(
-    process.env.QR_Y ||
-    1185
-  );
+const QR_Y = Number(
+  process.env.QR_Y || 1185
+);
 
-const QR_SIZE =
-  Number(
-    process.env.QR_SIZE ||
-    175
-  );
+const QR_SIZE = Number(
+  process.env.QR_SIZE || 175
+);
 
 /* =========================================================
-   SERVER START MESSAGE
+   START LOG
 ========================================================= */
 
 console.log(
@@ -186,7 +127,7 @@ console.log(
 
 console.log(
   "Default Event:",
-  DEFAULT_EVENT
+  DEFAULT_EVENT_KEY
 );
 
 console.log(
@@ -209,76 +150,94 @@ console.log(
    HOME
 ========================================================= */
 
-app.get(
-  "/",
-  (req, res) => {
+app.get("/", (req, res) => {
+  res.send(
+    "GeitaCard system iko running!"
+  );
+});
 
-    res.send(
-      "GeitaCard system iko running!"
-    );
+/* =========================================================
+   HEALTH
+========================================================= */
 
-  }
-);
+app.get("/health", (req, res) => {
+  res.status(200).json({
+    success: true,
+    message: "GeitaCard server iko hai.",
+    qr_system: "enabled",
+    event_system: "enabled",
+    default_event: DEFAULT_EVENT_KEY,
+    storage_bucket: STORAGE_BUCKET
+  });
+});
 
 /* =========================================================
    WHATSAPP WEBHOOK VERIFICATION
 ========================================================= */
 
-app.get(
-  "/webhook",
-  (req, res) => {
+app.get("/webhook", (req, res) => {
+  const mode =
+    req.query["hub.mode"];
 
-    const mode =
-      req.query["hub.mode"];
+  const token =
+    req.query["hub.verify_token"];
 
-    const token =
-      req.query["hub.verify_token"];
+  const challenge =
+    req.query["hub.challenge"];
 
-    const challenge =
-      req.query["hub.challenge"];
+  console.log(
+    "Webhook verification request received"
+  );
 
+  if (
+    mode === "subscribe" &&
+    token === VERIFY_TOKEN
+  ) {
     console.log(
-      "Webhook verification request received"
+      "Webhook verified successfully"
     );
 
-    if (
-      mode === "subscribe" &&
-      token === VERIFY_TOKEN
-    ) {
-
-      console.log(
-        "Webhook verified successfully"
-      );
-
-      return res
-        .status(200)
-        .send(challenge);
-
-    }
-
-    console.log(
-      "Webhook verification failed"
-    );
-
-    return res.sendStatus(403);
-
+    return res
+      .status(200)
+      .send(challenge);
   }
-);
+
+  console.log(
+    "Webhook verification failed"
+  );
+
+  return res.sendStatus(403);
+});
 
 /* =========================================================
    NORMALIZE PHONE
 ========================================================= */
 
 function normalizePhone(phone) {
+  return String(phone || "")
+    .replace(/\D/g, "");
+}
 
-  return String(
-    phone || ""
+/* =========================================================
+   NORMALIZE EVENT KEY
+========================================================= */
+
+function normalizeEventKey(eventKey) {
+  const value = String(
+    eventKey || DEFAULT_EVENT_KEY
   )
-    .replace(
-      /\D/g,
-      ""
-    );
+    .trim()
+    .toUpperCase();
 
+  return value || DEFAULT_EVENT_KEY;
+}
+
+/* =========================================================
+   NORMALIZE CODE
+========================================================= */
+
+function normalizeCode(code) {
+  return String(code || "").trim();
 }
 
 /* =========================================================
@@ -286,19 +245,14 @@ function normalizePhone(phone) {
 ========================================================= */
 
 function createQRToken() {
-
   return crypto.randomUUID();
-
 }
 
 /* =========================================================
    CREATE QR IMAGE
 ========================================================= */
 
-async function createQRImage(
-  qrToken
-) {
-
+async function createQRImage(qrToken) {
   const qrBuffer =
     await QRCode.toBuffer(
       qrToken,
@@ -311,7 +265,6 @@ async function createQRImage(
     );
 
   return qrBuffer;
-
 }
 
 /* =========================================================
@@ -319,13 +272,10 @@ async function createQRImage(
 ========================================================= */
 
 async function downloadInvitationImage() {
-
   if (!INVITE_IMAGE_URL) {
-
     throw new Error(
       "INVITE_IMAGE_URL haijawekwa kwenye Render."
     );
-
   }
 
   console.log(
@@ -342,69 +292,52 @@ async function downloadInvitationImage() {
     );
 
   if (!response.data) {
-
     throw new Error(
       "Invitation image haikupatikana."
     );
-
   }
 
   return Buffer.from(
     response.data
   );
-
 }
 
 /* =========================================================
    CREATE CARD WITH QR
 ========================================================= */
 
-async function createCardWithQR(
-  qrToken
-) {
-
+async function createCardWithQR(qrToken) {
   const originalImage =
     await downloadInvitationImage();
 
   const qrImage =
-    await createQRImage(
-      qrToken
-    );
+    await createQRImage(qrToken);
 
   const imageMetadata =
     await sharp(
       originalImage
-    )
-      .metadata();
+    ).metadata();
 
   const imageWidth =
-    imageMetadata.width ||
-    1024;
+    imageMetadata.width || 1024;
 
   const imageHeight =
-    imageMetadata.height ||
-    1536;
+    imageMetadata.height || 1536;
 
-  const baseWidth =
-    1024;
-
-  const baseHeight =
-    1536;
+  const baseWidth = 1024;
+  const baseHeight = 1536;
 
   const scaleX =
-    imageWidth /
-    baseWidth;
+    imageWidth / baseWidth;
 
   const scaleY =
-    imageHeight /
-    baseHeight;
+    imageHeight / baseHeight;
 
   const finalX =
     Math.max(
       0,
       Math.round(
-        QR_X *
-        scaleX
+        QR_X * scaleX
       )
     );
 
@@ -412,8 +345,7 @@ async function createCardWithQR(
     Math.max(
       0,
       Math.round(
-        QR_Y *
-        scaleY
+        QR_Y * scaleY
       )
     );
 
@@ -422,17 +354,15 @@ async function createCardWithQR(
       80,
       Math.round(
         QR_SIZE *
-        Math.min(
-          scaleX,
-          scaleY
-        )
+          Math.min(
+            scaleX,
+            scaleY
+          )
       )
     );
 
   const resizedQR =
-    await sharp(
-      qrImage
-    )
+    await sharp(qrImage)
       .resize(
         finalSize,
         finalSize,
@@ -444,19 +374,12 @@ async function createCardWithQR(
       .toBuffer();
 
   const cardImage =
-    await sharp(
-      originalImage
-    )
+    await sharp(originalImage)
       .composite([
         {
-          input:
-            resizedQR,
-
-          left:
-            finalX,
-
-          top:
-            finalY
+          input: resizedQR,
+          left: finalX,
+          top: finalY
         }
       ])
       .png()
@@ -470,17 +393,13 @@ async function createCardWithQR(
   );
 
   return cardImage;
-
 }
 
 /* =========================================================
-   CREATE SAFE FILE NAME
+   SAFE FILE NAME
 ========================================================= */
 
-function safeFileName(
-  value
-) {
-
+function safeFileName(value) {
   return String(
     value || "guest"
   )
@@ -492,7 +411,6 @@ function safeFileName(
       0,
       80
     );
-
 }
 
 /* =========================================================
@@ -503,37 +421,32 @@ async function uploadCardToStorage(
   cardBuffer,
   name,
   code,
-  qrToken,
-  eventKey
+  eventKey,
+  qrToken
 ) {
-
   const safeName =
-    safeFileName(
-      name
-    );
+    safeFileName(name);
 
   const safeCode =
-    safeFileName(
-      code
-    );
+    safeFileName(code);
 
   const safeEvent =
-    safeFileName(
-      eventKey
-    );
+    safeFileName(eventKey);
 
   /*
-    Event inawekwa kwenye path.
+    MUHIMU:
 
-    Hii inaruhusu:
-    Event A
-    Event B
+    STORAGE_BUCKET tayari ni "guest-cards".
 
-    kuwa na cards tofauti.
+    Kwa hiyo HATUTUMII:
+    guest-cards/file.png
+
+    Tunatumia:
+    event-code-name-token.png
   */
 
   const filePath =
-    `${safeEvent}/${safeCode}-${safeName}-${qrToken}.png`;
+    `${safeEvent}-${safeCode}-${safeName}-${qrToken}.png`;
 
   console.log(
     "Uploading card to Storage:",
@@ -542,33 +455,28 @@ async function uploadCardToStorage(
 
   const {
     error
-  } =
-    await supabase
-      .storage
-      .from(
-        STORAGE_BUCKET
-      )
-      .upload(
-        filePath,
-        cardBuffer,
-        {
-          contentType:
-            "image/png",
+  } = await supabase
+    .storage
+    .from(STORAGE_BUCKET)
+    .upload(
+      filePath,
+      cardBuffer,
+      {
+        contentType:
+          "image/png",
 
-          upsert:
-            false
-        }
-      );
+        upsert:
+          false
+      }
+    );
 
   if (error) {
-
     console.error(
       "Storage upload error:",
       error.message
     );
 
     throw error;
-
   }
 
   const {
@@ -576,9 +484,7 @@ async function uploadCardToStorage(
   } =
     supabase
       .storage
-      .from(
-        STORAGE_BUCKET
-      )
+      .from(STORAGE_BUCKET)
       .getPublicUrl(
         filePath
       );
@@ -587,11 +493,9 @@ async function uploadCardToStorage(
     data?.publicUrl;
 
   if (!publicUrl) {
-
     throw new Error(
       "Public URL ya kadi haikupatikana."
     );
-
   }
 
   console.log(
@@ -604,15 +508,9 @@ async function uploadCardToStorage(
   );
 
   return {
-
-    filePath:
-      filePath,
-
-    publicUrl:
-      publicUrl
-
+    filePath,
+    publicUrl
   };
-
 }
 
 /* =========================================================
@@ -622,50 +520,40 @@ async function uploadCardToStorage(
 async function deleteCardFromStorage(
   filePath
 ) {
-
   if (!filePath) {
     return;
   }
 
   try {
-
     const {
       error
-    } =
-      await supabase
-        .storage
-        .from(
-          STORAGE_BUCKET
-        )
-        .remove([
-          filePath
-        ]);
+    } = await supabase
+      .storage
+      .from(STORAGE_BUCKET)
+      .remove([
+        filePath
+      ]);
 
     if (error) {
-
       console.error(
         "Storage cleanup error:",
         error.message
       );
 
       return;
-
     }
 
     console.log(
-      "Unused card removed from Storage:",
+      "Unused card removed:",
       filePath
     );
 
   } catch (error) {
-
     console.error(
       "Storage cleanup exception:",
       error.message
     );
-
   }
-
 }
 
 /* =========================================================
@@ -677,14 +565,25 @@ async function preparePersonalCard(
   code,
   eventKey
 ) {
-
   const qrToken =
     createQRToken();
 
   console.log(
-    "Creating unique QR token for:",
-    name,
-    code,
+    "Creating unique QR token:"
+  );
+
+  console.log(
+    "Name:",
+    name
+  );
+
+  console.log(
+    "Code:",
+    code
+  );
+
+  console.log(
+    "Event:",
     eventKey
   );
 
@@ -703,205 +602,160 @@ async function preparePersonalCard(
       cardBuffer,
       name,
       code,
-      qrToken,
-      eventKey
+      eventKey,
+      qrToken
     );
 
   return {
-
-    qrToken:
-      qrToken,
-
-    cardBuffer:
-      cardBuffer,
-
+    qrToken,
+    cardBuffer,
     cardImageUrl:
       storage.publicUrl,
-
     storagePath:
       storage.filePath
-
   };
-
 }
 
 /* =========================================================
-   GET EXISTING GUEST
+   GET INVITATION TYPE
 ========================================================= */
 
-async function getGuestByEventAndCode(
-  eventKey,
-  code
-) {
+function getInvitationType(code) {
+  const upper =
+    String(code || "")
+      .toUpperCase();
 
-  const {
-    data,
-    error
-  } =
-    await supabase
-      .from(
-        "guests"
-      )
-      .select("*")
-      .eq(
-        "event_key",
-        eventKey
-      )
-      .eq(
-        "guest_code",
-        code
-      )
-      .maybeSingle();
-
-  if (error) {
-
-    console.error(
-      "Find existing guest error:",
-      error.message
-    );
-
-    throw error;
-
+  if (
+    upper.endsWith(
+      "-KAMATI"
+    )
+  ) {
+    return "KAMATI";
   }
 
-  return data || null;
+  if (
+    upper.endsWith(
+      "-SINGLE"
+    )
+  ) {
+    return "SINGLE";
+  }
 
+  return (
+    process.env.INVITATION_TYPE ||
+    "premium"
+  );
 }
 
 /* =========================================================
-   SAVE / UPDATE GUEST
+   SAVE GUEST
 ========================================================= */
 
 async function saveGuest(
   to,
   name,
   code,
+  eventKey,
   qrToken,
   cardImageUrl,
-  eventKey,
-  storagePath
+  whatsappMessageId
 ) {
-
   const phone =
-    normalizePhone(
-      to
-    );
+    normalizePhone(to);
+
+  const cleanCode =
+    normalizeCode(code);
 
   const cleanEventKey =
-    normalizeEventKey(
-      eventKey
-    );
+    normalizeEventKey(eventKey);
 
   const invitationType =
-    String(
-      code || ""
-    )
-      .toUpperCase()
-      .endsWith(
-        "-KAMATI"
-      )
-
-      ? "KAMATI"
-
-      : String(
-          code || ""
-        )
-          .toUpperCase()
-          .endsWith(
-            "-SINGLE"
-          )
-
-        ? "SINGLE"
-
-        : (
-            process.env.INVITATION_TYPE ||
-            "premium"
-          );
+    getInvitationType(
+      cleanCode
+    );
 
   /*
     MUHIMU:
 
-    Unique key sasa ni:
+    guest_code PEKEE SI UNIQUE.
 
-       event_key + guest_code
+    Unique sasa ni:
+    event_key + guest_code
 
-    Kwa hiyo:
+    Hivyo:
 
     EVENT_A + 9752-SINGLE
-       ni record moja
-
     EVENT_B + 9752-SINGLE
-       ni record nyingine.
 
-    Hii ndiyo inayoruhusu mtu mmoja
-    kuwa na events mbili tofauti.
+    ZOTE ZINARUHUSIWA.
   */
 
   const {
     data,
     error
-  } =
-    await supabase
-      .from(
-        "guests"
-      )
-      .upsert(
-        [
-          {
+  } = await supabase
+    .from("guests")
+    .insert([
+      {
+        full_name:
+          name,
 
-            full_name:
-              name,
+        phone:
+          phone,
 
-            phone:
-              phone,
+        guest_code:
+          cleanCode,
 
-            guest_code:
-              code,
+        event_key:
+          cleanEventKey,
 
-            event_key:
-              cleanEventKey,
+        qr_token:
+          qrToken,
 
-            qr_token:
-              qrToken,
+        card_image_url:
+          cardImageUrl,
 
-            card_image_url:
-              cardImageUrl,
+        invitation_type:
+          invitationType,
 
-            storage_path:
-              storagePath,
+        attendance_status:
+          "pending",
 
-            invitation_type:
-              invitationType
+        /*
+          Hii inatusaidia kujua
+          invitation gani ilijibiwa
+          na WhatsApp.
+        */
 
-          }
-        ],
-        {
-          onConflict:
-            "event_key,guest_code",
-
-          ignoreDuplicates:
-            false
-        }
-      )
-      .select()
-      .single();
+        wa_message_id:
+          whatsappMessageId || null
+      }
+    ])
+    .select()
+    .single();
 
   if (error) {
-
     console.error(
       "Supabase save guest error:",
       error.message
     );
 
     throw error;
-
   }
 
   console.log(
-    "Guest saved/updated:",
-    data.full_name,
-    data.guest_code,
+    "Guest saved:",
+    data.full_name
+  );
+
+  console.log(
+    "Event:",
     data.event_key
+  );
+
+  console.log(
+    "Code:",
+    data.guest_code
   );
 
   console.log(
@@ -909,13 +763,7 @@ async function saveGuest(
     data.qr_token
   );
 
-  console.log(
-    "Card URL:",
-    data.card_image_url
-  );
-
   return data;
-
 }
 
 /* =========================================================
@@ -926,17 +774,14 @@ async function sendText(
   to,
   text
 ) {
-
   const url =
     `https://graph.facebook.com/${GRAPH_VERSION}/${PHONE_NUMBER_ID}/messages`;
 
   try {
-
     const response =
       await axios.post(
         url,
         {
-
           messaging_product:
             "whatsapp",
 
@@ -944,36 +789,27 @@ async function sendText(
             "individual",
 
           to:
-            normalizePhone(
-              to
-            ),
+            normalizePhone(to),
 
           type:
             "text",
 
           text: {
-
             preview_url:
               false,
 
             body:
               text
-
           }
-
         },
         {
-
           headers: {
-
             Authorization:
               `Bearer ${WHATSAPP_TOKEN}`,
 
             "Content-Type":
               "application/json"
-
           }
-
         }
       );
 
@@ -985,17 +821,14 @@ async function sendText(
     return response.data;
 
   } catch (error) {
-
     console.error(
       "Text send error:",
       error.response?.data ||
-      error.message
+        error.message
     );
 
     throw error;
-
   }
-
 }
 
 /* =========================================================
@@ -1008,95 +841,76 @@ async function sendInvitation(
   code,
   cardImageUrl
 ) {
-
   const url =
     `https://graph.facebook.com/${GRAPH_VERSION}/${PHONE_NUMBER_ID}/messages`;
 
   const components = [];
 
-  const imageUrl =
-    cardImageUrl ||
-    INVITE_IMAGE_URL;
-
   /*
     HEADER IMAGE
   */
 
+  const imageUrl =
+    cardImageUrl ||
+    INVITE_IMAGE_URL;
+
   if (imageUrl) {
-
     components.push({
-
       type:
         "header",
 
       parameters: [
-
         {
-
           type:
             "image",
 
           image: {
-
             link:
               imageUrl
-
           }
-
         }
-
       ]
-
     });
-
   }
 
   /*
-    BODY
+    BODY:
 
     {{1}} = Jina
     {{2}} = Code
   */
 
   components.push({
-
     type:
       "body",
 
     parameters: [
-
       {
-
         type:
           "text",
 
         text:
-          String(
-            name
-          )
-
+          String(name)
       },
 
       {
-
         type:
           "text",
 
         text:
-          String(
-            code
-          )
-
+          String(code)
       }
-
     ]
-
   });
 
   try {
+    console.log(
+      "Sending WhatsApp template..."
+    );
 
     console.log(
-      "Sending WhatsApp invitation..."
+      "To:",
+      normalizePhone(to)
     );
 
     console.log(
@@ -1108,7 +922,6 @@ async function sendInvitation(
       await axios.post(
         url,
         {
-
           messaging_product:
             "whatsapp",
 
@@ -1116,69 +929,97 @@ async function sendInvitation(
             "individual",
 
           to:
-            normalizePhone(
-              to
-            ),
+            normalizePhone(to),
 
           type:
             "template",
 
           template: {
-
             name:
               TEMPLATE_NAME,
 
             language: {
-
               code:
                 TEMPLATE_LANGUAGE
-
             },
 
             components:
               components
-
           }
-
         },
         {
-
           headers: {
-
             Authorization:
               `Bearer ${WHATSAPP_TOKEN}`,
 
             "Content-Type":
               "application/json"
-
           }
-
         }
       );
 
     console.log(
-      "Invitation sent:",
+      "Invitation sent successfully."
+    );
+
+    console.log(
       response.data
     );
 
     return response.data;
 
   } catch (error) {
+    console.error(
+      "Invitation send error:"
+    );
 
     console.error(
-      "Invitation send error:",
       JSON.stringify(
         error.response?.data ||
-        error.message,
+          error.message,
         null,
         2
       )
     );
 
     throw error;
+  }
+}
 
+/* =========================================================
+   FIND GUEST BY WHATSAPP MESSAGE ID
+========================================================= */
+
+async function findGuestByWhatsAppMessageId(
+  messageId
+) {
+  if (!messageId) {
+    return null;
   }
 
+  const {
+    data,
+    error
+  } = await supabase
+    .from("guests")
+    .select("*")
+    .eq(
+      "wa_message_id",
+      messageId
+    )
+    .limit(1)
+    .maybeSingle();
+
+  if (error) {
+    console.error(
+      "Find by WhatsApp message ID error:",
+      error.message
+    );
+
+    return null;
+  }
+
+  return data;
 }
 
 /* =========================================================
@@ -1188,115 +1029,150 @@ async function sendInvitation(
 async function updateAttendance(
   phone,
   status,
-  eventKey
+  whatsappContextMessageId = null
 ) {
-
   const normalizedPhone =
-    normalizePhone(
-      phone
-    );
+    normalizePhone(phone);
 
-  const cleanEventKey =
-    normalizeEventKey(
-      eventKey
-    );
+  /*
+    FIRST:
+    Tumia WhatsApp message ID
+    kama ipo.
 
-  let query =
-    supabase
-      .from(
-        "guests"
-      )
-      .select(
-        "id, full_name, phone, guest_code, event_key"
-      )
-      .eq(
-        "phone",
-        normalizedPhone
-      )
-      .eq(
-        "event_key",
-        cleanEventKey
-      )
-      .order(
-        "created_at",
-        {
-          ascending:
-            false
-        }
-      )
-      .limit(1)
-      .maybeSingle();
+    Hii ni salama zaidi wakati
+    mtu mmoja ana invitations
+    za events mbili.
+  */
+
+  if (whatsappContextMessageId) {
+    const guest =
+      await findGuestByWhatsAppMessageId(
+        whatsappContextMessageId
+      );
+
+    if (guest) {
+      const {
+        data,
+        error
+      } = await supabase
+        .from("guests")
+        .update({
+          attendance_status:
+            status
+        })
+        .eq(
+          "id",
+          guest.id
+        )
+        .select()
+        .single();
+
+      if (error) {
+        console.error(
+          "Attendance update error:",
+          error.message
+        );
+
+        return null;
+      }
+
+      console.log(
+        "Attendance updated by WhatsApp message:"
+      );
+
+      console.log(
+        guest.full_name,
+        guest.event_key,
+        guest.guest_code,
+        status
+      );
+
+      return data;
+    }
+  }
+
+  /*
+    FALLBACK:
+
+    Kama context message ID haipo,
+    tumia invitation ya mwisho ya
+    namba hiyo.
+  */
 
   const {
     data: guest,
     error: findError
-  } =
-    await query;
+  } = await supabase
+    .from("guests")
+    .select(
+      "id, full_name, phone, guest_code, event_key"
+    )
+    .eq(
+      "phone",
+      normalizedPhone
+    )
+    .order(
+      "created_at",
+      {
+        ascending:
+          false
+      }
+    )
+    .limit(1)
+    .maybeSingle();
 
   if (findError) {
-
     console.error(
       "Find guest error:",
       findError.message
     );
 
     return null;
-
   }
 
   if (!guest) {
-
     console.log(
       "Guest not found:",
-      normalizedPhone,
-      cleanEventKey
+      normalizedPhone
     );
 
     return null;
-
   }
 
   const {
     data,
     error
-  } =
-    await supabase
-      .from(
-        "guests"
-      )
-      .update({
-
-        attendance_status:
-          status
-
-      })
-      .eq(
-        "id",
-        guest.id
-      )
-      .select()
-      .single();
+  } = await supabase
+    .from("guests")
+    .update({
+      attendance_status:
+        status
+    })
+    .eq(
+      "id",
+      guest.id
+    )
+    .select()
+    .single();
 
   if (error) {
-
     console.error(
       "Attendance update error:",
       error.message
     );
 
     return null;
-
   }
 
   console.log(
     "Attendance updated:",
     guest.full_name,
-    status,
-    cleanEventKey
+    guest.event_key,
+    guest.guest_code,
+    status
   );
 
   return data;
-
 }
 
 /* =========================================================
@@ -1307,9 +1183,8 @@ async function processAttendanceReply(
   from,
   buttonId,
   buttonTitle,
-  eventKey
+  contextMessageId
 ) {
-
   const normalizedId =
     String(
       buttonId || ""
@@ -1324,17 +1199,20 @@ async function processAttendanceReply(
       .toLowerCase()
       .trim();
 
+  /* -------------------------------------------------------
+     NITASHIRIKI
+  ------------------------------------------------------- */
+
   if (
     normalizedId ===
       "nitashiriki" ||
     normalizedTitle ===
       "nitashiriki"
   ) {
-
     await updateAttendance(
       from,
       "confirmed",
-      eventKey
+      contextMessageId
     );
 
     await sendText(
@@ -1343,8 +1221,11 @@ async function processAttendanceReply(
     );
 
     return true;
-
   }
+
+  /* -------------------------------------------------------
+     SITASHIRIKI
+  ------------------------------------------------------- */
 
   if (
     normalizedId ===
@@ -1352,11 +1233,10 @@ async function processAttendanceReply(
     normalizedTitle ===
       "sitashiriki"
   ) {
-
     await updateAttendance(
       from,
       "declined",
-      eventKey
+      contextMessageId
     );
 
     await sendText(
@@ -1365,8 +1245,11 @@ async function processAttendanceReply(
     );
 
     return true;
-
   }
+
+  /* -------------------------------------------------------
+     SINA UHAKIKA
+  ------------------------------------------------------- */
 
   if (
     normalizedId ===
@@ -1376,11 +1259,10 @@ async function processAttendanceReply(
     normalizedTitle ===
       "sina uhakika"
   ) {
-
     await updateAttendance(
       from,
       "maybe",
-      eventKey
+      contextMessageId
     );
 
     await sendText(
@@ -1389,23 +1271,19 @@ async function processAttendanceReply(
     );
 
     return true;
-
   }
 
   return false;
-
 }
 
 /* =========================================================
-   WHATSAPP WEBHOOK
+   WHATSAPP WEBHOOK RECEIVE
 ========================================================= */
 
 app.post(
   "/webhook",
   async (req, res) => {
-
     try {
-
       const body =
         req.body;
 
@@ -1435,11 +1313,7 @@ app.post(
         !body.entry ||
         !body.entry[0]
       ) {
-
-        return res.sendStatus(
-          200
-        );
-
+        return res.sendStatus(200);
       }
 
       const changes =
@@ -1449,23 +1323,20 @@ app.post(
         !changes ||
         !changes[0]
       ) {
-
-        return res.sendStatus(
-          200
-        );
-
+        return res.sendStatus(200);
       }
 
       const value =
         changes[0].value;
 
-      /* STATUS */
+      /* ---------------------------------------------------
+         STATUS
+      --------------------------------------------------- */
 
       if (
         value.statuses &&
         value.statuses.length > 0
       ) {
-
         const status =
           value.statuses[0];
 
@@ -1474,10 +1345,14 @@ app.post(
           status.status
         );
 
-        if (
-          status.errors
-        ) {
+        if (status.id) {
+          console.log(
+            "WhatsApp message ID:",
+            status.id
+          );
+        }
 
+        if (status.errors) {
           console.log(
             "Status errors:",
             JSON.stringify(
@@ -1486,26 +1361,20 @@ app.post(
               2
             )
           );
-
         }
 
-        return res.sendStatus(
-          200
-        );
-
+        return res.sendStatus(200);
       }
 
-      /* MESSAGE */
+      /* ---------------------------------------------------
+         MESSAGE
+      --------------------------------------------------- */
 
       if (
         !value.messages ||
         !value.messages[0]
       ) {
-
-        return res.sendStatus(
-          200
-        );
-
+        return res.sendStatus(200);
       }
 
       const message =
@@ -1524,26 +1393,29 @@ app.post(
         from
       );
 
-      /*
-        Kwa sasa webhook replies
-        zitatumia DEFAULT_EVENT.
+      /* ---------------------------------------------------
+         CONTEXT MESSAGE ID
+      --------------------------------------------------- */
 
-        Baadaye tunaweza kuweka event
-        moja kwa moja ndani ya button ID.
-      */
+      const contextMessageId =
+        message.context?.id ||
+        null;
 
-      const eventKey =
-        normalizeEventKey(
-          DEFAULT_EVENT
+      if (contextMessageId) {
+        console.log(
+          "Context message ID:",
+          contextMessageId
         );
+      }
 
-      /* TEXT */
+      /* ---------------------------------------------------
+         TEXT
+      --------------------------------------------------- */
 
       if (
         message.type ===
         "text"
       ) {
-
         const text =
           message.text?.body ||
           "";
@@ -1553,19 +1425,17 @@ app.post(
           text
         );
 
-        return res.sendStatus(
-          200
-        );
-
+        return res.sendStatus(200);
       }
 
-      /* OLD BUTTON */
+      /* ---------------------------------------------------
+         OLD BUTTON
+      --------------------------------------------------- */
 
       if (
         message.type ===
         "button"
       ) {
-
         const buttonId =
           message.button?.payload ||
           "";
@@ -1578,16 +1448,15 @@ app.post(
           from,
           buttonId,
           buttonTitle,
-          eventKey
+          contextMessageId
         );
 
-        return res.sendStatus(
-          200
-        );
-
+        return res.sendStatus(200);
       }
 
-      /* INTERACTIVE BUTTON */
+      /* ---------------------------------------------------
+         INTERACTIVE BUTTON
+      --------------------------------------------------- */
 
       if (
         message.type ===
@@ -1595,7 +1464,6 @@ app.post(
         message.interactive?.type ===
           "button_reply"
       ) {
-
         const buttonId =
           message
             .interactive
@@ -1612,13 +1480,10 @@ app.post(
           from,
           buttonId,
           buttonTitle,
-          eventKey
+          contextMessageId
         );
 
-        return res.sendStatus(
-          200
-        );
-
+        return res.sendStatus(200);
       }
 
       console.log(
@@ -1626,24 +1491,17 @@ app.post(
         message.type
       );
 
-      return res.sendStatus(
-        200
-      );
+      return res.sendStatus(200);
 
     } catch (error) {
-
       console.error(
         "Webhook error:",
         error.response?.data ||
-        error.message
+          error.message
       );
 
-      return res.sendStatus(
-        200
-      );
-
+      return res.sendStatus(200);
     }
-
   }
 );
 
@@ -1654,12 +1512,9 @@ app.post(
 app.post(
   "/send-invitation",
   async (req, res) => {
-
-    let preparedCard =
-      null;
+    let preparedCard = null;
 
     try {
-
       const {
         to,
         name,
@@ -1672,35 +1527,21 @@ app.post(
         !name ||
         !code
       ) {
-
-        return res.status(
-          400
-        ).json({
-
-          success:
-            false,
-
+        return res.status(400).json({
+          success: false,
           message:
             "to, name na code vinahitajika."
-
         });
-
       }
 
       const cleanTo =
-        String(
-          to
-        ).trim();
+        String(to).trim();
 
       const cleanName =
-        String(
-          name
-        ).trim();
+        String(name).trim();
 
       const cleanCode =
-        String(
-          code
-        ).trim();
+        normalizeCode(code);
 
       const cleanEventKey =
         normalizeEventKey(
@@ -1739,7 +1580,9 @@ app.post(
         "=============================================="
       );
 
-      /* 1. CREATE CARD */
+      /* ---------------------------------------------------
+         1. CREATE PERSONAL QR + CARD
+      --------------------------------------------------- */
 
       preparedCard =
         await preparePersonalCard(
@@ -1748,7 +1591,9 @@ app.post(
           cleanEventKey
         );
 
-      /* 2. SEND WHATSAPP */
+      /* ---------------------------------------------------
+         2. SEND WHATSAPP
+      --------------------------------------------------- */
 
       const result =
         await sendInvitation(
@@ -1758,70 +1603,70 @@ app.post(
           preparedCard.cardImageUrl
         );
 
-      /* 3. SAVE / UPDATE */
+      /*
+        WhatsApp message ID.
+        Tutaitumia baadaye kutambua
+        invitation gani imejibiwa.
+      */
+
+      const whatsappMessageId =
+        result?.messages?.[0]?.id ||
+        null;
+
+      console.log(
+        "WhatsApp message ID:",
+        whatsappMessageId
+      );
+
+      /* ---------------------------------------------------
+         3. SAVE GUEST
+      --------------------------------------------------- */
 
       const guest =
         await saveGuest(
           cleanTo,
           cleanName,
           cleanCode,
+          cleanEventKey,
           preparedCard.qrToken,
           preparedCard.cardImageUrl,
-          cleanEventKey,
-          preparedCard.storagePath
+          whatsappMessageId
         );
 
-      return res.status(
-        200
-      ).json({
-
-        success:
-          true,
+      return res.status(200).json({
+        success: true,
 
         event_key:
           cleanEventKey,
 
-        result:
-          result,
+        result,
 
-        guest:
-          guest
-
+        guest
       });
 
     } catch (error) {
-
       console.error(
         "Send invitation error:",
         error.response?.data ||
-        error.message
+          error.message
       );
 
       if (
         preparedCard?.storagePath
       ) {
-
         await deleteCardFromStorage(
           preparedCard.storagePath
         );
-
       }
 
-      return res.status(
-        500
-      ).json({
-
-        success:
-          false,
+      return res.status(500).json({
+        success: false,
 
         error:
           error.response?.data ||
           error.message
-
       });
-
     }
-
   }
 );
 
@@ -1832,28 +1677,18 @@ app.post(
 app.post(
   "/send-bulk",
   async (req, res) => {
-
     try {
-
       if (
         !req.body ||
         !Array.isArray(
           req.body.contacts
         )
       ) {
-
-        return res.status(
-          400
-        ).json({
-
-          success:
-            false,
-
+        return res.status(400).json({
+          success: false,
           message:
             "Tuma contacts kama array."
-
         });
-
       }
 
       const contacts =
@@ -1862,19 +1697,11 @@ app.post(
       if (
         contacts.length === 0
       ) {
-
-        return res.status(
-          400
-        ).json({
-
-          success:
-            false,
-
+        return res.status(400).json({
+          success: false,
           message:
             "Hakuna contact iliyotumwa."
-
         });
-
       }
 
       const results = [];
@@ -1896,12 +1723,15 @@ app.post(
         "=============================================="
       );
 
+      /* ---------------------------------------------------
+         PROCESS ONE BY ONE
+      --------------------------------------------------- */
+
       for (
         let i = 0;
         i < contacts.length;
         i++
       ) {
-
         const contact =
           contacts[i];
 
@@ -1926,58 +1756,42 @@ app.post(
               ).trim()
             : "";
 
-        /*
-          EVENT inaweza kutoka
-          kwenye Excel/CSV.
-
-          Kama haipo:
-          DEFAULT_EVENT.
-        */
-
         const eventKey =
           normalizeEventKey(
             contact.event_key ||
-            contact.event ||
-            DEFAULT_EVENT
+              contact.event ||
+              DEFAULT_EVENT_KEY
           );
+
+        /* -------------------------------------------------
+           VALIDATION
+        ------------------------------------------------- */
 
         if (
           !to ||
           !name ||
           !code
         ) {
-
           results.push({
-
-            to:
-              to,
-
-            name:
-              name,
-
-            code:
-              code,
-
+            to,
+            name,
+            code,
             event_key:
               eventKey,
 
-            success:
-              false,
+            success: false,
 
             error:
               "Namba, Jina na Code vinahitajika."
-
           });
 
           continue;
-
         }
 
         let preparedCard =
           null;
 
         try {
-
           console.log(
             "----------------------------------------------"
           );
@@ -2006,7 +1820,9 @@ app.post(
             eventKey
           );
 
-          /* CREATE UNIQUE CARD */
+          /* ---------------------------------------------
+             1. PERSONAL QR + CARD
+          --------------------------------------------- */
 
           preparedCard =
             await preparePersonalCard(
@@ -2015,12 +1831,9 @@ app.post(
               eventKey
             );
 
-          console.log(
-            "Unique QR generated:",
-            preparedCard.qrToken
-          );
-
-          /* SEND */
+          /* ---------------------------------------------
+             2. SEND WHATSAPP
+          --------------------------------------------- */
 
           const whatsappResult =
             await sendInvitation(
@@ -2030,30 +1843,34 @@ app.post(
               preparedCard.cardImageUrl
             );
 
-          /* SAVE / UPDATE */
+          const whatsappMessageId =
+            whatsappResult
+              ?.messages?.[0]?.id ||
+            null;
+
+          /* ---------------------------------------------
+             3. SAVE GUEST
+          --------------------------------------------- */
 
           const guest =
             await saveGuest(
               to,
               name,
               code,
+              eventKey,
               preparedCard.qrToken,
               preparedCard.cardImageUrl,
-              eventKey,
-              preparedCard.storagePath
+              whatsappMessageId
             );
 
+          /* ---------------------------------------------
+             4. RESULT
+          --------------------------------------------- */
+
           results.push({
-
-            to:
-              to,
-
-            name:
-              name,
-
-            code:
-              code,
-
+            to,
+            name,
+            code,
             event_key:
               eventKey,
 
@@ -2066,50 +1883,41 @@ app.post(
             card_image_url:
               preparedCard.cardImageUrl,
 
-            guest:
-              guest,
+            whatsapp_message_id:
+              whatsappMessageId,
+
+            guest,
 
             result:
               whatsappResult
-
           });
 
           console.log(
             "SUCCESS:",
             name,
-            code,
-            eventKey
+            eventKey,
+            code
           );
 
         } catch (error) {
-
           console.error(
             "Bulk item error:",
             error.response?.data ||
-            error.message
+              error.message
           );
 
           if (
             preparedCard?.storagePath
           ) {
-
             await deleteCardFromStorage(
               preparedCard.storagePath
             );
-
           }
 
           results.push({
-
-            to:
-              to,
-
-            name:
-              name,
-
-            code:
-              code,
-
+            to,
+            name,
+            code,
             event_key:
               eventKey,
 
@@ -2119,16 +1927,17 @@ app.post(
             error:
               error.response?.data ||
               error.message
-
           });
-
         }
+
+        /*
+          Pause ya sekunde 1.
+        */
 
         if (
           i <
           contacts.length - 1
         ) {
-
           await new Promise(
             resolve =>
               setTimeout(
@@ -2136,10 +1945,12 @@ app.post(
                 1000
               )
           );
-
         }
-
       }
+
+      /* ---------------------------------------------------
+         SUMMARY
+      --------------------------------------------------- */
 
       const successful =
         results.filter(
@@ -2180,50 +1991,34 @@ app.post(
         "=============================================="
       );
 
-      return res.status(
-        200
-      ).json({
-
-        success:
-          true,
+      return res.status(200).json({
+        success: true,
 
         total:
           contacts.length,
 
-        successful:
-          successful,
+        successful,
 
-        failed:
-          failed,
+        failed,
 
-        results:
-          results
-
+        results
       });
 
     } catch (error) {
-
       console.error(
         "Bulk send error:",
         error.response?.data ||
-        error.message
+          error.message
       );
 
-      return res.status(
-        500
-      ).json({
-
-        success:
-          false,
+      return res.status(500).json({
+        success: false,
 
         error:
           error.response?.data ||
           error.message
-
       });
-
     }
-
   }
 );
 
@@ -2234,95 +2029,58 @@ app.post(
 app.get(
   "/api/attendance",
   async (req, res) => {
-
     try {
-
-      const eventKey =
-        normalizeEventKey(
-          req.query.event_key
-        );
-
       const {
         data,
         error
-      } =
-        await supabase
-          .from(
-            "attendance_list"
-          )
-          .select("*")
-          .eq(
-            "event_key",
-            eventKey
-          )
-          .order(
-            "created_at",
-            {
-              ascending:
-                false
-            }
-          );
+      } = await supabase
+        .from(
+          "attendance_list"
+        )
+        .select("*")
+        .order(
+          "created_at",
+          {
+            ascending:
+              false
+          }
+        );
 
       if (error) {
-
         console.error(
           "Attendance API error:",
           error.message
         );
 
-        return res.status(
-          500
-        ).json({
-
-          success:
-            false,
-
+        return res.status(500).json({
+          success: false,
           error:
             error.message
-
         });
-
       }
 
-      return res.status(
-        200
-      ).json({
-
-        success:
-          true,
-
-        event_key:
-          eventKey,
+      return res.status(200).json({
+        success: true,
 
         total:
           data?.length || 0,
 
         guests:
           data || []
-
       });
 
     } catch (error) {
-
       console.error(
         "Attendance API error:",
         error.message
       );
 
-      return res.status(
-        500
-      ).json({
-
-        success:
-          false,
-
+      return res.status(500).json({
+        success: false,
         error:
           error.message
-
       });
-
     }
-
   }
 );
 
@@ -2333,67 +2091,43 @@ app.get(
 app.get(
   "/api/attendance/export",
   async (req, res) => {
-
     try {
-
-      const eventKey =
-        normalizeEventKey(
-          req.query.event_key
-        );
-
       console.log(
-        "Preparing attendance Excel for:",
-        eventKey
+        "Preparing attendance Excel..."
       );
 
       const {
         data,
         error
-      } =
-        await supabase
-          .from(
-            "guests"
-          )
-          .select(
-            "full_name, phone, guest_code, event_key, qr_token, card_image_url, invitation_type, attendance_status, scanned_at, created_at"
-          )
-          .eq(
-            "event_key",
-            eventKey
-          )
-          .order(
-            "created_at",
-            {
-              ascending:
-                false
-            }
-          );
+      } = await supabase
+        .from("guests")
+        .select(
+          "full_name, phone, guest_code, event_key, qr_token, card_image_url, invitation_type, attendance_status, scanned_at, created_at"
+        )
+        .order(
+          "created_at",
+          {
+            ascending:
+              false
+          }
+        );
 
       if (error) {
-
         console.error(
           "Excel Supabase error:",
           error.message
         );
 
-        return res.status(
-          500
-        ).json({
-
-          success:
-            false,
-
+        return res.status(500).json({
+          success: false,
           error:
             error.message
-
         });
-
       }
 
       const rows =
         (data || []).map(
           (guest, index) => ({
-
             "#":
               index + 1,
 
@@ -2403,11 +2137,11 @@ app.get(
             "Simu":
               guest.phone || "",
 
-            "Code":
-              guest.guest_code || "",
-
             "Event":
               guest.event_key || "",
+
+            "Code":
+              guest.guest_code || "",
 
             "QR Token":
               guest.qr_token || "",
@@ -2421,19 +2155,13 @@ app.get(
             "Ushiriki":
               guest.attendance_status ===
               "confirmed"
-
                 ? "Nitashiriki"
-
                 : guest.attendance_status ===
                   "declined"
-
                   ? "Sitashiriki"
-
                   : guest.attendance_status ===
                     "maybe"
-
                     ? "Sina uhakika"
-
                     : "Pending",
 
             "Check-in":
@@ -2458,7 +2186,6 @@ app.get(
                     "sw-TZ"
                   )
                 : ""
-
           })
         );
 
@@ -2468,12 +2195,11 @@ app.get(
         );
 
       worksheet["!cols"] = [
-
         { wch: 6 },
         { wch: 30 },
         { wch: 18 },
         { wch: 20 },
-        { wch: 25 },
+        { wch: 20 },
         { wch: 40 },
         { wch: 60 },
         { wch: 15 },
@@ -2481,7 +2207,6 @@ app.get(
         { wch: 20 },
         { wch: 25 },
         { wch: 25 }
-
       ];
 
       const workbook =
@@ -2506,7 +2231,7 @@ app.get(
         );
 
       const filename =
-        `GeitaCard_${safeFileName(eventKey)}_Wahudhuriaji.xlsx`;
+        "GeitaCard_Wahudhuriaji.xlsx";
 
       res.setHeader(
         "Content-Type",
@@ -2527,26 +2252,17 @@ app.get(
       );
 
     } catch (error) {
-
       console.error(
         "Attendance Excel error:",
         error.message
       );
 
-      return res.status(
-        500
-      ).json({
-
-        success:
-          false,
-
+      return res.status(500).json({
+        success: false,
         error:
           error.message
-
       });
-
     }
-
   }
 );
 
@@ -2557,34 +2273,22 @@ app.get(
 app.post(
   "/api/check-in",
   async (req, res) => {
-
     try {
-
       const {
         code,
         event_key
       } = req.body;
 
       if (!code) {
-
-        return res.status(
-          400
-        ).json({
-
-          success:
-            false,
-
+        return res.status(400).json({
+          success: false,
           message:
             "Code ya mgeni inahitajika."
-
         });
-
       }
 
       const guestCode =
-        String(
-          code
-        ).trim();
+        normalizeCode(code);
 
       const eventKey =
         normalizeEventKey(
@@ -2604,70 +2308,52 @@ app.post(
       const {
         data: guest,
         error: findError
-      } =
-        await supabase
-          .from(
-            "guests"
-          )
-          .select("*")
-          .eq(
-            "guest_code",
-            guestCode
-          )
-          .eq(
-            "event_key",
-            eventKey
-          )
-          .limit(1)
-          .maybeSingle();
+      } = await supabase
+        .from("guests")
+        .select("*")
+        .eq(
+          "guest_code",
+          guestCode
+        )
+        .eq(
+          "event_key",
+          eventKey
+        )
+        .order(
+          "created_at",
+          {
+            ascending:
+              false
+          }
+        )
+        .limit(1)
+        .maybeSingle();
 
       if (findError) {
-
         console.error(
           "Check-in search error:",
           findError.message
         );
 
-        return res.status(
-          500
-        ).json({
-
-          success:
-            false,
-
+        return res.status(500).json({
+          success: false,
           message:
             findError.message
-
         });
-
       }
 
       if (!guest) {
-
-        return res.status(
-          404
-        ).json({
-
-          success:
-            false,
+        return res.status(404).json({
+          success: false,
 
           message:
-            "Mgeni mwenye code hiyo hakupatikana kwenye event hii."
-
+            `Mgeni mwenye code ${guestCode} kwenye event ${eventKey} hakupatikana.`
         });
-
       }
 
-      if (
-        guest.scanned_at
-      ) {
-
-        return res.status(
-          409
-        ).json({
-
-          success:
-            false,
+      if (guest.scanned_at) {
+        return res.status(409).json({
+          success: false,
 
           alreadyCheckedIn:
             true,
@@ -2675,98 +2361,68 @@ app.post(
           message:
             "Mgeni huyu tayari ameshaingia ukumbini.",
 
-          guest:
-            guest
-
+          guest
         });
-
       }
 
       const {
         data: updatedGuest,
         error: updateError
-      } =
-        await supabase
-          .from(
-            "guests"
-          )
-          .update({
-
-            scanned_at:
-              new Date().toISOString()
-
-          })
-          .eq(
-            "id",
-            guest.id
-          )
-          .select()
-          .single();
+      } = await supabase
+        .from("guests")
+        .update({
+          scanned_at:
+            new Date().toISOString()
+        })
+        .eq(
+          "id",
+          guest.id
+        )
+        .select()
+        .single();
 
       if (updateError) {
-
         console.error(
           "Check-in update error:",
           updateError.message
         );
 
-        return res.status(
-          500
-        ).json({
-
-          success:
-            false,
-
+        return res.status(500).json({
+          success: false,
           message:
             updateError.message
-
         });
-
       }
 
       console.log(
         "Guest checked in:",
         updatedGuest.full_name,
-        updatedGuest.guest_code,
-        updatedGuest.event_key
+        updatedGuest.event_key,
+        updatedGuest.guest_code
       );
 
-      return res.status(
-        200
-      ).json({
-
-        success:
-          true,
+      return res.status(200).json({
+        success: true,
 
         message:
           "Mgeni ameingia ukumbini.",
 
         guest:
           updatedGuest
-
       });
 
     } catch (error) {
-
       console.error(
         "Check-in error:",
         error.message
       );
 
-      return res.status(
-        500
-      ).json({
-
-        success:
-          false,
-
+      return res.status(500).json({
+        success: false,
         message:
           error.message
-
       });
-
     }
-
   }
 );
 
@@ -2777,27 +2433,17 @@ app.post(
 app.post(
   "/api/check-in-qr",
   async (req, res) => {
-
     try {
-
       const {
         qr_token
       } = req.body;
 
       if (!qr_token) {
-
-        return res.status(
-          400
-        ).json({
-
-          success:
-            false,
-
+        return res.status(400).json({
+          success: false,
           message:
             "QR Token inahitajika."
-
         });
-
       }
 
       const qrToken =
@@ -2813,66 +2459,41 @@ app.post(
       const {
         data: guest,
         error: findError
-      } =
-        await supabase
-          .from(
-            "guests"
-          )
-          .select("*")
-          .eq(
-            "qr_token",
-            qrToken
-          )
-          .limit(1)
-          .maybeSingle();
+      } = await supabase
+        .from("guests")
+        .select("*")
+        .eq(
+          "qr_token",
+          qrToken
+        )
+        .limit(1)
+        .maybeSingle();
 
       if (findError) {
-
         console.error(
           "QR check-in search error:",
           findError.message
         );
 
-        return res.status(
-          500
-        ).json({
-
-          success:
-            false,
-
+        return res.status(500).json({
+          success: false,
           message:
             findError.message
-
         });
-
       }
 
       if (!guest) {
-
-        return res.status(
-          404
-        ).json({
-
-          success:
-            false,
+        return res.status(404).json({
+          success: false,
 
           message:
             "QR Code hii si ya mgeni aliyesajiliwa."
-
         });
-
       }
 
-      if (
-        guest.scanned_at
-      ) {
-
-        return res.status(
-          409
-        ).json({
-
-          success:
-            false,
+      if (guest.scanned_at) {
+        return res.status(409).json({
+          success: false,
 
           alreadyCheckedIn:
             true,
@@ -2880,222 +2501,68 @@ app.post(
           message:
             "Mgeni huyu tayari ameshaingia ukumbini.",
 
-          guest:
-            guest
-
+          guest
         });
-
       }
 
       const {
         data: updatedGuest,
         error: updateError
-      } =
-        await supabase
-          .from(
-            "guests"
-          )
-          .update({
-
-            scanned_at:
-              new Date().toISOString()
-
-          })
-          .eq(
-            "id",
-            guest.id
-          )
-          .select()
-          .single();
+      } = await supabase
+        .from("guests")
+        .update({
+          scanned_at:
+            new Date().toISOString()
+        })
+        .eq(
+          "id",
+          guest.id
+        )
+        .select()
+        .single();
 
       if (updateError) {
-
         console.error(
           "QR check-in update error:",
           updateError.message
         );
 
-        return res.status(
-          500
-        ).json({
-
-          success:
-            false,
-
+        return res.status(500).json({
+          success: false,
           message:
             updateError.message
-
         });
-
       }
 
       console.log(
         "QR CHECK-IN SUCCESS:",
         updatedGuest.full_name,
-        updatedGuest.guest_code,
-        updatedGuest.event_key
+        updatedGuest.event_key,
+        updatedGuest.guest_code
       );
 
-      return res.status(
-        200
-      ).json({
-
-        success:
-          true,
+      return res.status(200).json({
+        success: true,
 
         message:
           "QR Check-in imefanikiwa.",
 
         guest:
           updatedGuest
-
       });
 
     } catch (error) {
-
       console.error(
         "QR check-in error:",
         error.message
       );
 
-      return res.status(
-        500
-      ).json({
-
-        success:
-          false,
-
+      return res.status(500).json({
+        success: false,
         message:
           error.message
-
       });
-
     }
-
-  }
-);
-
-/* =========================================================
-   EVENTS LIST
-========================================================= */
-
-app.get(
-  "/api/events",
-  async (req, res) => {
-
-    try {
-
-      const {
-        data,
-        error
-      } =
-        await supabase
-          .from(
-            "guests"
-          )
-          .select(
-            "event_key"
-          )
-          .not(
-            "event_key",
-            "is",
-            null
-          );
-
-      if (error) {
-
-        return res.status(
-          500
-        ).json({
-
-          success:
-            false,
-
-          error:
-            error.message
-
-        });
-
-      }
-
-      const events =
-        [
-          ...new Set(
-            (data || [])
-              .map(
-                item =>
-                  item.event_key
-              )
-              .filter(Boolean)
-          )
-        ];
-
-      return res.status(
-        200
-      ).json({
-
-        success:
-          true,
-
-        default_event:
-          DEFAULT_EVENT,
-
-        events:
-          events
-
-      });
-
-    } catch (error) {
-
-      return res.status(
-        500
-      ).json({
-
-        success:
-          false,
-
-        error:
-          error.message
-
-      });
-
-    }
-
-  }
-);
-
-/* =========================================================
-   HEALTH CHECK
-========================================================= */
-
-app.get(
-  "/health",
-  (req, res) => {
-
-    res.status(
-      200
-    ).json({
-
-      success:
-        true,
-
-      message:
-        "GeitaCard server iko hai.",
-
-      qr_system:
-        "enabled",
-
-      event_system:
-        "enabled",
-
-      default_event:
-        DEFAULT_EVENT,
-
-      storage_bucket:
-        STORAGE_BUCKET
-
-    });
-
   }
 );
 
@@ -3106,7 +2573,6 @@ app.get(
 app.listen(
   PORT,
   () => {
-
     console.log(
       "=============================================="
     );
@@ -3147,7 +2613,7 @@ app.listen(
 
     console.log(
       "Default Event:",
-      DEFAULT_EVENT
+      DEFAULT_EVENT_KEY
     );
 
     console.log(
@@ -3158,6 +2624,5 @@ app.listen(
     console.log(
       "=============================================="
     );
-
   }
 );
