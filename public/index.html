@@ -2,7 +2,10 @@
 <html lang="sw">
 <head>
   <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta
+    name="viewport"
+    content="width=device-width, initial-scale=1.0"
+  >
 
   <title>GeitaCard - Dashboard</title>
 
@@ -10,6 +13,7 @@
   <script src="https://unpkg.com/html5-qrcode"></script>
 
   <style>
+
     * {
       box-sizing: border-box;
       margin: 0;
@@ -25,57 +29,61 @@
     header {
       background: #111827;
       color: white;
-      padding: 20px;
+      padding: 14px 15px;
     }
 
     header h1 {
-      font-size: 26px;
+      font-size: 20px;
     }
 
     header p {
-      margin-top: 6px;
-      opacity: .8;
+      margin-top: 4px;
+      opacity: .75;
+      font-size: 12px;
     }
 
     .container {
       max-width: 1300px;
       margin: auto;
-      padding: 20px;
+      padding: 15px;
     }
 
     .section {
       background: white;
-      padding: 20px;
-      border-radius: 14px;
-      margin-bottom: 20px;
+      padding: 15px;
+      border-radius: 13px;
+      margin-bottom: 15px;
       box-shadow: 0 2px 8px rgba(0,0,0,.07);
     }
 
     h2 {
-      margin-bottom: 10px;
+      font-size: 17px;
+      margin-bottom: 8px;
     }
 
     h3 {
-      margin-bottom: 10px;
+      font-size: 15px;
+      margin-bottom: 8px;
     }
 
     .description {
       color: #6b7280;
-      line-height: 1.6;
-      margin-bottom: 18px;
+      line-height: 1.55;
+      margin-bottom: 14px;
+      font-size: 13px;
     }
 
     .event-grid {
       display: grid;
       grid-template-columns: 1fr 1fr;
-      gap: 20px;
+      gap: 14px;
     }
 
     .event-form {
       background: #eff6ff;
       border: 1px solid #bfdbfe;
-      padding: 18px;
-      border-radius: 12px;
+      padding: 14px;
+      border-radius: 11px;
     }
 
     .event-form h3 {
@@ -85,11 +93,11 @@
     input,
     select {
       width: 100%;
-      padding: 13px;
+      padding: 11px;
       border: 1px solid #d1d5db;
       border-radius: 8px;
-      font-size: 15px;
-      margin-bottom: 10px;
+      font-size: 14px;
+      margin-bottom: 9px;
       background: white;
     }
 
@@ -100,14 +108,14 @@
     }
 
     input[type="file"] {
-      padding: 10px;
+      padding: 9px;
     }
 
     button {
       border: none;
-      border-radius: 8px;
-      padding: 12px 17px;
-      font-size: 15px;
+      border-radius: 7px;
+      padding: 10px 13px;
+      font-size: 13px;
       font-weight: bold;
       cursor: pointer;
     }
@@ -149,51 +157,52 @@
 
     .button-row {
       display: flex;
-      gap: 10px;
+      gap: 8px;
       flex-wrap: wrap;
-      margin-top: 12px;
+      margin-top: 10px;
     }
 
     .event-select-box {
       background: #eff6ff;
       border: 1px solid #93c5fd;
-      border-radius: 12px;
-      padding: 18px;
-      margin-bottom: 20px;
+      border-radius: 11px;
+      padding: 14px;
     }
 
     .selected-event {
       background: #dbeafe;
       color: #1e40af;
-      padding: 14px;
-      border-radius: 8px;
-      margin-top: 10px;
-      line-height: 1.6;
+      padding: 11px;
+      border-radius: 7px;
+      margin-top: 8px;
+      line-height: 1.55;
+      font-size: 13px;
     }
 
     .card-preview {
-      margin-top: 15px;
+      margin-top: 12px;
       background: white;
       border: 1px solid #dbeafe;
-      border-radius: 10px;
-      padding: 15px;
+      border-radius: 9px;
+      padding: 10px;
       text-align: center;
     }
 
     .card-preview img {
       max-width: 100%;
-      max-height: 450px;
-      border-radius: 8px;
+      max-height: 400px;
+      border-radius: 7px;
       border: 1px solid #ddd;
       display: block;
-      margin: 12px auto;
+      margin: 10px auto;
     }
 
     .card-url {
-      font-size: 12px;
+      font-size: 11px;
       color: #6b7280;
       word-break: break-all;
       text-align: left;
+      line-height: 1.5;
     }
 
     .hidden {
@@ -201,10 +210,11 @@
     }
 
     .message {
-      padding: 13px;
-      border-radius: 8px;
-      margin-top: 12px;
-      line-height: 1.6;
+      padding: 10px;
+      border-radius: 7px;
+      margin-top: 10px;
+      line-height: 1.5;
+      font-size: 13px;
     }
 
     .success {
@@ -224,15 +234,18 @@
 
     .event-list {
       display: grid;
-      grid-template-columns: repeat(auto-fit, minmax(260px, 1fr));
-      gap: 15px;
-      margin-top: 15px;
+      grid-template-columns: repeat(
+        auto-fit,
+        minmax(250px, 1fr)
+      );
+      gap: 12px;
+      margin-top: 12px;
     }
 
     .event-card {
       border: 1px solid #e5e7eb;
-      border-radius: 12px;
-      padding: 15px;
+      border-radius: 10px;
+      padding: 12px;
       background: #fff;
     }
 
@@ -242,22 +255,23 @@
 
     .event-card img {
       width: 100%;
-      max-height: 250px;
+      max-height: 220px;
       object-fit: contain;
-      border-radius: 8px;
-      margin: 10px 0;
+      border-radius: 7px;
+      margin: 8px 0;
       border: 1px solid #ddd;
     }
 
     .event-key {
       font-weight: bold;
       color: #2563eb;
+      font-size: 13px;
     }
 
     .upload-box {
       border: 2px dashed #9ca3af;
-      border-radius: 12px;
-      padding: 25px;
+      border-radius: 10px;
+      padding: 18px;
       text-align: center;
       background: #f9fafb;
     }
@@ -270,36 +284,39 @@
       display: inline-block;
       background: #111827;
       color: white;
-      padding: 14px 20px;
-      border-radius: 8px;
+      padding: 11px 15px;
+      border-radius: 7px;
       cursor: pointer;
       font-weight: bold;
+      font-size: 13px;
     }
 
     .file-name {
-      margin-top: 12px;
+      margin-top: 9px;
       font-weight: bold;
       color: #374151;
+      font-size: 12px;
     }
 
     .table-container {
       overflow-x: auto;
       border: 1px solid #e5e7eb;
-      border-radius: 10px;
-      margin-top: 15px;
+      border-radius: 8px;
+      margin-top: 12px;
     }
 
     table {
       width: 100%;
       border-collapse: collapse;
-      min-width: 900px;
+      min-width: 850px;
     }
 
     th,
     td {
-      padding: 12px;
+      padding: 9px;
       border-bottom: 1px solid #eee;
       text-align: left;
+      font-size: 13px;
     }
 
     th {
@@ -323,9 +340,9 @@
 
     .status {
       display: inline-block;
-      padding: 6px 10px;
+      padding: 5px 8px;
       border-radius: 20px;
-      font-size: 12px;
+      font-size: 11px;
       font-weight: bold;
       white-space: nowrap;
     }
@@ -357,32 +374,37 @@
 
     .stats {
       display: grid;
-      grid-template-columns: repeat(auto-fit, minmax(170px, 1fr));
-      gap: 15px;
-      margin-bottom: 20px;
+      grid-template-columns:
+        repeat(
+          auto-fit,
+          minmax(125px, 1fr)
+        );
+      gap: 9px;
+      margin-bottom: 15px;
     }
 
     .stat-card {
       background: white;
-      padding: 20px;
-      border-radius: 12px;
-      box-shadow: 0 2px 8px rgba(0,0,0,.07);
+      padding: 12px;
+      border-radius: 10px;
+      box-shadow: 0 2px 7px rgba(0,0,0,.07);
     }
 
     .stat-card h3 {
       color: #6b7280;
-      font-size: 14px;
+      font-size: 11px;
+      margin-bottom: 5px;
     }
 
     .number {
-      font-size: 30px;
+      font-size: 24px;
       font-weight: bold;
     }
 
     .checkin-form {
       display: grid;
-      grid-template-columns: 220px 1fr auto;
-      gap: 10px;
+      grid-template-columns: 210px 1fr auto;
+      gap: 8px;
     }
 
     .checkin-form input,
@@ -391,25 +413,25 @@
     }
 
     .qr-box {
-      margin-top: 20px;
+      margin-top: 15px;
       background: #f9fafb;
       border: 1px solid #e5e7eb;
-      border-radius: 12px;
-      padding: 18px;
+      border-radius: 10px;
+      padding: 13px;
     }
 
     #qr-reader {
       max-width: 450px;
-      margin-top: 15px;
+      margin-top: 12px;
     }
 
     .progress {
-      margin-top: 15px;
+      margin-top: 12px;
       display: none;
     }
 
     .progress-bar {
-      height: 18px;
+      height: 16px;
       background: #e5e7eb;
       border-radius: 20px;
       overflow: hidden;
@@ -423,23 +445,42 @@
     }
 
     .progress-text {
-      margin-top: 8px;
+      margin-top: 7px;
       font-weight: bold;
+      font-size: 12px;
     }
 
     .small {
       color: #6b7280;
-      font-size: 13px;
+      font-size: 11px;
       line-height: 1.5;
     }
 
     .loading {
-      padding: 25px;
+      padding: 20px;
       text-align: center;
       color: #6b7280;
+      font-size: 13px;
+    }
+
+    .url-box {
+      background: #fff;
+      border: 1px solid #bfdbfe;
+      border-radius: 8px;
+      padding: 10px;
+      margin-top: 10px;
+    }
+
+    .url-box label {
+      display: block;
+      font-weight: bold;
+      color: #1e3a8a;
+      font-size: 12px;
+      margin-bottom: 6px;
     }
 
     @media(max-width: 800px) {
+
       .event-grid {
         grid-template-columns: 1fr;
       }
@@ -451,23 +492,25 @@
       .checkin-form button {
         width: 100%;
       }
+
     }
 
     @media(max-width: 600px) {
+
       .container {
-        padding: 12px;
+        padding: 10px;
       }
 
       .section {
-        padding: 15px;
+        padding: 12px;
       }
 
       header {
-        padding: 15px;
+        padding: 12px 10px;
       }
 
       header h1 {
-        font-size: 21px;
+        font-size: 19px;
       }
 
       button {
@@ -477,18 +520,40 @@
       .button-row {
         flex-direction: column;
       }
+
+      .stats {
+        grid-template-columns:
+          repeat(3, 1fr);
+      }
+
+      .stat-card {
+        padding: 10px;
+      }
+
+      .number {
+        font-size: 21px;
+      }
+
     }
+
   </style>
 </head>
 
 <body>
 
 <header>
+
   <h1>GeitaCard</h1>
-  <p>Mfumo wa Mialiko, Events na Dashboard ya Wahudhuriaji</p>
+
+  <p>
+    Mfumo wa Mialiko na Dashboard ya Wahudhuriaji
+  </p>
+
 </header>
 
+
 <div class="container">
+
 
   <!-- =====================================================
        EVENT MANAGEMENT
@@ -499,17 +564,21 @@
     <h2>🎟️ EVENT MANAGEMENT</h2>
 
     <p class="description">
-      Hapa ndipo unatengeneza Event na ku-upload kadi yake.
-      Kila Event ina kadi yake tofauti.
+      Hapa ndipo unatengeneza Event na kuweka Kadi yake.
+      Kila Event inaweza kuwa na Kadi yake tofauti.
     </p>
 
+
     <div class="event-grid">
+
 
       <!-- CREATE EVENT -->
 
       <div class="event-form">
 
-        <h3>➕ Tengeneza Event Mpya</h3>
+        <h3>
+          ➕ Tengeneza Event Mpya
+        </h3>
 
         <input
           id="newEventKey"
@@ -536,6 +605,7 @@
           value="sw"
         >
 
+
         <div class="upload-box">
 
           <label
@@ -560,6 +630,7 @@
 
         </div>
 
+
         <div class="button-row">
 
           <button
@@ -571,6 +642,7 @@
 
         </div>
 
+
         <div
           id="createEventMessage"
         ></div>
@@ -578,21 +650,29 @@
       </div>
 
 
-      <!-- CHANGE EVENT CARD -->
+
+      <!-- CHANGE CARD -->
 
       <div class="event-form">
 
-        <h3>🖼️ Badilisha Kadi ya Event</h3>
+        <h3>
+          🖼️ Badilisha Kadi ya Event
+        </h3>
 
         <p class="small">
-          Chagua Event kwanza, kisha upload kadi mpya.
+          Chagua Event kisha unaweza upload Kadi mpya
+          au kuweka URL ya Kadi moja kwa moja.
         </p>
 
+
         <select id="cardEventSelect">
+
           <option value="">
             -- CHAGUA EVENT --
           </option>
+
         </select>
+
 
         <input
           type="file"
@@ -600,18 +680,47 @@
           accept="image/png,image/jpeg,image/webp"
         >
 
+
+        <div class="url-box">
+
+          <label>
+            🔗 AU WEKA URL YA KADI MOJA KWA MOJA
+          </label>
+
+          <input
+            id="cardUrlInput"
+            type="url"
+            placeholder="https://example.com/kadi.jpg"
+          >
+
+          <button
+            class="primary"
+            style="width:100%"
+            onclick="changeCardUrl()"
+          >
+            🔗 HIFADHI CARD URL
+          </button>
+
+        </div>
+
+
         <div
           id="changeCardPreview"
           class="card-preview hidden"
         >
-          <strong>Preview ya Kadi Mpya</strong>
+
+          <strong>
+            Preview ya Kadi Mpya
+          </strong>
 
           <img
             id="changeCardImage"
             src=""
             alt="Preview"
           >
+
         </div>
+
 
         <div class="button-row">
 
@@ -624,6 +733,7 @@
 
         </div>
 
+
         <div
           id="changeCardMessage"
         ></div>
@@ -635,56 +745,74 @@
   </div>
 
 
+
   <!-- =====================================================
-       EVENTS LIST
+       EVENTS
   ====================================================== -->
 
   <div class="section">
 
-    <h2>📋 EVENTS ZILIZOPO</h2>
+    <h2>
+      📋 EVENTS ZILIZOPO
+    </h2>
 
     <div
       id="eventsList"
       class="event-list"
     >
+
       <div class="loading">
         Inapakia Events...
       </div>
+
     </div>
 
   </div>
 
 
+
   <!-- =====================================================
-       EVENT SELECTOR
+       SELECT EVENT
   ====================================================== -->
 
   <div class="section">
 
-    <h2>🎯 CHAGUA EVENT YA KUTUMIA</h2>
+    <h2>
+      🎯 CHAGUA EVENT YA KUTUMIA
+    </h2>
 
     <div class="event-select-box">
 
       <select id="eventSelect">
+
         <option value="">
           ⏳ Inapakia Events...
         </option>
+
       </select>
+
 
       <div
         id="selectedEventDisplay"
         class="selected-event"
       >
+
         🎟️ Event:
-        <strong>HAIJAWEKWA</strong>
+        <strong>
+          HAIJAWEKWA
+        </strong>
+
       </div>
+
 
       <div
         id="selectedCardPreview"
         class="card-preview hidden"
       >
 
-        <h3>🖼️ Kadi ya Event Hii</h3>
+        <h3>
+          🖼️ Kadi ya Event Hii
+        </h3>
 
         <img
           id="selectedCardImage"
@@ -704,19 +832,24 @@
   </div>
 
 
+
   <!-- =====================================================
-       EXCEL / CSV
+       EXCEL
   ====================================================== -->
 
   <div class="section">
 
-    <h2>📁 UPLOAD EXCEL / CSV</h2>
+    <h2>
+      📁 UPLOAD EXCEL / CSV
+    </h2>
 
     <p class="description">
 
-      Columns zinazotakiwa:
+      Excel yako iwe na columns hizi tu:
 
-      <strong>Namba | Jina | Code</strong>
+      <strong>
+        Namba | Jina | Code
+      </strong>
 
       <br><br>
 
@@ -728,16 +861,36 @@
 
       <br>
 
-      Event haiandikwi kwenye Excel.
-      Inatoka kwenye Event uliyochagua hapo juu.
+      au
+
+      <strong>
+        255714567890 | Juma Mohamed | 9751-SINGLE
+      </strong>
+
+      <br><br>
+
+      <strong>
+        ⚠️ Event haiandikwi kwenye Excel.
+      </strong>
+
+      <br>
+
+      Event inachaguliwa hapa kwenye Dashboard.
+      Kwa hiyo Excel inaweza kutumika kwa Event yoyote
+      utakayochagua.
 
     </p>
 
+
+    <!-- SELECTED EXCEL EVENT -->
+
     <div class="selected-event">
 
-      🎟️ Event ya Excel:
+      🎟️ Event ya Excel hii:
 
-      <strong id="excelEventName">
+      <strong
+        id="excelEventName"
+      >
         HAIJAWEKWA
       </strong>
 
@@ -745,15 +898,31 @@
 
       🔑 Event Key:
 
-      <strong id="excelEventKey">
+      <strong
+        id="excelEventKey"
+      >
         -
       </strong>
 
+      <br>
+
+      <span class="small">
+
+        Mfano:
+        EVENT_A,
+        EVENT_B,
+        HARUSI_2026
+
+      </span>
+
     </div>
+
+
+    <!-- EXCEL UPLOAD -->
 
     <div
       class="upload-box"
-      style="margin-top:18px"
+      style="margin-top:15px"
     >
 
       <label
@@ -776,9 +945,11 @@
 
     </div>
 
+
     <div
       id="uploadMessage"
     ></div>
+
 
 
     <!-- PREVIEW -->
@@ -786,17 +957,26 @@
     <div
       id="previewSection"
       class="hidden"
-      style="margin-top:20px"
+      style="margin-top:15px"
     >
 
-      <h3>👀 PREVIEW YA WAGENI</h3>
+      <h3>
+        👀 PREVIEW YA WAGENI
+      </h3>
 
-      <div
-        class="selected-event"
-      >
+
+      <div class="selected-event">
+
         Jumla ya Wageni:
-        <strong id="previewCount">0</strong>
+
+        <strong
+          id="previewCount"
+        >
+          0
+        </strong>
+
       </div>
+
 
       <div class="table-container">
 
@@ -805,22 +985,34 @@
           <thead>
 
             <tr>
+
               <th>#</th>
+
               <th>Namba</th>
+
               <th>Jina</th>
+
               <th>Code</th>
+
               <th>Aina</th>
+
               <th>Event</th>
+
               <th>Kadi</th>
+
             </tr>
 
           </thead>
 
-          <tbody id="previewBody"></tbody>
+
+          <tbody
+            id="previewBody"
+          ></tbody>
 
         </table>
 
       </div>
+
 
       <div class="button-row">
 
@@ -832,6 +1024,7 @@
           🚀 TUMA BULK WHATSAPP
         </button>
 
+
         <button
           class="gray"
           onclick="clearExcel()"
@@ -840,6 +1033,7 @@
         </button>
 
       </div>
+
 
       <div
         id="bulkProgress"
@@ -855,6 +1049,7 @@
 
         </div>
 
+
         <div
           id="progressText"
           class="progress-text"
@@ -863,6 +1058,7 @@
         </div>
 
       </div>
+
 
       <div
         id="bulkResult"
@@ -873,61 +1069,110 @@
   </div>
 
 
+
   <!-- =====================================================
-       DASHBOARD STATS
+       STATS
   ====================================================== -->
 
   <div class="stats">
 
     <div class="stat-card">
-      <h3>Jumla ya Wageni</h3>
+
+      <h3>
+        Jumla ya Wageni
+      </h3>
+
       <div
         id="total"
         class="number"
-      >0</div>
+      >
+        0
+      </div>
+
     </div>
 
+
     <div class="stat-card">
-      <h3>Watashiriki</h3>
+
+      <h3>
+        Watashiriki
+      </h3>
+
       <div
         id="confirmed"
         class="number"
-      >0</div>
+      >
+        0
+      </div>
+
     </div>
 
+
     <div class="stat-card">
-      <h3>Hawashiriki</h3>
+
+      <h3>
+        Hawashiriki
+      </h3>
+
       <div
         id="declined"
         class="number"
-      >0</div>
+      >
+        0
+      </div>
+
     </div>
 
+
     <div class="stat-card">
-      <h3>Sina Uhakika</h3>
+
+      <h3>
+        Sina Uhakika
+      </h3>
+
       <div
         id="maybe"
         class="number"
-      >0</div>
+      >
+        0
+      </div>
+
     </div>
 
+
     <div class="stat-card">
-      <h3>Bado Hawajajibu</h3>
+
+      <h3>
+        Bado Hawajajibu
+      </h3>
+
       <div
         id="pending"
         class="number"
-      >0</div>
+      >
+        0
+      </div>
+
     </div>
 
+
     <div class="stat-card">
-      <h3>Wameingia Ukumbini</h3>
+
+      <h3>
+        Wameingia Ukumbini
+      </h3>
+
       <div
         id="checkedIn"
         class="number"
-      >0</div>
+      >
+        0
+      </div>
+
     </div>
 
   </div>
+
 
 
   <!-- =====================================================
@@ -936,23 +1181,33 @@
 
   <div class="section">
 
-    <h2>🎟️ CHECK-IN YA MGENI</h2>
+    <h2>
+      🎟️ CHECK-IN YA MGENI
+    </h2>
 
     <p class="description">
-      Unaweza kutumia Code au QR Token.
+
+      Unaweza kutumia Code au QR Code ya mgeni.
       Code lazima ihusishwe na Event sahihi.
-      QR Token ni unique kwa kila mgeni.
+
     </p>
 
-    <h3>🔢 Check-in kwa Code</h3>
+
+    <h3>
+      🔢 Check-in kwa Code
+    </h3>
+
 
     <div class="checkin-form">
 
       <select id="checkinEvent">
+
         <option value="">
           -- CHAGUA EVENT --
         </option>
+
       </select>
+
 
       <input
         id="checkinCode"
@@ -960,6 +1215,7 @@
         placeholder="Mfano: 9750-KAMATI"
         autocomplete="off"
       >
+
 
       <button
         id="checkinButton"
@@ -971,21 +1227,30 @@
 
     </div>
 
+
     <div
       id="checkinMessage"
     ></div>
+
 
 
     <!-- QR -->
 
     <div class="qr-box">
 
-      <h3>📷 Check-in kwa QR Code</h3>
+      <h3>
+        📷 Check-in kwa QR Code
+      </h3>
 
       <p class="small">
-        Bonyeza ANZA KUSCAN QR, ruhusu camera,
-        kisha elekeza camera kwenye QR ya kadi.
+
+        Bonyeza ANZA KUSCAN QR,
+        ruhusu camera,
+        kisha elekeza camera kwenye QR
+        ya kadi ya mwaliko.
+
       </p>
+
 
       <div class="button-row">
 
@@ -996,6 +1261,7 @@
         >
           📷 ANZA KUSCAN QR
         </button>
+
 
         <button
           id="stopQrButton"
@@ -1008,10 +1274,12 @@
 
       </div>
 
+
       <div
         id="qr-reader"
         style="display:none"
       ></div>
+
 
       <div
         id="qrMessage"
@@ -1022,13 +1290,17 @@
   </div>
 
 
+
   <!-- =====================================================
        GUEST DASHBOARD
   ====================================================== -->
 
   <div class="section">
 
-    <h2>👥 WAHUDHURIAJI</h2>
+    <h2>
+      👥 WAHUDHURIAJI
+    </h2>
+
 
     <div class="button-row">
 
@@ -1036,21 +1308,37 @@
         id="search"
         type="text"
         placeholder="Tafuta jina, simu, code au event..."
-        style="flex:1; min-width:220px; margin:0"
+        style="
+          flex:1;
+          min-width:200px;
+          margin:0
+        "
       >
+
 
       <select
         id="eventFilter"
-        style="flex:1; min-width:200px; margin:0"
+        style="
+          flex:1;
+          min-width:170px;
+          margin:0
+        "
       >
+
         <option value="all">
           Events zote
         </option>
+
       </select>
+
 
       <select
         id="statusFilter"
-        style="flex:1; min-width:180px; margin:0"
+        style="
+          flex:1;
+          min-width:150px;
+          margin:0
+        "
       >
 
         <option value="all">
@@ -1075,9 +1363,14 @@
 
       </select>
 
+
       <select
         id="checkinFilter"
-        style="flex:1; min-width:180px; margin:0"
+        style="
+          flex:1;
+          min-width:150px;
+          margin:0
+        "
       >
 
         <option value="all">
@@ -1094,12 +1387,14 @@
 
       </select>
 
+
       <button
         class="primary"
         onclick="loadGuests()"
       >
         🔄 REFRESH
       </button>
+
 
       <button
         class="green"
@@ -1110,6 +1405,7 @@
 
     </div>
 
+
     <div class="table-container">
 
       <div
@@ -1119,10 +1415,12 @@
         Inapakia wageni...
       </div>
 
+
       <div
         id="guestError"
-        class="error hidden"
+        class="message error hidden"
       ></div>
+
 
       <table
         id="guestTable"
@@ -1132,19 +1430,31 @@
         <thead>
 
           <tr>
+
             <th>#</th>
+
             <th>Jina</th>
+
             <th>Simu</th>
+
             <th>Code</th>
+
             <th>Event</th>
+
             <th>Aina</th>
+
             <th>Ushiriki</th>
+
             <th>Check-in</th>
+
           </tr>
 
         </thead>
 
-        <tbody id="guestBody"></tbody>
+
+        <tbody
+          id="guestBody"
+        ></tbody>
 
       </table>
 
@@ -1155,6 +1465,7 @@
 </div>
 
 
+
 <script>
 
 /* =========================================================
@@ -1162,12 +1473,17 @@
 ========================================================= */
 
 let events = [];
+
 let selectedEvent = null;
+
 let uploadedContacts = [];
+
 let guests = [];
 
 let qrScanner = null;
+
 let qrProcessing = false;
+
 let bulkSending = false;
 
 
@@ -1176,22 +1492,34 @@ let bulkSending = false;
 ========================================================= */
 
 const eventSelect =
-  document.getElementById("eventSelect");
+  document.getElementById(
+    "eventSelect"
+  );
 
 const cardEventSelect =
-  document.getElementById("cardEventSelect");
+  document.getElementById(
+    "cardEventSelect"
+  );
 
 const checkinEvent =
-  document.getElementById("checkinEvent");
+  document.getElementById(
+    "checkinEvent"
+  );
 
 const excelFile =
-  document.getElementById("excelFile");
+  document.getElementById(
+    "excelFile"
+  );
 
 const newEventCard =
-  document.getElementById("newEventCard");
+  document.getElementById(
+    "newEventCard"
+  );
 
 const changeEventCardInput =
-  document.getElementById("changeEventCard");
+  document.getElementById(
+    "changeEventCard"
+  );
 
 
 /* =========================================================
@@ -1200,42 +1528,65 @@ const changeEventCardInput =
 
 function escapeHtml(value) {
 
-  return String(value ?? "")
-    .replace(/&/g, "&amp;")
-    .replace(/</g, "&lt;")
-    .replace(/>/g, "&gt;")
-    .replace(/"/g, "&quot;")
-    .replace(/'/g, "&#039;");
+  return String(
+    value ?? ""
+  )
+    .replace(
+      /&/g,
+      "&amp;"
+    )
+    .replace(
+      /</g,
+      "&lt;"
+    )
+    .replace(
+      />/g,
+      "&gt;"
+    )
+    .replace(
+      /"/g,
+      "&quot;"
+    )
+    .replace(
+      /'/g,
+      "&#039;"
+    );
 
 }
 
 
 /* =========================================================
-   BASE64 FILE
+   FILE TO BASE64
 ========================================================= */
 
 function fileToBase64(file) {
 
-  return new Promise((resolve, reject) => {
+  return new Promise(
+    (resolve, reject) => {
 
-    const reader =
-      new FileReader();
+      const reader =
+        new FileReader();
 
-    reader.onload =
-      () => resolve(reader.result);
+      reader.onload =
+        () => resolve(
+          reader.result
+        );
 
-    reader.onerror =
-      reject;
+      reader.onerror =
+        reject;
 
-    reader.readAsDataURL(file);
+      reader.readAsDataURL(
+        file
+      );
 
-  });
+    }
+  );
 
 }
 
 
 /* =========================================================
-   NEW EVENT CARD NAME
+   NEW CARD NAME
 ========================================================= */
 
 newEventCard.addEventListener(
@@ -1301,7 +1652,7 @@ changeEventCardInput.addEventListener(
 
 
 /* =========================================================
-   EVENT SELECT CHANGE
+   EVENT SELECT
 ========================================================= */
 
 eventSelect.addEventListener(
@@ -1418,12 +1769,16 @@ function updateSelectedEvent() {
   display.innerHTML = `
 
     🎟️ Event:
-    <strong>${escapeHtml(name)}</strong>
+    <strong>
+      ${escapeHtml(name)}
+    </strong>
 
     <br>
 
     🔑 Event Key:
-    <strong>${escapeHtml(key)}</strong>
+    <strong>
+      ${escapeHtml(key)}
+    </strong>
 
     <br>
 
@@ -1496,7 +1851,8 @@ async function loadEvents() {
       await fetch(
         "/api/events",
         {
-          cache: "no-store"
+          cache:
+            "no-store"
         }
       );
 
@@ -1516,6 +1872,7 @@ async function loadEvents() {
 
     }
 
+
     events =
       Array.isArray(
         result.events
@@ -1523,7 +1880,9 @@ async function loadEvents() {
         ? result.events
         : [];
 
+
     populateEventSelectors();
+
     renderEventsList();
 
 
@@ -1536,6 +1895,9 @@ async function loadEvents() {
         events[0];
 
       eventSelect.value =
+        selectedEvent.event_key;
+
+      checkinEvent.value =
         selectedEvent.event_key;
 
       updateSelectedEvent();
@@ -1555,7 +1917,8 @@ async function loadEvents() {
 
       <div class="message error">
 
-        ❌ ${escapeHtml(
+        ❌
+        ${escapeHtml(
           error.message
         )}
 
@@ -1569,7 +1932,7 @@ async function loadEvents() {
 
 
 /* =========================================================
-   POPULATE EVENT SELECTORS
+   POPULATE SELECTORS
 ========================================================= */
 
 function populateEventSelectors() {
@@ -1674,7 +2037,7 @@ function populateEventSelectors() {
 
 
 /* =========================================================
-   EVENTS LIST
+   RENDER EVENTS
 ========================================================= */
 
 function renderEventsList() {
@@ -1749,9 +2112,7 @@ function renderEventsList() {
                 src="${escapeHtml(
                   event.card_image_url
                 )}"
-                alt="Kadi ${escapeHtml(
-                  name
-                )}"
+                alt="Kadi"
               >
 
             `
@@ -1765,7 +2126,9 @@ function renderEventsList() {
             `
         }
 
+
         <p class="small">
+
           Template:
           ${escapeHtml(
             event.template_name || "-"
@@ -1777,27 +2140,27 @@ function renderEventsList() {
           ${escapeHtml(
             event.template_language || "-"
           )}
+
         </p>
+
 
         <div class="button-row">
 
           <button
             class="blue"
-            onclick="selectEventByKey('${escapeHtml(
-              key
-            )}')"
+            onclick="selectEventByKey('${key}')"
           >
             🎯 CHAGUA
           </button>
 
+
           <button
             class="orange"
-            onclick="selectCardEvent('${escapeHtml(
-              key
-            )}')"
+            onclick="selectCardEvent('${key}')"
           >
             🖼️ BADILISHA KADI
           </button>
+
 
           <button
             class="red"
@@ -1839,18 +2202,14 @@ function selectEventByKey(
         )
           .trim()
           .toUpperCase() ===
-        String(
-          key
-        )
+        String(key)
           .trim()
           .toUpperCase()
     ) || null;
 
 
   if (!selectedEvent) {
-
     return;
-
   }
 
 
@@ -1862,13 +2221,12 @@ function selectEventByKey(
 
   updateSelectedEvent();
 
-  window.scrollTo({
-    top:
-      eventSelect
-        .closest(".section")
-        .offsetTop,
+
+  eventSelect.scrollIntoView({
     behavior:
-      "smooth"
+      "smooth",
+    block:
+      "center"
   });
 
 }
@@ -1886,8 +2244,11 @@ function selectCardEvent(
     key;
 
   document.getElementById(
-    "changeEventCard"
-  ).scrollIntoView({
+    "cardUrlInput"
+  ).value =
+    "";
+
+  cardEventSelect.scrollIntoView({
     behavior:
       "smooth",
     block:
@@ -1908,6 +2269,7 @@ async function createEvent() {
       "createEventMessage"
     );
 
+
   message.innerHTML =
     "";
 
@@ -1915,22 +2277,35 @@ async function createEvent() {
   const eventKey =
     document.getElementById(
       "newEventKey"
-    ).value.trim().toUpperCase();
+    )
+      .value
+      .trim()
+      .toUpperCase();
+
 
   const eventName =
     document.getElementById(
       "newEventName"
-    ).value.trim();
+    )
+      .value
+      .trim();
+
 
   const templateName =
     document.getElementById(
       "newTemplateName"
-    ).value.trim();
+    )
+      .value
+      .trim();
+
 
   const templateLanguage =
     document.getElementById(
       "newTemplateLanguage"
-    ).value.trim();
+    )
+      .value
+      .trim();
+
 
   const cardFile =
     newEventCard.files[0];
@@ -1949,12 +2324,16 @@ async function createEvent() {
   }
 
 
-  if (!/^[A-Z0-9_-]+$/.test(eventKey)) {
+  if (
+    !/^[A-Z0-9_-]+$/.test(
+      eventKey
+    )
+  ) {
 
     showMessage(
       message,
       "error",
-      "⚠️ Event Key inaweza kuwa na A-Z, 0-9, _ na - tu."
+      "⚠️ Event Key si sahihi."
     );
 
     return;
@@ -1967,7 +2346,7 @@ async function createEvent() {
     showMessage(
       message,
       "error",
-      "⚠️ Tafadhali upload Kadi ya Event."
+      "⚠️ Upload Kadi ya Event."
     );
 
     return;
@@ -2100,7 +2479,7 @@ async function createEvent() {
 
 
 /* =========================================================
-   CHANGE EVENT CARD
+   CHANGE CARD BY UPLOAD
 ========================================================= */
 
 async function changeEventCard() {
@@ -2110,12 +2489,14 @@ async function changeEventCard() {
       "changeCardMessage"
     );
 
+
   message.innerHTML =
     "";
 
 
   const key =
     cardEventSelect.value;
+
 
   const file =
     changeEventCardInput.files[0];
@@ -2139,7 +2520,7 @@ async function changeEventCard() {
     showMessage(
       message,
       "error",
-      "⚠️ Chagua kadi mpya."
+      "⚠️ Chagua Kadi mpya."
     );
 
     return;
@@ -2155,9 +2536,7 @@ async function changeEventCard() {
         )
           .trim()
           .toUpperCase() ===
-        String(
-          key
-        )
+        String(key)
           .trim()
           .toUpperCase()
     );
@@ -2181,7 +2560,7 @@ async function changeEventCard() {
     showMessage(
       message,
       "warning",
-      "⏳ Ina-upload kadi mpya..."
+      "⏳ Ina-upload Kadi mpya..."
     );
 
 
@@ -2248,6 +2627,7 @@ async function changeEventCard() {
     changeEventCardInput.value =
       "";
 
+
     document.getElementById(
       "changeCardPreview"
     ).classList.add(
@@ -2258,18 +2638,203 @@ async function changeEventCard() {
     await loadEvents();
 
 
+    selectedEvent =
+      events.find(
+        item =>
+          item.id ===
+          event.id
+      ) || selectedEvent;
+
+
+    updateSelectedEvent();
+
+
+  } catch (error) {
+
+    showMessage(
+      message,
+      "error",
+      "❌ " +
+      error.message
+    );
+
+  }
+
+}
+
+
+/* =========================================================
+   CHANGE CARD URL
+========================================================= */
+
+async function changeCardUrl() {
+
+  const message =
+    document.getElementById(
+      "changeCardMessage"
+    );
+
+
+  const key =
+    cardEventSelect.value;
+
+
+  const url =
+    document.getElementById(
+      "cardUrlInput"
+    )
+      .value
+      .trim();
+
+
+  message.innerHTML =
+    "";
+
+
+  if (!key) {
+
+    showMessage(
+      message,
+      "error",
+      "⚠️ Chagua Event kwanza."
+    );
+
+    return;
+
+  }
+
+
+  if (!url) {
+
+    showMessage(
+      message,
+      "error",
+      "⚠️ Weka URL ya Kadi."
+    );
+
+    return;
+
+  }
+
+
+  if (
+    !/^https?:\/\//i.test(
+      url
+    )
+  ) {
+
+    showMessage(
+      message,
+      "error",
+      "⚠️ URL lazima ianze na https:// au http://"
+    );
+
+    return;
+
+  }
+
+
+  const event =
+    events.find(
+      item =>
+        String(
+          item.event_key
+        )
+          .trim()
+          .toUpperCase() ===
+        String(key)
+          .trim()
+          .toUpperCase()
+    );
+
+
+  if (!event) {
+
+    showMessage(
+      message,
+      "error",
+      "❌ Event haikupatikana."
+    );
+
+    return;
+
+  }
+
+
+  try {
+
+    showMessage(
+      message,
+      "warning",
+      "⏳ Inahifadhi Card URL..."
+    );
+
+
+    const response =
+      await fetch(
+        `/api/events/${event.id}/card-url`,
+        {
+
+          method:
+            "POST",
+
+          headers: {
+            "Content-Type":
+              "application/json"
+          },
+
+          body:
+            JSON.stringify({
+
+              card_image_url:
+                url
+
+            })
+
+        }
+      );
+
+
+    const result =
+      await response.json();
+
+
     if (
-      selectedEvent &&
-      selectedEvent.id ===
-        event.id
+      !response.ok ||
+      !result.success
     ) {
 
-      selectedEvent =
-        result.event;
-
-      updateSelectedEvent();
+      throw new Error(
+        result.error ||
+        result.message ||
+        "URL haikuhifadhiwa."
+      );
 
     }
+
+
+    showMessage(
+      message,
+      "success",
+      "✅ URL ya Kadi imehifadhiwa."
+    );
+
+
+    await loadEvents();
+
+
+    selectedEvent =
+      events.find(
+        item =>
+          item.id ===
+          event.id
+      ) || selectedEvent;
+
+
+    eventSelect.value =
+      selectedEvent.event_key;
+
+    updateSelectedEvent();
 
 
   } catch (error) {
@@ -2299,6 +2864,7 @@ async function disableEvent(
       "⚠️ Unataka kuzima Event hii?"
     );
 
+
   if (!confirmed) {
     return;
   }
@@ -2327,15 +2893,16 @@ async function disableEvent(
 
       throw new Error(
         result.error ||
-        result.message
+        result.message ||
+        "Event haikuzimwa."
       );
 
     }
 
 
     if (
-      selectedEvent?.id ===
-      id
+      selectedEvent &&
+      selectedEvent.id === id
     ) {
 
       selectedEvent =
@@ -2362,7 +2929,7 @@ async function disableEvent(
 
 
 /* =========================================================
-   EXCEL UPLOAD
+   EXCEL
 ========================================================= */
 
 excelFile.addEventListener(
@@ -2377,6 +2944,7 @@ async function handleExcelFile(
 
   const file =
     event.target.files[0];
+
 
   const message =
     document.getElementById(
@@ -2399,12 +2967,21 @@ async function handleExcelFile(
     "📄 " + file.name;
 
 
+  /*
+    MUHIMU:
+
+    Excel haina Event Key.
+
+    Event inatoka kwenye selectedEvent
+    ya Dashboard.
+  */
+
   if (!selectedEvent) {
 
     showMessage(
       message,
       "error",
-      "⚠️ Chagua Event kwanza."
+      "⚠️ Chagua Event kwanza kwenye 'CHAGUA EVENT YA KUTUMIA'."
     );
 
     excelFile.value =
@@ -2420,7 +2997,7 @@ async function handleExcelFile(
     showMessage(
       message,
       "error",
-      "⚠️ Event hii haina Kadi. Upload kadi kwanza."
+      "⚠️ Event hii haina Kadi. Weka Card URL au upload Kadi kwanza."
     );
 
     excelFile.value =
@@ -2508,6 +3085,7 @@ async function handleExcelFile(
 
     uploadedContacts =
       [];
+
 
     document.getElementById(
       "previewSection"
@@ -2631,13 +3209,17 @@ function getColumn(
     const found =
       keys.find(
         key =>
-          key.trim().toLowerCase() ===
-          name.trim().toLowerCase()
+          key.trim()
+            .toLowerCase() ===
+          name.trim()
+            .toLowerCase()
       );
 
 
     if (found) {
+
       return row[found];
+
     }
 
   }
@@ -2649,7 +3231,7 @@ function getColumn(
 
 
 /* =========================================================
-   VALIDATE CONTACTS
+   VALIDATE
 ========================================================= */
 
 function validateContacts(
@@ -2667,23 +3249,29 @@ function validateContacts(
 
 
       if (!contact.to) {
+
         errors.push(
           `Row ${row}: Namba haipo`
         );
+
       }
 
 
       if (!contact.name) {
+
         errors.push(
           `Row ${row}: Jina halipo`
         );
+
       }
 
 
       if (!contact.code) {
+
         errors.push(
           `Row ${row}: Code haipo`
         );
+
       }
 
     }
@@ -2694,8 +3282,13 @@ function validateContacts(
 
     throw new Error(
       errors
-        .slice(0, 15)
-        .join(" | ")
+        .slice(
+          0,
+          15
+        )
+        .join(
+          " | "
+        )
     );
 
   }
@@ -2748,7 +3341,9 @@ function renderPreview() {
 
       row.innerHTML = `
 
-        <td>${index + 1}</td>
+        <td>
+          ${index + 1}
+        </td>
 
         <td>
           ${escapeHtml(
@@ -2897,7 +3492,7 @@ async function sendBulkInvitations() {
   if (!selectedEvent) {
 
     alert(
-      "⚠️ Chagua Event."
+      "⚠️ Chagua Event kwanza."
     );
 
     return;
@@ -2941,7 +3536,7 @@ async function sendBulkInvitations() {
       "\nWageni: " +
       uploadedContacts.length +
 
-      "\n\nKila mgeni atapata QR yake binafsi." +
+      "\n\nKadi ya Event hii itatumwa kwa wageni hawa." +
 
       "\n\nEndelea?"
 
@@ -2962,20 +3557,24 @@ async function sendBulkInvitations() {
       "bulkButton"
     );
 
+
   const progress =
     document.getElementById(
       "bulkProgress"
     );
+
 
   const fill =
     document.getElementById(
       "progressFill"
     );
 
+
   const text =
     document.getElementById(
       "progressText"
     );
+
 
   const resultBox =
     document.getElementById(
@@ -3004,6 +3603,13 @@ async function sendBulkInvitations() {
 
 
   try {
+
+    /*
+      Event inachukuliwa hapa moja kwa moja
+      kutoka kwenye Dashboard.
+
+      Excel yenyewe haina Event.
+    */
 
     const contacts =
       uploadedContacts.map(
@@ -3101,11 +3707,13 @@ async function sendBulkInvitations() {
     text.innerText =
       "❌ Imeshindikana.";
 
+
     resultBox.innerHTML = `
 
       <div class="message error">
 
-        ❌ ${escapeHtml(
+        ❌
+        ${escapeHtml(
           error.message
         )}
 
@@ -3172,7 +3780,8 @@ function showBulkResult(
 
     <div class="message success">
 
-      ✅ <strong>
+      ✅
+      <strong>
         Bulk send imekamilika
       </strong>
 
@@ -3191,7 +3800,10 @@ function showBulkResult(
 
       Jumla:
       <strong>
-        ${result.total || results.length}
+        ${
+          result.total ||
+          results.length
+        }
       </strong>
 
       <br>
@@ -3228,7 +3840,10 @@ function showBulkResult(
           item =>
             !item.success
         )
-        .slice(0, 20);
+        .slice(
+          0,
+          20
+        );
 
 
     let html = `
@@ -3252,7 +3867,9 @@ function showBulkResult(
           ${escapeHtml(
             item.name || "-"
           )}
+
           -
+
           ${escapeHtml(
             item.code || "-"
           )}
@@ -3297,18 +3914,22 @@ function clearExcel() {
   uploadedContacts =
     [];
 
+
   excelFile.value =
     "";
+
 
   document.getElementById(
     "fileName"
   ).innerText =
     "";
 
+
   document.getElementById(
     "previewBody"
   ).innerHTML =
     "";
+
 
   document.getElementById(
     "previewSection"
@@ -3316,15 +3937,18 @@ function clearExcel() {
     "hidden"
   );
 
+
   document.getElementById(
     "uploadMessage"
   ).innerHTML =
     "";
 
+
   document.getElementById(
     "bulkResult"
   ).innerHTML =
     "";
+
 
   document.getElementById(
     "bulkProgress"
@@ -3351,7 +3975,9 @@ async function checkInGuest() {
   const code =
     document.getElementById(
       "checkinCode"
-    ).value.trim();
+    )
+      .value
+      .trim();
 
 
   const message =
@@ -3450,8 +4076,14 @@ async function checkInGuest() {
         message,
         "success",
         `
-          ✅ <strong>CHECK-IN IMEFANIKIWA!</strong>
+
+          ✅
+          <strong>
+            CHECK-IN IMEFANIKIWA!
+          </strong>
+
           <br><br>
+
           Jina:
           <strong>
             ${escapeHtml(
@@ -3464,7 +4096,8 @@ async function checkInGuest() {
           Code:
           <strong>
             ${escapeHtml(
-              guest.guest_code || code
+              guest.guest_code ||
+              code
             )}
           </strong>
 
@@ -3477,6 +4110,7 @@ async function checkInGuest() {
               eventKey
             )}
           </strong>
+
         `
       );
 
@@ -3495,8 +4129,7 @@ async function checkInGuest() {
 
 
     if (
-      response.status ===
-      409
+      response.status === 409
     ) {
 
       const guest =
@@ -3507,8 +4140,14 @@ async function checkInGuest() {
         message,
         "warning",
         `
-          ⚠️ <strong>MGENI AMESHA-CHECK-IN!</strong>
+
+          ⚠️
+          <strong>
+            MGENI AMESHA-CHECK-IN!
+          </strong>
+
           <br><br>
+
           Jina:
           <strong>
             ${escapeHtml(
@@ -3525,6 +4164,7 @@ async function checkInGuest() {
               eventKey
             )}
           </strong>
+
         `
       );
 
@@ -3577,15 +4217,18 @@ async function startQRScanner() {
       "qr-reader"
     );
 
+
   const start =
     document.getElementById(
       "startQrButton"
     );
 
+
   const stop =
     document.getElementById(
       "stopQrButton"
     );
+
 
   const message =
     document.getElementById(
@@ -3605,7 +4248,7 @@ async function startQRScanner() {
     showMessage(
       message,
       "error",
-      "❌ QR Scanner library haijapakia. Refresh ukurasa."
+      "❌ QR Scanner haijapakia. Refresh ukurasa."
     );
 
     return;
@@ -3676,8 +4319,10 @@ async function startQRScanner() {
           return;
         }
 
+
         qrProcessing =
           true;
+
 
         await processQRCheckin(
           decodedText
@@ -3694,6 +4339,7 @@ async function startQRScanner() {
 
     qrScanner =
       null;
+
 
     reader.style.display =
       "none";
@@ -3728,10 +4374,12 @@ async function stopQRScanner() {
       "qr-reader"
     );
 
+
   const start =
     document.getElementById(
       "startQrButton"
     );
+
 
   const stop =
     document.getElementById(
@@ -3775,6 +4423,7 @@ async function stopQRScanner() {
   qrProcessing =
     false;
 
+
   reader.style.display =
     "none";
 
@@ -3788,7 +4437,7 @@ async function stopQRScanner() {
 
 
 /* =========================================================
-   PROCESS QR CHECK-IN
+   PROCESS QR
 ========================================================= */
 
 async function processQRCheckin(
@@ -3826,7 +4475,6 @@ async function processQRCheckin(
 
             })
 
-          }
         }
       );
 
@@ -3848,7 +4496,11 @@ async function processQRCheckin(
         message,
         "success",
         `
-          ✅ <strong>QR CHECK-IN IMEFANIKIWA!</strong>
+
+          ✅
+          <strong>
+            QR CHECK-IN IMEFANIKIWA!
+          </strong>
 
           <br><br>
 
@@ -3876,6 +4528,7 @@ async function processQRCheckin(
               guest.event_key || "-"
             )}
           </strong>
+
         `
       );
 
@@ -3912,7 +4565,11 @@ async function processQRCheckin(
         message,
         "warning",
         `
-          ⚠️ <strong>QR HII IMESHA-CHECK-IN!</strong>
+
+          ⚠️
+          <strong>
+            QR HII IMESHA-CHECK-IN!
+          </strong>
 
           <br><br>
 
@@ -3931,6 +4588,7 @@ async function processQRCheckin(
               guest.event_key || "-"
             )}
           </strong>
+
         `
       );
 
@@ -3959,6 +4617,7 @@ async function processQRCheckin(
       error.message
     );
 
+
     qrProcessing =
       false;
 
@@ -3978,10 +4637,12 @@ async function loadGuests() {
       "loading"
     );
 
+
   const table =
     document.getElementById(
       "guestTable"
     );
+
 
   const error =
     document.getElementById(
@@ -3992,12 +4653,15 @@ async function loadGuests() {
   loading.style.display =
     "block";
 
+
   table.style.display =
     "none";
+
 
   error.classList.add(
     "hidden"
   );
+
 
   error.innerText =
     "";
@@ -4051,6 +4715,7 @@ async function loadGuests() {
     loading.style.display =
       "none";
 
+
     table.style.display =
       "table";
 
@@ -4060,9 +4725,11 @@ async function loadGuests() {
     loading.style.display =
       "none";
 
+
     error.innerText =
       "❌ " +
       err.message;
+
 
     error.classList.remove(
       "hidden"
@@ -4169,13 +4836,16 @@ function populateEventFilter() {
             "option"
           );
 
+
         option.value =
           key;
+
 
         option.textContent =
           event?.event_name
             ? `${event.event_name} (${key})`
             : key;
+
 
         select.appendChild(
           option
@@ -4273,6 +4943,7 @@ function updateStats() {
   ).innerText =
     list.filter(
       g =>
+        !g.attendance_status ||
         g.attendance_status ===
         "pending"
     ).length;
@@ -4331,8 +5002,11 @@ function renderGuests() {
         const text = [
 
           guest.full_name,
+
           guest.phone,
+
           guest.guest_code,
+
           guest.event_key
 
         ]
@@ -4343,7 +5017,9 @@ function renderGuests() {
               )
                 .toLowerCase()
           )
-          .join(" ");
+          .join(
+            " "
+          );
 
 
         const matchSearch =
@@ -4352,10 +5028,14 @@ function renderGuests() {
           );
 
 
+        const guestStatus =
+          guest.attendance_status ||
+          "pending";
+
+
         const matchStatus =
           status === "all" ||
-          guest.attendance_status ===
-            status;
+          guestStatus === status;
 
 
         const matchEvent =
@@ -4391,10 +5071,12 @@ function renderGuests() {
 
 
         return (
+
           matchSearch &&
           matchStatus &&
           matchEvent &&
           matchCheckin
+
         );
 
       }
@@ -4419,14 +5101,20 @@ function renderGuests() {
 
         <td
           colspan="8"
-          style="text-align:center;padding:30px"
+          style="
+            text-align:center;
+            padding:25px
+          "
         >
+
           Hakuna mgeni aliyepatikana.
+
         </td>
 
       </tr>
 
     `;
+
 
     updateStats();
 
@@ -4489,6 +5177,7 @@ function renderGuests() {
         </td>
 
         <td>
+
           ${
             guest.scanned_at
 
@@ -4502,6 +5191,7 @@ function renderGuests() {
 
               : "—"
           }
+
         </td>
 
       `;
@@ -4580,7 +5270,7 @@ function statusLabel(
 
 
 /* =========================================================
-   DOWNLOAD
+   DOWNLOAD ATTENDANCE
 ========================================================= */
 
 function downloadAttendance() {
@@ -4592,7 +5282,7 @@ function downloadAttendance() {
 
 
 /* =========================================================
-   SEARCH / FILTER LISTENERS
+   SEARCH
 ========================================================= */
 
 document.getElementById(
@@ -4626,6 +5316,7 @@ document.getElementById(
   () => {
 
     updateStats();
+
     renderGuests();
 
   }
@@ -4671,4 +5362,4 @@ document.addEventListener(
 </script>
 
 </body>
-  </html>
+</html>
