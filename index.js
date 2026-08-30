@@ -26,9 +26,11 @@ if (
   !SUPABASE_URL ||
   !SUPABASE_SERVICE_ROLE_KEY
 ) {
+
   console.error(
     "ERROR: SUPABASE_URL au SUPABASE_SERVICE_ROLE_KEY haipo."
   );
+
 }
 
 const supabase =
@@ -72,68 +74,48 @@ const PORT =
 
 
 /* =========================================================
-   STORAGE
+   EVENT SYSTEM
+========================================================= */
+
+/*
+   HII NDIYO EVENT DEFAULT.
+
+   Kama request haijatuma event_key,
+   mfumo utatumia DEFAULT_EVENT.
+
+   Mfano:
+
+   EVENT A
+   event_key = HARUSI_TWAIBA
+
+   EVENT B
+   event_key = SENDOFF_TWAIBA
+
+   Mtu mmoja anaweza kuwa na:
+
+   code = 9752-SINGLE
+   event_key = HARUSI_TWAIBA
+
+   na pia:
+
+   code = 9752-SINGLE
+   event_key = SENDOFF_TWAIBA
+
+   bila duplicate conflict.
+*/
+
+const DEFAULT_EVENT =
+  process.env.DEFAULT_EVENT ||
+  "DEFAULT_EVENT";
+
+
+/* =========================================================
+   SUPABASE STORAGE
 ========================================================= */
 
 const STORAGE_BUCKET =
   process.env.STORAGE_BUCKET ||
   "guest-cards";
-
-
-/* =========================================================
-   EVENT SYSTEM
-========================================================= */
-
-/*
-  EVENT_KEY ni kitambulisho cha event.
-
-  Mfano:
-
-  HARUSI_TWAIBA_2026
-  SENDOFF_TWAIBA_2026
-
-  Mtu mmoja anaweza kuwa na invitation
-  nyingi kwa events tofauti.
-*/
-
-const DEFAULT_EVENT_KEY =
-  String(
-    process.env.DEFAULT_EVENT_KEY ||
-    "DEFAULT_EVENT"
-  )
-    .trim();
-
-
-function normalizeEventKey(
-  eventKey
-) {
-
-  const value =
-    String(
-      eventKey ||
-      ""
-    )
-      .trim();
-
-  if (!value) {
-    return DEFAULT_EVENT_KEY;
-  }
-
-  return value
-    .toUpperCase()
-    .replace(
-      /\s+/g,
-      "_"
-    )
-    .replace(
-      /[^A-Z0-9_-]/g,
-      "_"
-    )
-    .substring(
-      0,
-      100
-    );
-}
 
 
 /* =========================================================
@@ -157,11 +139,11 @@ const QR_SIZE =
 
 
 /* =========================================================
-   SERVER START
+   SERVER START MESSAGE
 ========================================================= */
 
 console.log(
-  "=================================================="
+  "=============================================="
 );
 
 console.log(
@@ -202,7 +184,7 @@ console.log(
 
 console.log(
   "Default Event:",
-  DEFAULT_EVENT_KEY
+  DEFAULT_EVENT
 );
 
 console.log(
@@ -213,7 +195,11 @@ console.log(
 );
 
 console.log(
-  "=================================================="
+  "WhatsApp Media Upload: ENABLED"
+);
+
+console.log(
+  "=============================================="
 );
 
 
@@ -234,7 +220,7 @@ app.get(
 
 
 /* =========================================================
-   WEBHOOK VERIFICATION
+   WHATSAPP WEBHOOK VERIFICATION
 ========================================================= */
 
 app.get(
@@ -277,9 +263,7 @@ app.get(
     );
 
 
-    return res.sendStatus(
-      403
-    );
+    return res.sendStatus(403);
 
   }
 );
@@ -289,9 +273,7 @@ app.get(
    NORMALIZE PHONE
 ========================================================= */
 
-function normalizePhone(
-  phone
-) {
+function normalizePhone(phone) {
 
   return String(
     phone || ""
@@ -305,22 +287,47 @@ function normalizePhone(
 
 
 /* =========================================================
+   NORMALIZE EVENT
+========================================================= */
+
+function normalizeEvent(eventKey) {
+
+  const value =
+    String(
+      eventKey ||
+      DEFAULT_EVENT
+    )
+      .trim();
+
+  return value || DEFAULT_EVENT;
+
+}
+
+
+/* =========================================================
    CREATE UNIQUE QR TOKEN
 ========================================================= */
 
 function createQRToken() {
 
   /*
-    crypto.randomUUID()
-    inatengeneza token tofauti kabisa.
+    UUID ni unique.
 
-    Mfano:
+    Kila KADI inapata QR Token yake.
 
-    8a3f...
-    b927...
-    4e21...
+    Hata kama:
 
-    Kila invitation inapata token yake.
+    Mtu = Juma
+    Code = 9752-SINGLE
+    Event = HARUSI
+
+    na
+
+    Mtu = Juma
+    Code = 9752-SINGLE
+    Event = SENDOFF
+
+    QR zao zitakuwa tofauti.
   */
 
   return crypto.randomUUID();
@@ -414,12 +421,19 @@ async function downloadInvitationImage() {
 
 
 /* =========================================================
-   CREATE CARD WITH UNIQUE QR
+   CREATE CARD WITH QR
 ========================================================= */
 
 async function createCardWithQR(
   qrToken
 ) {
+
+  /*
+    1. Download background
+    2. Generate unique QR
+    3. Put QR juu ya kadi
+    4. Return PNG
+  */
 
   const originalImage =
     await downloadInvitationImage();
@@ -531,7 +545,7 @@ async function createCardWithQR(
 
 
   console.log(
-    "Card with unique QR created:",
+    "Card with QR created:",
     finalX,
     finalY,
     finalSize
@@ -544,7 +558,7 @@ async function createCardWithQR(
 
 
 /* =========================================================
-   SAFE FILE NAME
+   CREATE SAFE STORAGE FILE NAME
 ========================================================= */
 
 function safeFileName(
@@ -595,18 +609,8 @@ async function uploadCardToStorage(
 
 
   /*
-    Muhimu:
-
-    HAPA HATUTUMII:
-
-    guest-cards/filename
-
-    kwa sababu .from(STORAGE_BUCKET)
-    tayari ina bucket.
-
-    Tunatumia:
-
-    event/filename
+    QR TOKEN inafanya kila file
+    liwe unique.
   */
 
   const filePath =
@@ -690,11 +694,8 @@ async function uploadCardToStorage(
 
 
   return {
-
     filePath,
-
     publicUrl
-
   };
 
 }
@@ -744,7 +745,7 @@ async function deleteCardFromStorage(
 
 
     console.log(
-      "Unused card removed:",
+      "Unused card removed from Storage:",
       filePath
     );
 
@@ -753,68 +754,6 @@ async function deleteCardFromStorage(
 
     console.error(
       "Storage cleanup exception:",
-      error.message
-    );
-
-  }
-
-}
-
-
-/* =========================================================
-   DELETE GUEST
-========================================================= */
-
-async function deleteGuest(
-  guestId
-) {
-
-  if (
-    !guestId
-  ) {
-
-    return;
-
-  }
-
-
-  try {
-
-    const {
-      error
-    } = await supabase
-      .from(
-        "guests"
-      )
-      .delete()
-      .eq(
-        "id",
-        guestId
-      );
-
-
-    if (error) {
-
-      console.error(
-        "Guest cleanup error:",
-        error.message
-      );
-
-      return;
-
-    }
-
-
-    console.log(
-      "Guest record cleaned up:",
-      guestId
-    );
-
-
-  } catch (error) {
-
-    console.error(
-      "Guest cleanup exception:",
       error.message
     );
 
@@ -833,21 +772,18 @@ async function preparePersonalCard(
   eventKey
 ) {
 
+  /*
+    HII NDIYO TOKEN YA KIPEKEE
+    YA KADI HUSIKA.
+  */
+
   const qrToken =
     createQRToken();
 
 
   console.log(
-    "Creating unique QR token..."
-  );
-
-  console.log(
-    "Guest:",
-    name
-  );
-
-  console.log(
-    "Code:",
+    "Creating unique QR token for:",
+    name,
     code
   );
 
@@ -898,46 +834,179 @@ async function preparePersonalCard(
 
 
 /* =========================================================
-   GET INVITATION TYPE
+   UPLOAD IMAGE TO WHATSAPP / META
 ========================================================= */
 
-function getInvitationType(
-  code
+async function uploadMediaToWhatsApp(
+  cardBuffer
 ) {
 
-  const upperCode =
-    String(
-      code || ""
-    )
-      .toUpperCase();
+  /*
+    MUHIMU:
+
+    HATUTUMII tena:
+
+    image: {
+      link: Supabase URL
+    }
+
+    Badala yake:
+
+    1. Tunapakia PNG moja kwa moja Meta.
+    2. Meta inatupa media ID.
+    3. Tunatumia media ID kwenye template.
+
+    Hii inalenga kutatua:
+
+    Error 131053
+    Media upload error
+    Downloading media from weblink failed
+  */
 
 
   if (
-    upperCode.endsWith(
-      "-KAMATI"
-    )
+    !WHATSAPP_TOKEN
   ) {
 
-    return "KAMATI";
+    throw new Error(
+      "WHATSAPP_TOKEN haijawekwa."
+    );
 
   }
 
 
   if (
-    upperCode.endsWith(
-      "-SINGLE"
-    )
+    !PHONE_NUMBER_ID
   ) {
 
-    return "SINGLE";
+    throw new Error(
+      "PHONE_NUMBER_ID haijawekwa."
+    );
 
   }
 
 
-  return (
-    process.env.INVITATION_TYPE ||
-    "premium"
+  console.log(
+    "Uploading personalized card directly to WhatsApp Media..."
   );
+
+
+  /*
+    Node.js 18+ ina FormData na Blob built-in.
+
+    Kwa hiyo hakuna package nyingine
+    inayohitajika hapa.
+  */
+
+  const form =
+    new FormData();
+
+
+  form.append(
+    "messaging_product",
+    "whatsapp"
+  );
+
+
+  form.append(
+    "type",
+    "image/png"
+  );
+
+
+  const blob =
+    new Blob(
+      [
+        cardBuffer
+      ],
+      {
+        type:
+          "image/png"
+      }
+    );
+
+
+  form.append(
+    "file",
+    blob,
+    "geitacard.png"
+  );
+
+
+  const url =
+    `https://graph.facebook.com/${GRAPH_VERSION}/${PHONE_NUMBER_ID}/media`;
+
+
+  try {
+
+    const response =
+      await axios.post(
+        url,
+        form,
+        {
+          headers: {
+
+            Authorization:
+              `Bearer ${WHATSAPP_TOKEN}`
+
+          },
+
+          maxContentLength:
+            Infinity,
+
+          maxBodyLength:
+            Infinity,
+
+          timeout:
+            60000
+        }
+      );
+
+
+    const mediaId =
+      response.data?.id;
+
+
+    if (
+      !mediaId
+    ) {
+
+      throw new Error(
+        "WhatsApp Media ID haikurudi."
+      );
+
+    }
+
+
+    console.log(
+      "WhatsApp Media uploaded successfully."
+    );
+
+    console.log(
+      "Media ID:",
+      mediaId
+    );
+
+
+    return mediaId;
+
+
+  } catch (error) {
+
+    console.error(
+      "WhatsApp Media upload error:",
+      JSON.stringify(
+        error.response?.data ||
+        error.message,
+        null,
+        2
+      )
+    );
+
+
+    throw error;
+
+  }
 
 }
 
@@ -950,9 +1019,9 @@ async function saveGuest(
   to,
   name,
   code,
-  eventKey,
   qrToken,
-  cardImageUrl
+  cardImageUrl,
+  eventKey
 ) {
 
   const phone =
@@ -961,46 +1030,56 @@ async function saveGuest(
     );
 
 
-  const normalizedEvent =
-    normalizeEventKey(
+  const cleanEventKey =
+    normalizeEvent(
       eventKey
     );
 
 
   const invitationType =
-    getInvitationType(
-      code
-    );
+    String(
+      code || ""
+    )
+      .toUpperCase()
+      .endsWith(
+        "-KAMATI"
+      )
+
+      ? "KAMATI"
+
+      : String(
+          code || ""
+        )
+          .toUpperCase()
+          .endsWith(
+            "-SINGLE"
+          )
+
+        ? "SINGLE"
+
+        : (
+            process.env.INVITATION_TYPE ||
+            "premium"
+          );
 
 
-  console.log(
-    "Saving guest..."
-  );
+  /*
+    MUHIMU:
 
-  console.log(
-    "Phone:",
-    phone
-  );
+    guest_code PEKE YAKE SI UNIQUE TENA.
 
-  console.log(
-    "Name:",
-    name
-  );
+    Unique sasa ni:
 
-  console.log(
-    "Code:",
-    code
-  );
+       event_key + guest_code
 
-  console.log(
-    "Event:",
-    normalizedEvent
-  );
+    Hivyo:
 
-  console.log(
-    "QR Token:",
-    qrToken
-  );
+       EVENT A + 9752-SINGLE
+
+       EVENT B + 9752-SINGLE
+
+    zinaruhusiwa.
+  */
 
 
   const {
@@ -1025,7 +1104,7 @@ async function saveGuest(
           code,
 
         event_key:
-          normalizedEvent,
+          cleanEventKey,
 
         qr_token:
           qrToken,
@@ -1060,11 +1139,9 @@ async function saveGuest(
 
 
   console.log(
-    "Guest saved successfully:"
-  );
-
-  console.log(
-    data.full_name
+    "Guest saved:",
+    data.full_name,
+    data.guest_code
   );
 
   console.log(
@@ -1073,13 +1150,13 @@ async function saveGuest(
   );
 
   console.log(
-    "Code:",
-    data.guest_code
+    "QR Token saved:",
+    data.qr_token
   );
 
   console.log(
-    "QR:",
-    data.qr_token
+    "Card URL saved:",
+    data.card_image_url
   );
 
 
@@ -1089,7 +1166,7 @@ async function saveGuest(
 
 
 /* =========================================================
-   SEND TEXT
+   SEND TEXT MESSAGE
 ========================================================= */
 
 async function sendText(
@@ -1154,7 +1231,8 @@ async function sendText(
 
 
     console.log(
-      "Text reply sent."
+      "Text reply sent:",
+      response.data
     );
 
 
@@ -1184,7 +1262,7 @@ async function sendInvitation(
   to,
   name,
   code,
-  cardImageUrl
+  mediaId
 ) {
 
   const url =
@@ -1194,18 +1272,15 @@ async function sendInvitation(
   const components = [];
 
 
-  /*
-    PERSONAL CARD
-    yenye QR ya mgeni huyu.
-  */
+  /* -------------------------------------------------------
+     HEADER IMAGE
 
-  const imageUrl =
-    cardImageUrl ||
-    INVITE_IMAGE_URL;
-
+     SASA TUNATUMIA MEDIA ID
+     YA KADI HUSIKA.
+  ------------------------------------------------------- */
 
   if (
-    imageUrl
+    mediaId
   ) {
 
     components.push({
@@ -1222,8 +1297,8 @@ async function sendInvitation(
 
           image: {
 
-            link:
-              imageUrl
+            id:
+              mediaId
 
           }
 
@@ -1236,10 +1311,12 @@ async function sendInvitation(
   }
 
 
-  /*
-    {{1}} = Jina
-    {{2}} = Code
-  */
+  /* -------------------------------------------------------
+     BODY VARIABLES
+
+     {{1}} = Jina
+     {{2}} = Code
+  ------------------------------------------------------- */
 
   components.push({
 
@@ -1337,7 +1414,8 @@ async function sendInvitation(
 
 
     console.log(
-      "Invitation sent successfully."
+      "Invitation sent successfully:",
+      response.data
     );
 
 
@@ -1371,7 +1449,7 @@ async function sendInvitation(
 async function updateAttendance(
   phone,
   status,
-  eventKey = null
+  eventKey
 ) {
 
   const normalizedPhone =
@@ -1388,7 +1466,7 @@ async function updateAttendance(
       )
 
       .select(
-        "id, full_name, phone, guest_code, event_key, qr_token, attendance_status"
+        "id, full_name, phone, guest_code, event_key"
       )
 
       .eq(
@@ -1398,12 +1476,12 @@ async function updateAttendance(
 
 
   /*
-    Kama event imetolewa,
-    tunatumia event hiyo.
+    Kama event_key imetumwa,
+    attendance inakuwa event-specific.
 
-    Kama haijatolewa,
-    tunatumia invitation ya mwisho
-    kwa compatibility na mfumo wa zamani.
+    Kama haijatumwa,
+    tunahifadhi tabia ya zamani:
+    tunachukua record ya mwisho.
   */
 
   if (
@@ -1413,7 +1491,7 @@ async function updateAttendance(
     query =
       query.eq(
         "event_key",
-        normalizeEventKey(
+        normalizeEvent(
           eventKey
         )
       );
@@ -1422,18 +1500,21 @@ async function updateAttendance(
 
 
   const {
-    data: guestsFound,
+    data: guest,
     error: findError
-  } =
-    await query
-      .order(
-        "created_at",
-        {
-          ascending:
-            false
-        }
-      )
-      .limit(1);
+  } = await query
+
+    .order(
+      "created_at",
+      {
+        ascending:
+          false
+      }
+    )
+
+    .limit(1)
+
+    .maybeSingle();
 
 
   if (findError) {
@@ -1446,11 +1527,6 @@ async function updateAttendance(
     return null;
 
   }
-
-
-  const guest =
-    guestsFound?.[0] ||
-    null;
 
 
   if (!guest) {
@@ -1507,7 +1583,6 @@ async function updateAttendance(
     "Attendance updated:",
     guest.full_name,
     status,
-    "Event:",
     guest.event_key
   );
 
@@ -1635,7 +1710,7 @@ async function processAttendanceReply(
 
 
 /* =========================================================
-   WHATSAPP WEBHOOK
+   WHATSAPP WEBHOOK - RECEIVE MESSAGES
 ========================================================= */
 
 app.post(
@@ -1649,7 +1724,7 @@ app.post(
 
 
       console.log(
-        "=================================================="
+        "=============================================="
       );
 
       console.log(
@@ -1665,7 +1740,7 @@ app.post(
       );
 
       console.log(
-        "=================================================="
+        "=============================================="
       );
 
 
@@ -1808,7 +1883,7 @@ app.post(
 
 
       /* ---------------------------------------------------
-         OLD BUTTON
+         OLD BUTTON FORMAT
       --------------------------------------------------- */
 
       if (
@@ -1920,9 +1995,6 @@ app.post(
     let preparedCard =
       null;
 
-    let savedGuest =
-      null;
-
 
     try {
 
@@ -1970,14 +2042,14 @@ app.post(
           code
         ).trim();
 
-      const cleanEvent =
-        normalizeEventKey(
+      const cleanEventKey =
+        normalizeEvent(
           event_key
         );
 
 
       console.log(
-        "=================================================="
+        "=============================================="
       );
 
       console.log(
@@ -2001,43 +2073,38 @@ app.post(
 
       console.log(
         "Event:",
-        cleanEvent
+        cleanEventKey
       );
 
       console.log(
-        "=================================================="
+        "=============================================="
       );
 
 
       /* ---------------------------------------------------
-         1. CREATE PERSONAL CARD
+         1. CREATE PERSONAL QR + CARD
       --------------------------------------------------- */
 
       preparedCard =
         await preparePersonalCard(
           cleanName,
           cleanCode,
-          cleanEvent
+          cleanEventKey
         );
 
 
       /* ---------------------------------------------------
-         2. SAVE GUEST FIRST
+         2. UPLOAD CARD DIRECTLY TO WHATSAPP MEDIA
       --------------------------------------------------- */
 
-      savedGuest =
-        await saveGuest(
-          cleanTo,
-          cleanName,
-          cleanCode,
-          cleanEvent,
-          preparedCard.qrToken,
-          preparedCard.cardImageUrl
+      const mediaId =
+        await uploadMediaToWhatsApp(
+          preparedCard.cardBuffer
         );
 
 
       /* ---------------------------------------------------
-         3. SEND WHATSAPP
+         3. SEND PERSONAL CARD USING MEDIA ID
       --------------------------------------------------- */
 
       const result =
@@ -2045,7 +2112,22 @@ app.post(
           cleanTo,
           cleanName,
           cleanCode,
-          preparedCard.cardImageUrl
+          mediaId
+        );
+
+
+      /* ---------------------------------------------------
+         4. SAVE GUEST
+      --------------------------------------------------- */
+
+      const guest =
+        await saveGuest(
+          cleanTo,
+          cleanName,
+          cleanCode,
+          preparedCard.qrToken,
+          preparedCard.cardImageUrl,
+          cleanEventKey
         );
 
 
@@ -2057,13 +2139,16 @@ app.post(
           true,
 
         event_key:
-          cleanEvent,
+          cleanEventKey,
+
+        media_id:
+          mediaId,
 
         result:
           result,
 
         guest:
-          savedGuest
+          guest
 
       });
 
@@ -2078,20 +2163,10 @@ app.post(
 
 
       /*
-        Kama DB ili-save lakini WhatsApp
-        ikashindikana, tunafuta guest.
+        Kama process imefeli,
+        futa kadi ya Storage ambayo
+        haikutumika.
       */
-
-      if (
-        savedGuest?.id
-      ) {
-
-        await deleteGuest(
-          savedGuest.id
-        );
-
-      }
-
 
       if (
         preparedCard?.storagePath
@@ -2182,7 +2257,7 @@ app.post(
 
 
       console.log(
-        "=================================================="
+        "=============================================="
       );
 
       console.log(
@@ -2195,7 +2270,7 @@ app.post(
       );
 
       console.log(
-        "=================================================="
+        "=============================================="
       );
 
 
@@ -2238,18 +2313,19 @@ app.post(
 
 
         /*
-          EVENT KEY inaweza kutoka Excel.
+          EVENT KEY:
 
-          Kama haipo:
+          Excel/CSV inaweza kuwa na:
 
-          DEFAULT_EVENT
+          event_key
+
+          Kama haipo,
+          DEFAULT_EVENT itatumika.
         */
 
         const eventKey =
-          normalizeEventKey(
-            contact.event_key ||
-            contact.event ||
-            contact.Event
+          normalizeEvent(
+            contact.event_key
           );
 
 
@@ -2294,9 +2370,6 @@ app.post(
         let preparedCard =
           null;
 
-        let savedGuest =
-          null;
-
 
         try {
 
@@ -2330,7 +2403,7 @@ app.post(
 
 
           /* ---------------------------------------------
-             1. CREATE UNIQUE QR
+             1. CREATE UNIQUE QR + PERSONAL CARD
           --------------------------------------------- */
 
           preparedCard =
@@ -2342,28 +2415,35 @@ app.post(
 
 
           console.log(
-            "Unique QR generated:",
+            "Unique QR generated:"
+          );
+
+          console.log(
             preparedCard.qrToken
           );
 
 
           /* ---------------------------------------------
-             2. SAVE GUEST
+             2. UPLOAD PERSONAL CARD TO WHATSAPP MEDIA
           --------------------------------------------- */
 
-          savedGuest =
-            await saveGuest(
-              to,
-              name,
-              code,
-              eventKey,
-              preparedCard.qrToken,
-              preparedCard.cardImageUrl
+          const mediaId =
+            await uploadMediaToWhatsApp(
+              preparedCard.cardBuffer
             );
 
 
+          console.log(
+            "WhatsApp Media ID:"
+          );
+
+          console.log(
+            mediaId
+          );
+
+
           /* ---------------------------------------------
-             3. SEND WHATSAPP
+             3. SEND PERSONAL CARD
           --------------------------------------------- */
 
           const whatsappResult =
@@ -2371,12 +2451,27 @@ app.post(
               to,
               name,
               code,
-              preparedCard.cardImageUrl
+              mediaId
             );
 
 
           /* ---------------------------------------------
-             4. SUCCESS
+             4. SAVE GUEST
+          --------------------------------------------- */
+
+          const guest =
+            await saveGuest(
+              to,
+              name,
+              code,
+              preparedCard.qrToken,
+              preparedCard.cardImageUrl,
+              eventKey
+            );
+
+
+          /* ---------------------------------------------
+             5. RESULT
           --------------------------------------------- */
 
           results.push({
@@ -2402,8 +2497,11 @@ app.post(
             card_image_url:
               preparedCard.cardImageUrl,
 
+            media_id:
+              mediaId,
+
             guest:
-              savedGuest,
+              guest,
 
             result:
               whatsappResult
@@ -2429,21 +2527,9 @@ app.post(
 
 
           /*
-            Kama guest alishahifadhiwa
-            lakini WhatsApp ikafeli,
-            tunafuta record.
+            Ondoa card ikiwa item
+            imeshindikana.
           */
-
-          if (
-            savedGuest?.id
-          ) {
-
-            await deleteGuest(
-              savedGuest.id
-            );
-
-          }
-
 
           if (
             preparedCard?.storagePath
@@ -2483,7 +2569,8 @@ app.post(
 
 
         /*
-          Pause kati ya messages.
+          Pause ya sekunde 1
+          kati ya message.
         */
 
         if (
@@ -2523,7 +2610,7 @@ app.post(
 
 
       console.log(
-        "=================================================="
+        "=============================================="
       );
 
       console.log(
@@ -2546,7 +2633,7 @@ app.post(
       );
 
       console.log(
-        "=================================================="
+        "=============================================="
       );
 
 
@@ -2687,7 +2774,7 @@ app.get(
         error:
           error.message
 
-        });
+      });
 
     }
 
@@ -2768,11 +2855,11 @@ app.get(
             "Simu":
               guest.phone || "",
 
-            "Event":
-              guest.event_key || "",
-
             "Code":
               guest.guest_code || "",
+
+            "Event":
+              guest.event_key || "",
 
             "QR Token":
               guest.qr_token || "",
@@ -2853,12 +2940,12 @@ app.get(
 
         {
           wch:
-            25
+            20
         },
 
         {
           wch:
-            20
+            25
         },
 
         {
@@ -3013,9 +3100,9 @@ app.post(
         ).trim();
 
 
-      const cleanEvent =
+      const cleanEventKey =
         event_key
-          ? normalizeEventKey(
+          ? normalizeEvent(
               event_key
             )
           : null;
@@ -3028,597 +3115,5 @@ app.post(
 
       console.log(
         "CHECK-IN EVENT:",
-        cleanEvent ||
-        "LATEST"
-      );
-
-
-      let query =
-        supabase
-
-          .from(
-            "guests"
-          )
-
-          .select("*")
-
-          .eq(
-            "guest_code",
-            guestCode
-          );
-
-
-      /*
-        Kama event imepewa,
-        tunachagua code ndani ya event hiyo.
-
-        Kama event haijapewa,
-        tunachukua invitation ya mwisho
-        ili mfumo wa zamani uendelee kufanya kazi.
-      */
-
-      if (
-        cleanEvent
-      ) {
-
-        query =
-          query.eq(
-            "event_key",
-            cleanEvent
-          );
-
-      }
-
-
-      const {
-        data: guestsFound,
-        error: findError
-      } =
-        await query
-
-          .order(
-            "created_at",
-            {
-              ascending:
-                false
-            }
-          )
-
-          .limit(1);
-
-
-      if (findError) {
-
-        console.error(
-          "Check-in search error:",
-          findError.message
-        );
-
-
-        return res.status(
-          500
-        ).json({
-
-          success:
-            false,
-
-          message:
-            findError.message
-
-        });
-
-      }
-
-
-      const guest =
-        guestsFound?.[0] ||
-        null;
-
-
-      if (!guest) {
-
-        return res.status(
-          404
-        ).json({
-
-          success:
-            false,
-
-          message:
-            cleanEvent
-
-              ? "Mgeni mwenye code hiyo hakupatikana kwenye event hiyo."
-
-              : "Mgeni mwenye code hiyo hakupatikana."
-
-        });
-
-      }
-
-
-      if (
-        guest.scanned_at
-      ) {
-
-        return res.status(
-          409
-        ).json({
-
-          success:
-            false,
-
-          alreadyCheckedIn:
-            true,
-
-          message:
-            "Mgeni huyu tayari ameshaingia ukumbini.",
-
-          guest:
-            guest
-
-        });
-
-      }
-
-
-      const {
-        data: updatedGuest,
-        error: updateError
-      } = await supabase
-
-        .from(
-          "guests"
-        )
-
-        .update({
-
-          scanned_at:
-            new Date().toISOString()
-
-        })
-
-        .eq(
-          "id",
-          guest.id
-        )
-
-        .select()
-        .single();
-
-
-      if (updateError) {
-
-        console.error(
-          "Check-in update error:",
-          updateError.message
-        );
-
-
-        return res.status(
-          500
-        ).json({
-
-          success:
-            false,
-
-          message:
-            updateError.message
-
-        });
-
-      }
-
-
-      console.log(
-        "Guest checked in:",
-        updatedGuest.full_name
-      );
-
-      console.log(
-        "Event:",
-        updatedGuest.event_key
-      );
-
-
-      return res.status(
-        200
-      ).json({
-
-        success:
-          true,
-
-        message:
-          "Mgeni ameingia ukumbini.",
-
-        guest:
-          updatedGuest
-
-      });
-
-
-    } catch (error) {
-
-      console.error(
-        "Check-in error:",
-        error.message
-      );
-
-
-      return res.status(
-        500
-      ).json({
-
-        success:
-          false,
-
-        message:
-          error.message
-
-      });
-
-    }
-
-  }
-);
-
-
-/* =========================================================
-   QR CODE CHECK-IN
-========================================================= */
-
-app.post(
-  "/api/check-in-qr",
-  async (req, res) => {
-
-    try {
-
-      const {
-        qr_token
-      } = req.body;
-
-
-      if (
-        !qr_token
-      ) {
-
-        return res.status(
-          400
-        ).json({
-
-          success:
-            false,
-
-          message:
-            "QR Token inahitajika."
-
-        });
-
-      }
-
-
-      const qrToken =
-        String(
-          qr_token
-        ).trim();
-
-
-      console.log(
-        "QR CHECK-IN TOKEN:",
-        qrToken
-      );
-
-
-      /*
-        QR lazima iwepo database.
-      */
-
-      const {
-        data: guestsFound,
-        error: findError
-      } = await supabase
-
-        .from(
-          "guests"
-        )
-
-        .select("*")
-
-        .eq(
-          "qr_token",
-          qrToken
-        )
-
-        .limit(1);
-
-
-      if (findError) {
-
-        console.error(
-          "QR check-in search error:",
-          findError.message
-        );
-
-
-        return res.status(
-          500
-        ).json({
-
-          success:
-            false,
-
-          message:
-            findError.message
-
-        });
-
-      }
-
-
-      const guest =
-        guestsFound?.[0] ||
-        null;
-
-
-      /* ---------------------------------------------------
-         QR HAIPATIKANI
-      --------------------------------------------------- */
-
-      if (!guest) {
-
-        return res.status(
-          404
-        ).json({
-
-          success:
-            false,
-
-          message:
-            "QR Code hii si ya mgeni aliyesajiliwa."
-
-        });
-
-      }
-
-
-      /* ---------------------------------------------------
-         TAYARI CHECKED-IN
-      --------------------------------------------------- */
-
-      if (
-        guest.scanned_at
-      ) {
-
-        return res.status(
-          409
-        ).json({
-
-          success:
-            false,
-
-          alreadyCheckedIn:
-            true,
-
-          message:
-            "Mgeni huyu tayari ameshaingia ukumbini.",
-
-          guest:
-            guest
-
-        });
-
-      }
-
-
-      /* ---------------------------------------------------
-         CHECK-IN
-      --------------------------------------------------- */
-
-      const {
-        data: updatedGuest,
-        error: updateError
-      } = await supabase
-
-        .from(
-          "guests"
-        )
-
-        .update({
-
-          scanned_at:
-            new Date().toISOString()
-
-        })
-
-        .eq(
-          "id",
-          guest.id
-        )
-
-        .select()
-
-        .single();
-
-
-      if (updateError) {
-
-        console.error(
-          "QR check-in update error:",
-          updateError.message
-        );
-
-
-        return res.status(
-          500
-        ).json({
-
-          success:
-            false,
-
-          message:
-            updateError.message
-
-        });
-
-      }
-
-
-      console.log(
-        "QR CHECK-IN SUCCESS:"
-      );
-
-      console.log(
-        "Name:",
-        updatedGuest.full_name
-      );
-
-      console.log(
-        "Code:",
-        updatedGuest.guest_code
-      );
-
-      console.log(
-        "Event:",
-        updatedGuest.event_key
-      );
-
-
-      return res.status(
-        200
-      ).json({
-
-        success:
-          true,
-
-        message:
-          "QR Check-in imefanikiwa.",
-
-        guest:
-          updatedGuest
-
-      });
-
-
-    } catch (error) {
-
-      console.error(
-        "QR check-in error:",
-        error.message
-      );
-
-
-      return res.status(
-        500
-      ).json({
-
-        success:
-          false,
-
-        message:
-          error.message
-
-      });
-
-    }
-
-  }
-);
-
-
-/* =========================================================
-   HEALTH CHECK
-========================================================= */
-
-app.get(
-  "/health",
-  (req, res) => {
-
-    res.status(
-      200
-    ).json({
-
-      success:
-        true,
-
-      message:
-        "GeitaCard server iko hai.",
-
-      qr_system:
-        "enabled",
-
-      event_system:
-        "enabled",
-
-      storage_bucket:
-        STORAGE_BUCKET,
-
-      default_event:
-        DEFAULT_EVENT_KEY
-
-    });
-
-  }
-);
-
-
-/* =========================================================
-   START SERVER
-========================================================= */
-
-app.listen(
-  PORT,
-  () => {
-
-    console.log(
-      "=================================================="
-    );
-
-    console.log(
-      `Server running on port ${PORT}`
-    );
-
-    console.log(
-      "GeitaCard system READY"
-    );
-
-    console.log(
-      "Template:",
-      TEMPLATE_NAME
-    );
-
-    console.log(
-      "Language:",
-      TEMPLATE_LANGUAGE
-    );
-
-    console.log(
-      "QR System: ENABLED"
-    );
-
-    console.log(
-      "Manual Code Check-in: ENABLED"
-    );
-
-    console.log(
-      "QR Check-in: ENABLED"
-    );
-
-    console.log(
-      "Event System: ENABLED"
-    );
-
-    console.log(
-      "Storage Bucket:",
-      STORAGE_BUCKET
-    );
-
-    console.log(
-      "Default Event:",
-      DEFAULT_EVENT_KEY
-    );
-
-    console.log(
-      "=================================================="
-    );
-
-  }
-);
+        cleanEventKey ||
+        "LATEST
