@@ -95,20 +95,20 @@
 
 
     /* =====================================================
-       EVENT BOX
+       EVENT SELECTOR
     ====================================================== */
 
     .event-box {
 
       margin-bottom: 18px;
 
-      padding: 16px;
+      padding: 18px;
 
       background: #eff6ff;
 
       border: 1px solid #bfdbfe;
 
-      border-radius: 10px;
+      border-radius: 12px;
 
     }
 
@@ -133,24 +133,26 @@
     }
 
 
-    .event-input {
+    .event-select {
 
       width: 100%;
 
       padding: 14px;
 
-      border: 1px solid #cbd5e1;
+      border: 1px solid #93c5fd;
 
-      border-radius: 8px;
+      border-radius: 9px;
 
       font-size: 16px;
 
       background: white;
 
+      cursor: pointer;
+
     }
 
 
-    .event-input:focus {
+    .event-select:focus {
 
       outline: none;
 
@@ -163,19 +165,114 @@
     }
 
 
-    .event-display {
+    .selected-event {
 
-      margin-top: 12px;
+      margin-top: 14px;
 
-      padding: 10px 12px;
+      padding: 14px;
 
       background: #dbeafe;
 
       color: #1e40af;
 
+      border-radius: 9px;
+
+      line-height: 1.6;
+
+    }
+
+
+    .selected-event strong {
+
+      color: #1e3a8a;
+
+    }
+
+
+    .event-card-preview {
+
+      margin-top: 15px;
+
+      padding: 15px;
+
+      background: white;
+
+      border: 1px solid #dbeafe;
+
+      border-radius: 10px;
+
+      display: none;
+
+    }
+
+
+    .event-card-preview h4 {
+
+      margin-bottom: 10px;
+
+      color: #374151;
+
+    }
+
+
+    .event-card-preview img {
+
+      display: block;
+
+      max-width: 260px;
+
+      max-height: 350px;
+
+      width: auto;
+
+      height: auto;
+
+      margin: auto;
+
       border-radius: 8px;
 
-      font-weight: bold;
+      border: 1px solid #ddd;
+
+    }
+
+
+    .event-card-url {
+
+      margin-top: 10px;
+
+      font-size: 12px;
+
+      color: #6b7280;
+
+      word-break: break-all;
+
+    }
+
+
+    .event-loading {
+
+      color: #6b7280;
+
+      padding: 10px 0;
+
+    }
+
+
+    .event-error {
+
+      margin-top: 10px;
+
+      padding: 12px;
+
+      border-radius: 8px;
+
+      background: #fee2e2;
+
+      color: #991b1b;
+
+      display: none;
+
+      line-height: 1.5;
 
     }
 
@@ -572,6 +669,23 @@
     }
 
 
+    .result-warning {
+
+      background: #fef3c7;
+
+      color: #92400e;
+
+      padding: 13px;
+
+      border-radius: 8px;
+
+      margin-bottom: 10px;
+
+      line-height: 1.6;
+
+    }
+
+
     /* =====================================================
        STATS
     ====================================================== */
@@ -643,7 +757,8 @@
     }
 
 
-    .checkin-form input {
+    .checkin-form input,
+    .checkin-form select {
 
       flex: 1;
 
@@ -656,6 +771,8 @@
       border-radius: 8px;
 
       font-size: 16px;
+
+      background: white;
 
     }
 
@@ -943,6 +1060,23 @@
     }
 
 
+    .success-note {
+
+      margin-top: 12px;
+
+      padding: 12px;
+
+      border-radius: 8px;
+
+      background: #dcfce7;
+
+      color: #166534;
+
+      line-height: 1.5;
+
+    }
+
+
     /* =====================================================
        MOBILE
     ====================================================== */
@@ -1007,6 +1141,13 @@
 
       }
 
+
+      .event-card-preview img {
+
+        max-width: 100%;
+
+      }
+
     }
 
   </style>
@@ -1034,6 +1175,130 @@
 
 
   <!-- =====================================================
+       EVENT SELECTION
+  ====================================================== -->
+
+  <div class="section">
+
+    <h2>
+      🎟️ CHAGUA EVENT
+    </h2>
+
+
+    <p class="section-description">
+
+      Chagua Event unayotaka kutumia.
+
+      <br>
+
+      Kila Event ina Kadi yake.
+
+      <br><br>
+
+      Mfano:
+
+      <strong>EVENT_A → Kadi A</strong>
+
+      <br>
+
+      <strong>EVENT_B → Kadi B</strong>
+
+      <br><br>
+
+      Mfumo hautachanganya kadi kwa sababu Event
+      ndiyo inaamua <strong>card_image_url</strong>
+      itakayotumika.
+
+    </p>
+
+
+    <div class="event-box">
+
+      <h3>
+        📌 Event ya kutuma mialiko
+      </h3>
+
+
+      <p>
+        Chagua Event hapa chini kabla ya kupakia Excel.
+      </p>
+
+
+      <select
+        id="eventSelect"
+        class="event-select"
+      >
+
+        <option value="">
+          ⏳ Inapakia Events...
+        </option>
+
+      </select>
+
+
+      <div
+        id="eventLoading"
+        class="event-loading"
+      >
+        Inatafuta Events zilizopo...
+      </div>
+
+
+      <div
+        id="eventError"
+        class="event-error"
+      ></div>
+
+
+      <div
+        id="selectedEventDisplay"
+        class="selected-event"
+      >
+
+        🎟️ Event:
+        <strong>HAIJAWEKWA</strong>
+
+      </div>
+
+
+      <div
+        id="eventCardPreview"
+        class="event-card-preview"
+      >
+
+        <h4>
+          🖼️ Kadi itakayotumika kwenye Event hii
+        </h4>
+
+
+        <img
+          id="eventCardImage"
+          src=""
+          alt="Kadi ya Event"
+        >
+
+
+        <div
+          id="eventCardUrl"
+          class="event-card-url"
+        ></div>
+
+      </div>
+
+
+      <div class="small-note">
+
+        💡 Usichague Event nyingine wakati Bulk Send
+        tayari imeanza.
+
+      </div>
+
+    </div>
+
+  </div>
+
+
+  <!-- =====================================================
        UPLOAD EXCEL / CSV
   ====================================================== -->
 
@@ -1046,11 +1311,7 @@
 
     <p class="section-description">
 
-      Kila Event inatumia Excel yake.
-
-      <br>
-
-      Excel yenyewe inabaki na columns:
+      Excel inahitaji columns hizi:
 
       <strong>
         Namba | Jina | Code
@@ -1074,89 +1335,33 @@
 
       <br><br>
 
-      <strong>
-        Code uliyoandika kwenye Excel haitabadilishwa.
-      </strong>
+      Event haitakiwi kuandikwa ndani ya Excel.
 
       <br>
 
-      Mtu mmoja anaweza kuwepo kwenye Events tofauti
-      kwa namba ileile.
+      Event inachaguliwa juu kupitia dropdown.
+
+      <br><br>
+
+      <strong>
+        Code uliyoandika kwenye Excel hautabadilishwa.
+      </strong>
 
     </p>
 
 
-    <!-- ===================================================
-         EVENT KEY
-    ==================================================== -->
+    <div
+      id="excelEventDisplay"
+      class="selected-event"
+    >
 
-    <div class="event-box">
+      🎟️ Event ya Excel:
+      <strong>HAIJAWEKWA</strong>
 
-      <h3>
-        🎟️ Event ya Excel hii
-      </h3>
+      <br>
 
-
-      <p>
-
-        Weka Event Key ya Excel hii.
-
-        <br>
-
-        Mfano:
-
-        <strong>
-          EVENT_A
-        </strong>
-
-        au
-
-        <strong>
-          EVENT_B
-        </strong>
-
-        <br>
-
-        Event A na Event B zinaweza kuwa na mtu
-        mwenye namba ileile.
-
-      </p>
-
-
-      <input
-        type="text"
-        id="eventKey"
-        class="event-input"
-        placeholder="Mfano: EVENT_A"
-        autocomplete="off"
-        spellcheck="false"
-      >
-
-
-      <div
-        id="selectedEventDisplay"
-        class="event-display"
-      >
-
-        🎟️ Event:
-        HAIJAWEKWA
-
-      </div>
-
-
-      <div class="small-note">
-
-        💡 Tumia herufi kubwa, namba, <strong>_</strong>
-        au <strong>-</strong> tu.
-
-        <br>
-
-        Mfano:
-        EVENT_A,
-        EVENT_B,
-        HARUSI_2026
-
-      </div>
+      🖼️ Kadi:
+      <strong>HAIJAWEKWA</strong>
 
     </div>
 
@@ -1165,7 +1370,10 @@
          UPLOAD AREA
     ==================================================== -->
 
-    <div class="upload-area">
+    <div
+      class="upload-area"
+      style="margin-top:18px"
+    >
 
       <label
         for="excelFile"
@@ -1254,6 +1462,10 @@
 
               <th>
                 Event
+              </th>
+
+              <th>
+                Kadi
               </th>
 
             </tr>
@@ -1470,11 +1682,6 @@
       QR ndiyo njia salama zaidi kwa sababu
       kila kadi ina QR Token yake ya kipekee.
 
-      <br>
-
-      Code inaweza kutokea kwenye Event nyingine,
-      kwa hiyo QR inapendekezwa wakati wa check-in.
-
     </p>
 
 
@@ -1490,6 +1697,18 @@
 
 
     <div class="checkin-form">
+
+
+      <select
+        id="checkinEvent"
+      >
+
+        <option value="">
+          Chagua Event
+        </option>
+
+      </select>
+
 
       <input
         type="text"
@@ -1508,6 +1727,15 @@
         CHECK-IN
 
       </button>
+
+    </div>
+
+
+    <div class="small-note">
+
+      💡 Kwa Code, chagua Event husika kwanza.
+      Hii inazuia Code yenye jina lilelile kutoka
+      Event tofauti kuchanganywa.
 
     </div>
 
@@ -1580,8 +1808,9 @@
 
       <div class="small-note">
 
-        💡 QR lazima iwe na QR Token ya mgeni
-        iliyohifadhiwa kwenye database.
+        💡 QR Token ni wa kipekee kwa kila mgeni.
+        Hivyo QR inaweza kumtambua mgeni hata kama
+        Code yake ipo kwenye Event nyingine.
 
       </div>
 
@@ -1772,9 +2001,15 @@ let guests = [];
 
 let uploadedContacts = [];
 
+let events = [];
+
+let selectedEvent = null;
+
 let qrScanner = null;
 
 let qrProcessing = false;
+
+let bulkSending = false;
 
 
 /* =========================================================
@@ -1787,9 +2022,15 @@ const excelFile =
   );
 
 
-const eventKeyInput =
+const eventSelect =
   document.getElementById(
-    "eventKey"
+    "eventSelect"
+  );
+
+
+const checkinEvent =
+  document.getElementById(
+    "checkinEvent"
   );
 
 
@@ -1804,29 +2045,41 @@ excelFile.addEventListener(
 
 
 /* =========================================================
-   EVENT KEY LISTENER
+   EVENT SELECTOR
 ========================================================= */
 
-eventKeyInput.addEventListener(
-  "input",
+eventSelect.addEventListener(
+  "change",
   function() {
 
-    let value =
+    if (bulkSending) {
+
+      return;
+
+    }
+
+    const eventKey =
       String(
         this.value || ""
-      )
-        .toUpperCase()
-        .replace(
-          /[^A-Z0-9_-]/g,
-          ""
-        );
+      ).trim().toUpperCase();
 
 
-    this.value =
-      value;
+    selectedEvent =
+      events.find(
+        event =>
+          String(
+            event.event_key || ""
+          )
+            .trim()
+            .toUpperCase() ===
+          eventKey
+      ) || null;
 
 
-    updateEventDisplay();
+    updateSelectedEventUI();
+
+
+    syncCheckinEvent();
 
 
     if (
@@ -1842,18 +2095,280 @@ eventKeyInput.addEventListener(
 
 
 /* =========================================================
-   UPDATE EVENT DISPLAY
+   LOAD EVENTS
 ========================================================= */
 
-function updateEventDisplay() {
+async function loadEvents() {
 
-  const eventKey =
-    String(
-      eventKeyInput.value || ""
-    )
-      .trim()
-      .toUpperCase();
+  const loading =
+    document.getElementById(
+      "eventLoading"
+    );
 
+
+  const errorBox =
+    document.getElementById(
+      "eventError"
+    );
+
+
+  loading.style.display =
+    "block";
+
+
+  errorBox.style.display =
+    "none";
+
+
+  errorBox.innerText =
+    "";
+
+
+  try {
+
+    const response =
+      await fetch(
+        "/api/events",
+        {
+          cache:
+            "no-store"
+        }
+      );
+
+
+    let result;
+
+
+    try {
+
+      result =
+        await response.json();
+
+    } catch {
+
+      throw new Error(
+        "Server imerudisha majibu yasiyo sahihi."
+      );
+
+    }
+
+
+    if (
+      !response.ok ||
+      !result.success
+    ) {
+
+      throw new Error(
+        result.error ||
+        result.message ||
+        "Imeshindikana kupata Events."
+      );
+
+    }
+
+
+    events =
+      Array.isArray(
+        result.events
+      )
+        ? result.events
+        : [];
+
+
+    populateEventSelector();
+
+
+    populateCheckinEventSelector();
+
+
+    if (
+      events.length === 0
+    ) {
+
+      throw new Error(
+        "Hakuna Event active iliyopatikana kwenye database."
+      );
+
+    }
+
+
+    /*
+      Chagua Event ya kwanza
+      kama hakuna Event iliyochaguliwa.
+    */
+
+    if (
+      !selectedEvent
+    ) {
+
+      selectedEvent =
+        events[0];
+
+    }
+
+
+    eventSelect.value =
+      selectedEvent.event_key;
+
+
+    checkinEvent.value =
+      selectedEvent.event_key;
+
+
+    updateSelectedEventUI();
+
+
+    syncCheckinEvent();
+
+
+    loading.style.display =
+      "none";
+
+
+  } catch (error) {
+
+    console.error(
+      "Load events error:",
+      error
+    );
+
+
+    loading.style.display =
+      "none";
+
+
+    errorBox.innerText =
+      "❌ " +
+      error.message;
+
+
+    errorBox.style.display =
+      "block";
+
+
+    eventSelect.innerHTML = `
+
+      <option value="">
+        Hakuna Event iliyopatikana
+      </option>
+
+    `;
+
+
+    checkinEvent.innerHTML = `
+
+      <option value="">
+        Hakuna Event
+      </option>
+
+    `;
+
+  }
+
+}
+
+
+/* =========================================================
+   POPULATE EVENT SELECT
+========================================================= */
+
+function populateEventSelector() {
+
+  eventSelect.innerHTML = `
+
+    <option value="">
+      -- CHAGUA EVENT --
+    </option>
+
+  `;
+
+
+  events.forEach(
+    event => {
+
+      const option =
+        document.createElement(
+          "option"
+        );
+
+
+      option.value =
+        String(
+          event.event_key || ""
+        )
+          .trim()
+          .toUpperCase();
+
+
+      option.textContent =
+        event.event_name
+          ? `${event.event_name} (${event.event_key})`
+          : event.event_key;
+
+
+      eventSelect.appendChild(
+        option
+      );
+
+    }
+  );
+
+}
+
+
+/* =========================================================
+   POPULATE CHECKIN EVENT SELECT
+========================================================= */
+
+function populateCheckinEventSelector() {
+
+  checkinEvent.innerHTML = `
+
+    <option value="">
+      -- CHAGUA EVENT --
+    </option>
+
+  `;
+
+
+  events.forEach(
+    event => {
+
+      const option =
+        document.createElement(
+          "option"
+        );
+
+
+      option.value =
+        String(
+          event.event_key || ""
+        )
+          .trim()
+          .toUpperCase();
+
+
+      option.textContent =
+        event.event_name
+          ? `${event.event_name} (${event.event_key})`
+          : event.event_key;
+
+
+      checkinEvent.appendChild(
+        option
+      );
+
+    }
+  );
+
+}
+
+
+/* =========================================================
+   UPDATE SELECTED EVENT UI
+========================================================= */
+
+function updateSelectedEventUI() {
 
   const display =
     document.getElementById(
@@ -1861,53 +2376,292 @@ function updateEventDisplay() {
     );
 
 
-  display.innerText =
-    "🎟️ Event: " +
-    (
-      eventKey ||
-      "HAIJAWEKWA"
+  const excelDisplay =
+    document.getElementById(
+      "excelEventDisplay"
     );
 
-}
+
+  const preview =
+    document.getElementById(
+      "eventCardPreview"
+    );
 
 
-/* =========================================================
-   VALIDATE EVENT KEY
-========================================================= */
+  const image =
+    document.getElementById(
+      "eventCardImage"
+    );
 
-function validateEventKey() {
+
+  const urlBox =
+    document.getElementById(
+      "eventCardUrl"
+    );
+
+
+  if (
+    !selectedEvent
+  ) {
+
+    display.innerHTML = `
+
+      🎟️ Event:
+      <strong>HAIJAWEKWA</strong>
+
+    `;
+
+
+    excelDisplay.innerHTML = `
+
+      🎟️ Event ya Excel:
+      <strong>HAIJAWEKWA</strong>
+
+      <br>
+
+      🖼️ Kadi:
+      <strong>HAIJAWEKWA</strong>
+
+    `;
+
+
+    preview.style.display =
+      "none";
+
+
+    image.src =
+      "";
+
+
+    urlBox.innerText =
+      "";
+
+
+    return;
+
+  }
+
 
   const eventKey =
     String(
-      eventKeyInput.value || ""
+      selectedEvent.event_key || ""
     )
       .trim()
       .toUpperCase();
 
 
-  if (!eventKey) {
+  const eventName =
+    selectedEvent.event_name ||
+    eventKey;
+
+
+  const cardUrl =
+    selectedEvent.card_image_url ||
+    "";
+
+
+  display.innerHTML = `
+
+    🎟️ Event:
+
+    <strong>
+      ${escapeHtml(
+        eventName
+      )}
+    </strong>
+
+    <br>
+
+    Event Key:
+
+    <strong>
+      ${escapeHtml(
+        eventKey
+      )}
+    </strong>
+
+    <br>
+
+    🖼️ Kadi:
+
+    <strong>
+      ${
+        cardUrl
+          ? "KADI IPO"
+          : "HAINA KADI"
+      }
+    </strong>
+
+  `;
+
+
+  excelDisplay.innerHTML = `
+
+    🎟️ Event ya Excel:
+
+    <strong>
+      ${escapeHtml(
+        eventName
+      )}
+    </strong>
+
+    <br>
+
+    Event Key:
+
+    <strong>
+      ${escapeHtml(
+        eventKey
+      )}
+    </strong>
+
+    <br>
+
+    🖼️ Kadi:
+
+    <strong>
+      ${
+        cardUrl
+          ? "KADI IPO"
+          : "HAINA KADI"
+      }
+    </strong>
+
+  `;
+
+
+  if (
+    cardUrl
+  ) {
+
+    image.src =
+      cardUrl;
+
+
+    image.alt =
+      `Kadi ya ${eventName}`;
+
+
+    urlBox.innerText =
+      cardUrl;
+
+
+    preview.style.display =
+      "block";
+
+
+  } else {
+
+    preview.style.display =
+      "block";
+
+
+    image.removeAttribute(
+      "src"
+    );
+
+
+    image.alt =
+      "Kadi haijawekwa";
+
+
+    urlBox.innerText =
+      "⚠️ Event hii haina card_image_url.";
+
+  }
+
+}
+
+
+/* =========================================================
+   SYNC CHECK-IN EVENT
+========================================================= */
+
+function syncCheckinEvent() {
+
+  if (
+    selectedEvent
+  ) {
+
+    checkinEvent.value =
+      String(
+        selectedEvent.event_key || ""
+      )
+        .trim()
+        .toUpperCase();
+
+  }
+
+}
+
+
+/* =========================================================
+   GET SELECTED EVENT KEY
+========================================================= */
+
+function getSelectedEventKey() {
+
+  if (
+    !selectedEvent
+  ) {
 
     throw new Error(
-      "Tafadhali weka Event Key kwanza. Mfano: EVENT_A"
+      "Tafadhali chagua Event kwanza."
     );
 
   }
 
 
-  if (
-    !/^[A-Z0-9_-]+$/.test(
-      eventKey
+  const eventKey =
+    String(
+      selectedEvent.event_key || ""
     )
+      .trim()
+      .toUpperCase();
+
+
+  if (
+    !eventKey
   ) {
 
     throw new Error(
-      "Event Key inaweza kuwa na herufi, namba, _ au - tu."
+      "Event Key haipo."
     );
 
   }
 
 
   return eventKey;
+
+}
+
+
+/* =========================================================
+   VALIDATE SELECTED EVENT CARD
+========================================================= */
+
+function validateSelectedEventCard() {
+
+  if (
+    !selectedEvent
+  ) {
+
+    throw new Error(
+      "Tafadhali chagua Event kwanza."
+    );
+
+  }
+
+
+  if (
+    !selectedEvent.card_image_url
+  ) {
+
+    throw new Error(
+      `Event "${selectedEvent.event_key}" haina Kadi. Weka card_image_url kwenye Event hiyo kwanza.`
+    );
+
+  }
 
 }
 
@@ -1983,12 +2737,10 @@ async function handleExcelFile(
 
   try {
 
-    /*
-      Hakikisha Event imewekwa
-      kabla ya kuendelea.
-    */
+    getSelectedEventKey();
 
-    validateEventKey();
+
+    validateSelectedEventCard();
 
 
     const arrayBuffer =
@@ -2318,12 +3070,26 @@ function renderPreview() {
     );
 
 
+  if (
+    !selectedEvent
+  ) {
+
+    return;
+
+  }
+
+
   const eventKey =
     String(
-      eventKeyInput.value || ""
+      selectedEvent.event_key || ""
     )
       .trim()
       .toUpperCase();
+
+
+  const eventName =
+    selectedEvent.event_name ||
+    eventKey;
 
 
   body.innerHTML =
@@ -2372,9 +3138,25 @@ function renderPreview() {
         <td>
           <strong>
             ${escapeHtml(
-              eventKey || "-"
+              eventKey
             )}
           </strong>
+
+          <br>
+
+          <span class="small-note">
+            ${escapeHtml(
+              eventName
+            )}
+          </span>
+        </td>
+
+        <td>
+          ${
+            selectedEvent.card_image_url
+              ? "✅ Kadi A"
+              : "❌ Hakuna Kadi"
+          }
         </td>
 
       `;
@@ -2395,7 +3177,7 @@ function renderPreview() {
     uploadedContacts.length;
 
 
-  updateEventDisplay();
+  updateSelectedEventUI();
 
 
   section.classList.remove(
@@ -2436,7 +3218,10 @@ async function sendBulkInvitations() {
   try {
 
     eventKey =
-      validateEventKey();
+      getSelectedEventKey();
+
+
+    validateSelectedEventCard();
 
   } catch (error) {
 
@@ -2444,22 +3229,41 @@ async function sendBulkInvitations() {
       error.message
     );
 
-    eventKeyInput.focus();
-
     return;
 
   }
 
 
+  const eventName =
+    selectedEvent.event_name ||
+    eventKey;
+
+
   const confirmed =
     confirm(
-      "Unataka kutuma mialiko kwa wageni " +
-      uploadedContacts.length +
-      "?\n\n" +
-      "EVENT: " +
+      "⚠️ THIBITISHA BULK SEND\n\n" +
+
+      "Event: " +
+      eventName +
+
+      "\nEvent Key: " +
       eventKey +
+
       "\n\n" +
-      "Kila mgeni atapata QR Token yake binafsi."
+
+      "Kadi iliyochaguliwa:\n" +
+      selectedEvent.card_image_url +
+
+      "\n\n" +
+
+      "Wageni: " +
+      uploadedContacts.length +
+
+      "\n\n" +
+
+      "Kila mgeni atapata QR Token yake binafsi.\n\n" +
+
+      "Endelea kutuma?"
     );
 
 
@@ -2468,6 +3272,10 @@ async function sendBulkInvitations() {
     return;
 
   }
+
+
+  bulkSending =
+    true;
 
 
   const button =
@@ -2504,6 +3312,10 @@ async function sendBulkInvitations() {
     true;
 
 
+  eventSelect.disabled =
+    true;
+
+
   button.innerText =
     "Inatuma...";
 
@@ -2521,7 +3333,7 @@ async function sendBulkInvitations() {
 
 
   progressText.innerText =
-    "Inatuma Event " +
+    "Inaanza kutuma Event " +
     eventKey +
     "...";
 
@@ -2531,14 +3343,22 @@ async function sendBulkInvitations() {
     /*
       MUHIMU:
 
-      Event Key inatoka kwenye
-      dashboard, SI kwenye Excel.
+      Hapa tunatuma Event Key moja
+      kwa contacts zote.
 
-      Excel A:
-      EVENT_A
+      Backend itafanya:
 
-      Excel B:
-      EVENT_B
+      Event A
+        ↓
+      getEventConfig(EVENT_A)
+        ↓
+      card_image_url ya Event A
+
+      Event B
+        ↓
+      getEventConfig(EVENT_B)
+        ↓
+      card_image_url ya Event B
     */
 
     const contacts =
@@ -2646,11 +3466,18 @@ async function sendBulkInvitations() {
 
     showBulkResult(
       result,
-      eventKey
+      eventKey,
+      eventName
     );
 
 
   } catch (error) {
+
+    console.error(
+      "Bulk error:",
+      error
+    );
+
 
     progressFill.style.width =
       "0%";
@@ -2685,7 +3512,9 @@ async function sendBulkInvitations() {
         <br><br>
 
         ${escapeHtml(
-          error.message
+          getErrorText(
+            error.message
+          )
         )}
 
       </div>
@@ -2697,7 +3526,15 @@ async function sendBulkInvitations() {
 
   finally {
 
+    bulkSending =
+      false;
+
+
     button.disabled =
+      false;
+
+
+    eventSelect.disabled =
       false;
 
 
@@ -2715,7 +3552,8 @@ async function sendBulkInvitations() {
 
 function showBulkResult(
   result,
-  eventKey
+  eventKey,
+  eventName
 ) {
 
   const box =
@@ -2748,6 +3586,16 @@ function showBulkResult(
     );
 
 
+  const duplicates =
+    Number(
+      result.duplicates ??
+      results.filter(
+        item =>
+          item.duplicate
+      ).length
+    );
+
+
   const total =
     Number(
       result.total ??
@@ -2763,9 +3611,19 @@ function showBulkResult(
         Bulk send imekamilika
       </strong>
 
-      <br>
+      <br><br>
 
       Event:
+
+      <strong>
+        ${escapeHtml(
+          eventName
+        )}
+      </strong>
+
+      <br>
+
+      Event Key:
 
       <strong>
         ${escapeHtml(
@@ -2797,12 +3655,22 @@ function showBulkResult(
         ${failed}
       </strong>
 
+      <br>
+
+      Duplicates:
+
+      <strong>
+        ${duplicates}
+      </strong>
+
     </div>
 
   `;
 
 
-  if (failed > 0) {
+  if (
+    failed > 0
+  ) {
 
     html += `
 
@@ -2842,6 +3710,14 @@ function showBulkResult(
 
             ${escapeHtml(
               item.code || "-"
+            )}
+
+            <br>
+
+            Event:
+
+            ${escapeHtml(
+              item.event_key || eventKey
             )}
 
             <br>
@@ -2991,20 +3867,6 @@ function clearExcel() {
     "progressText"
   ).innerText =
     "Inaanza...";
-
-
-  /*
-    Event Key inafutwa pia,
-    ili usije ukatuma Excel ya
-    Event B kwa bahati mbaya ukiwa
-    bado umeacha EVENT_A.
-  */
-
-  eventKeyInput.value =
-    "";
-
-
-  updateEventDisplay();
 
 }
 
@@ -3158,6 +4020,10 @@ function populateEventFilter() {
     new Set();
 
 
+  /*
+    Events kutoka database ya guests
+  */
+
   guests.forEach(
     guest => {
 
@@ -3170,6 +4036,33 @@ function populateEventFilter() {
             guest.event_key
           )
             .trim()
+            .toUpperCase()
+        );
+
+      }
+
+    }
+  );
+
+
+  /*
+    Ongeza pia Events active
+    hata kama bado hazina wageni.
+  */
+
+  events.forEach(
+    event => {
+
+      if (
+        event.event_key
+      ) {
+
+        eventSet.add(
+          String(
+            event.event_key
+          )
+            .trim()
+            .toUpperCase()
         );
 
       }
@@ -3194,6 +4087,18 @@ function populateEventFilter() {
     .forEach(
       eventKey => {
 
+        const eventConfig =
+          events.find(
+            event =>
+              String(
+                event.event_key || ""
+              )
+                .trim()
+                .toUpperCase() ===
+              eventKey
+          );
+
+
         const option =
           document.createElement(
             "option"
@@ -3205,7 +4110,9 @@ function populateEventFilter() {
 
 
         option.textContent =
-          eventKey;
+          eventConfig?.event_name
+            ? `${eventConfig.event_name} (${eventKey})`
+            : eventKey;
 
 
         select.appendChild(
@@ -3217,6 +4124,14 @@ function populateEventFilter() {
 
 
   if (
+    currentValue ===
+    "all"
+  ) {
+
+    select.value =
+      "all";
+
+  } else if (
     Array.from(
       eventSet
     ).includes(
@@ -3255,8 +4170,14 @@ function updateStats() {
             String(
               guest.event_key ||
               ""
-            ) ===
-            eventFilter
+            )
+              .trim()
+              .toUpperCase() ===
+            String(
+              eventFilter
+            )
+              .trim()
+              .toUpperCase()
         );
 
 
@@ -3419,8 +4340,14 @@ function renderGuests() {
           String(
             guest.event_key ||
             ""
-          ) ===
-            eventFilter;
+          )
+            .trim()
+            .toUpperCase() ===
+          String(
+            eventFilter
+          )
+            .trim()
+            .toUpperCase();
 
 
         const isChecked =
@@ -3781,8 +4708,34 @@ async function checkInGuest() {
     input.value.trim();
 
 
+  const eventKey =
+    String(
+      checkinEvent.value || ""
+    )
+      .trim()
+      .toUpperCase();
+
+
   message.innerHTML =
     "";
+
+
+  if (!eventKey) {
+
+    message.innerHTML = `
+
+      <div class="error-message">
+
+        ⚠️ Tafadhali chagua Event ya Check-in.
+
+      </div>
+
+    `;
+
+
+    return;
+
+  }
 
 
   if (!code) {
@@ -3835,7 +4788,10 @@ async function checkInGuest() {
             JSON.stringify({
 
               code:
-                code
+                code,
+
+              event_key:
+                eventKey
 
             })
 
@@ -3906,7 +4862,7 @@ async function checkInGuest() {
           <strong>
             ${escapeHtml(
               guest.event_key ||
-              "-"
+              eventKey
             )}
           </strong>
 
@@ -3993,7 +4949,7 @@ async function checkInGuest() {
           <strong>
             ${escapeHtml(
               guest.event_key ||
-              "-"
+              eventKey
             )}
           </strong>
 
@@ -4164,970 +5120,3 @@ async function startQRScanner() {
     new Html5Qrcode(
       "qr-reader"
     );
-
-
-  try {
-
-    const config = {
-
-      fps:
-        10,
-
-      qrbox:
-        {
-          width:
-            250,
-
-          height:
-            250
-        },
-
-      aspectRatio:
-        1.0
-
-    };
-
-
-    await qrScanner.start(
-
-      {
-        facingMode:
-          "environment"
-      },
-
-      config,
-
-      onQRCodeSuccess,
-
-      onQRCodeError
-
-    );
-
-
-    message.innerHTML = `
-
-      <div class="success-message">
-
-        📷 Camera imewashwa.
-        Elekeza camera kwenye QR Code.
-
-      </div>
-
-    `;
-
-
-  } catch (error) {
-
-    console.error(
-      "QR camera error:",
-      error
-    );
-
-
-    qrScanner =
-      null;
-
-
-    reader.style.display =
-      "none";
-
-
-    startButton.style.display =
-      "inline-block";
-
-
-    stopButton.style.display =
-      "none";
-
-
-    message.innerHTML = `
-
-      <div class="error-message">
-
-        ❌ Imeshindikana kuwasha camera.
-
-        <br><br>
-
-        Hakikisha:
-
-        <br>
-        1. Umeruhusu camera kwenye browser.
-        <br>
-        2. Unatumia HTTPS.
-        <br>
-        3. Camera haijatumika na app nyingine.
-
-        <br><br>
-
-        ${escapeHtml(
-          error?.message ||
-          String(error)
-        )}
-
-      </div>
-
-    `;
-
-  }
-
-}
-
-
-/* =========================================================
-   QR SUCCESS
-========================================================= */
-
-async function onQRCodeSuccess(
-  decodedText
-) {
-
-  if (
-    qrProcessing
-  ) {
-
-    return;
-
-  }
-
-
-  if (
-    !decodedText
-  ) {
-
-    return;
-
-  }
-
-
-  qrProcessing =
-    true;
-
-
-  const message =
-    document.getElementById(
-      "qrMessage"
-    );
-
-
-  message.innerHTML = `
-
-    <div class="warning-message">
-
-      ⏳ QR imeonekana.
-      Inathibitisha mgeni...
-
-    </div>
-
-  `;
-
-
-  try {
-
-    const qrToken =
-      extractQRToken(
-        decodedText
-      );
-
-
-    if (!qrToken) {
-
-      throw new Error(
-        "QR hii haina QR Token inayotambulika."
-      );
-
-    }
-
-
-    const response =
-      await fetch(
-        "/api/check-in-qr",
-        {
-
-          method:
-            "POST",
-
-          headers: {
-
-            "Content-Type":
-              "application/json"
-
-          },
-
-          body:
-            JSON.stringify({
-
-              qr_token:
-                qrToken
-
-            })
-
-          }
-        );
-
-
-    let result;
-
-
-    try {
-
-      result =
-        await response.json();
-
-    } catch {
-
-      throw new Error(
-        "Server imerudisha majibu yasiyo sahihi."
-      );
-
-    }
-
-
-    if (
-      response.ok &&
-      result.success
-    ) {
-
-      const guest =
-        result.guest || {};
-
-
-      message.innerHTML = `
-
-        <div class="success-message">
-
-          🎉 <strong>
-            QR CHECK-IN IMEFANIKIWA!
-          </strong>
-
-          <br><br>
-
-          Jina:
-
-          <strong>
-            ${escapeHtml(
-              guest.full_name ||
-              "-"
-            )}
-          </strong>
-
-          <br>
-
-          Code:
-
-          <strong>
-            ${escapeHtml(
-              guest.guest_code ||
-              "-"
-            )}
-          </strong>
-
-          <br>
-
-          Event:
-
-          <strong>
-            ${escapeHtml(
-              guest.event_key ||
-              "-"
-            )}
-          </strong>
-
-          <br>
-
-          Aina:
-
-          <strong>
-            ${escapeHtml(
-              getInvitationType(
-                guest.guest_code
-              )
-            )}
-          </strong>
-
-          <br>
-
-          Muda:
-
-          ${formatDate(
-            guest.scanned_at
-          )}
-
-        </div>
-
-      `;
-
-
-      await loadGuests();
-
-
-      setTimeout(
-        () => {
-
-          qrProcessing =
-            false;
-
-        },
-        1500
-      );
-
-
-      return;
-
-    }
-
-
-    if (
-      response.status ===
-      409
-    ) {
-
-      const guest =
-        result.guest || {};
-
-
-      message.innerHTML = `
-
-        <div class="warning-message">
-
-          ⚠️ <strong>
-            MGENI HUYU AMESHA-CHECK-IN!
-          </strong>
-
-          <br><br>
-
-          Jina:
-
-          <strong>
-            ${escapeHtml(
-              guest.full_name ||
-              "-"
-            )}
-          </strong>
-
-          <br>
-
-          Code:
-
-          <strong>
-            ${escapeHtml(
-              guest.guest_code ||
-              "-"
-            )}
-          </strong>
-
-          <br>
-
-          Event:
-
-          <strong>
-            ${escapeHtml(
-              guest.event_key ||
-              "-"
-            )}
-          </strong>
-
-          <br>
-
-          Aliingia:
-
-          ${formatDate(
-            guest.scanned_at
-          )}
-
-        </div>
-
-      `;
-
-
-      setTimeout(
-        () => {
-
-          qrProcessing =
-            false;
-
-        },
-        2000
-      );
-
-
-      return;
-
-    }
-
-
-    message.innerHTML = `
-
-      <div class="error-message">
-
-        ❌ ${escapeHtml(
-          result.message ||
-          result.error ||
-          "QR Code haijatambuliwa."
-        )}
-
-      </div>
-
-    `;
-
-
-    setTimeout(
-      () => {
-
-        qrProcessing =
-          false;
-
-      },
-      2000
-    );
-
-
-  } catch (error) {
-
-    console.error(
-      "QR check-in error:",
-      error
-    );
-
-
-    message.innerHTML = `
-
-      <div class="error-message">
-
-        ❌ ${escapeHtml(
-          error.message ||
-          "QR Check-in imeshindikana."
-        )}
-
-      </div>
-
-    `;
-
-
-    setTimeout(
-      () => {
-
-        qrProcessing =
-          false;
-
-      },
-      2000
-    );
-
-  }
-
-}
-
-
-/* =========================================================
-   QR ERROR
-========================================================= */
-
-function onQRCodeError(
-  errorMessage
-) {
-
-  /*
-    Tunanyamaza hapa kwa sababu
-    html5-qrcode huita callback hii
-    mara nyingi wakati bado haijasoma QR.
-  */
-
-}
-
-
-/* =========================================================
-   EXTRACT QR TOKEN
-========================================================= */
-
-function extractQRToken(
-  value
-) {
-
-  const text =
-    String(
-      value || ""
-    ).trim();
-
-
-  if (!text) {
-
-    return "";
-
-  }
-
-
-  /*
-    QR Token moja kwa moja.
-  */
-
-  if (
-    !text.startsWith(
-      "http://"
-    ) &&
-    !text.startsWith(
-      "https://"
-    )
-  ) {
-
-    return text;
-
-  }
-
-
-  /*
-    URL yenye qr_token.
-  */
-
-  try {
-
-    const url =
-      new URL(
-        text
-      );
-
-
-    const token =
-      url.searchParams.get(
-        "qr_token"
-      );
-
-
-    if (token) {
-
-      return token.trim();
-
-    }
-
-
-    const token2 =
-      url.searchParams.get(
-        "token"
-      );
-
-
-    if (token2) {
-
-      return token2.trim();
-
-    }
-
-
-    const parts =
-      url.pathname
-        .split("/")
-        .filter(
-          part =>
-            part
-        );
-
-
-    if (
-      parts.length
-    ) {
-
-      const last =
-        parts[
-          parts.length - 1
-        ];
-
-
-      if (
-        last &&
-        last.length >= 10
-      ) {
-
-        return last.trim();
-
-      }
-
-    }
-
-  } catch {
-
-    return text;
-
-  }
-
-
-  return "";
-
-}
-
-
-/* =========================================================
-   STOP QR SCANNER
-========================================================= */
-
-async function stopQRScanner() {
-
-  const reader =
-    document.getElementById(
-      "qr-reader"
-    );
-
-
-  const startButton =
-    document.getElementById(
-      "startQrButton"
-    );
-
-
-  const stopButton =
-    document.getElementById(
-      "stopQrButton"
-    );
-
-
-  const message =
-    document.getElementById(
-      "qrMessage"
-    );
-
-
-  qrProcessing =
-    false;
-
-
-  if (!qrScanner) {
-
-    reader.style.display =
-      "none";
-
-
-    startButton.style.display =
-      "inline-block";
-
-
-    stopButton.style.display =
-      "none";
-
-
-    return;
-
-  }
-
-
-  try {
-
-    await qrScanner.stop();
-
-  } catch (error) {
-
-    console.log(
-      "QR scanner stop:",
-      error
-    );
-
-  }
-
-
-  try {
-
-    qrScanner.clear();
-
-  } catch {
-
-  }
-
-
-  qrScanner =
-    null;
-
-
-  reader.innerHTML =
-    "";
-
-
-  reader.style.display =
-    "none";
-
-
-  startButton.style.display =
-    "inline-block";
-
-
-  stopButton.style.display =
-    "none";
-
-
-  message.innerHTML = `
-
-    <div class="success-message">
-
-      📷 Camera imesimamishwa.
-
-    </div>
-
-  `;
-
-}
-
-
-/* =========================================================
-   GET INVITATION TYPE
-========================================================= */
-
-function getInvitationType(
-  code
-) {
-
-  const value =
-    String(
-      code || ""
-    )
-      .trim()
-      .toUpperCase();
-
-
-  if (
-    value.endsWith(
-      "-KAMATI"
-    )
-  ) {
-
-    return "KAMATI";
-
-  }
-
-
-  if (
-    value.endsWith(
-      "-SINGLE"
-    )
-  ) {
-
-    return "SINGLE";
-
-  }
-
-
-  return "-";
-
-}
-
-
-/* =========================================================
-   FORMAT DATE
-========================================================= */
-
-function formatDate(
-  value
-) {
-
-  if (!value) {
-
-    return "-";
-
-  }
-
-
-  try {
-
-    const date =
-      new Date(
-        value
-      );
-
-
-    if (
-      Number.isNaN(
-        date.getTime()
-      )
-    ) {
-
-      return String(
-        value
-      );
-
-    }
-
-
-    return date.toLocaleString(
-      "sw-TZ",
-      {
-
-        dateStyle:
-          "medium",
-
-        timeStyle:
-          "short"
-
-      }
-    );
-
-  } catch {
-
-    return String(
-      value
-    );
-
-  }
-
-}
-
-
-/* =========================================================
-   SECURITY
-========================================================= */
-
-function escapeHtml(
-  value
-) {
-
-  return String(
-    value ?? ""
-  )
-
-    .replace(
-      /&/g,
-      "&amp;"
-    )
-
-    .replace(
-      /</g,
-      "&lt;"
-    )
-
-    .replace(
-      />/g,
-      "&gt;"
-    )
-
-    .replace(
-      /"/g,
-      "&quot;"
-    )
-
-    .replace(
-      /'/g,
-      "&#039;"
-    );
-
-}
-
-
-/* =========================================================
-   ENTER KEY
-========================================================= */
-
-document
-  .getElementById(
-    "checkinCode"
-  )
-  .addEventListener(
-    "keydown",
-    function(event) {
-
-      if (
-        event.key ===
-        "Enter"
-      ) {
-
-        event.preventDefault();
-
-        checkInGuest();
-
-      }
-
-    }
-  );
-
-
-/* =========================================================
-   SEARCH
-========================================================= */
-
-document
-  .getElementById(
-    "search"
-  )
-  .addEventListener(
-    "input",
-    renderGuests
-  );
-
-
-/* =========================================================
-   STATUS FILTER
-========================================================= */
-
-document
-  .getElementById(
-    "statusFilter"
-  )
-  .addEventListener(
-    "change",
-    renderGuests
-  );
-
-
-/* =========================================================
-   EVENT FILTER
-========================================================= */
-
-document
-  .getElementById(
-    "eventFilter"
-  )
-  .addEventListener(
-    "change",
-    function() {
-
-      updateStats();
-
-      renderGuests();
-
-    }
-  );
-
-
-/* =========================================================
-   CHECK-IN FILTER
-========================================================= */
-
-document
-  .getElementById(
-    "checkinFilter"
-  )
-  .addEventListener(
-    "change",
-    renderGuests
-  );
-
-
-/* =========================================================
-   STOP CAMERA WHEN LEAVING PAGE
-========================================================= */
-
-window.addEventListener(
-  "beforeunload",
-  function() {
-
-    if (qrScanner) {
-
-      qrScanner
-        .stop()
-        .catch(
-          () => {}
-        );
-
-    }
-
-  }
-);
-
-
-/* =========================================================
-   START DASHBOARD
-========================================================= */
-
-updateEventDisplay();
-
-loadGuests();
-
-</script>
-
-
-</body>
-
-  </html>
