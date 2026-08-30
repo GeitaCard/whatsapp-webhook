@@ -72,9 +72,14 @@ const STORAGE_BUCKET =
   process.env.STORAGE_BUCKET ||
   "guest-cards";
 
-const DEFAULT_EVENT =
-  process.env.DEFAULT_EVENT ||
-  "DEFAULT_EVENT";
+/*
+  MUHIMU:
+
+  Hakuna DEFAULT_EVENT tena kwa invitation.
+
+  Kila invitation lazima iwe na Event Key
+  inayolingana na event iliyopo kwenye database.
+*/
 
 /* =========================================================
    QR POSITION
@@ -139,7 +144,7 @@ console.log(
 );
 
 console.log(
-  "Multi Event Cards: ENABLED"
+  "STRICT MULTI EVENT CARDS: ENABLED"
 );
 
 console.log(
@@ -147,8 +152,7 @@ console.log(
 );
 
 console.log(
-  "Default Event:",
-  DEFAULT_EVENT
+  "Default Event Fallback: DISABLED"
 );
 
 console.log(
@@ -235,6 +239,7 @@ function normalizePhone(
 
 /* =========================================================
    NORMALIZE EVENT
+   EVENT KEY LAZIMA ITOKE KWENYE REQUEST
 ========================================================= */
 
 function normalizeEvent(
@@ -243,14 +248,32 @@ function normalizeEvent(
 
   const value =
     String(
-      eventKey ||
-      DEFAULT_EVENT
+      eventKey || ""
     )
       .trim()
       .toUpperCase();
 
-  return value ||
-    DEFAULT_EVENT;
+  if (!value) {
+
+    throw new Error(
+      "Event Key inahitajika. Mfano: EVENT_A"
+    );
+
+  }
+
+  if (
+    !/^[A-Z0-9_-]+$/.test(
+      value
+    )
+  ) {
+
+    throw new Error(
+      "Event Key inaweza kuwa na herufi, namba, _ au - tu."
+    );
+
+  }
+
+  return value;
 
 }
 
@@ -422,6 +445,9 @@ function parseBase64Image(
 
 /* =========================================================
    GET EVENT CONFIGURATION
+   HII NDIYO SEHEMU MUHIMU YA
+   EVENT A -> CARD A
+   EVENT B -> CARD B
 ========================================================= */
 
 async function getEventConfig(
@@ -434,8 +460,20 @@ async function getEventConfig(
     );
 
   console.log(
-    "Looking for Event:",
+    "=============================================="
+  );
+
+  console.log(
+    "EVENT CONFIG LOOKUP"
+  );
+
+  console.log(
+    "Requested Event:",
     cleanEvent
+  );
+
+  console.log(
+    "=============================================="
   );
 
   const {
@@ -467,7 +505,9 @@ async function getEventConfig(
     );
 
     throw new Error(
-      "Imeshindikana kupata taarifa za Event: " +
+      "Imeshindikana kupata taarifa za Event " +
+      cleanEvent +
+      ": " +
       error.message
     );
 
@@ -476,7 +516,8 @@ async function getEventConfig(
   if (!data) {
 
     throw new Error(
-      `Event "${cleanEvent}" haipo au haijawekwa active.`
+      `Event "${cleanEvent}" haipo au haijawekwa active. ` +
+      `Hakikisha umeunda Event ${cleanEvent} kwenye mfumo.`
     );
 
   }
@@ -490,6 +531,55 @@ async function getEventConfig(
     );
 
   }
+
+  /*
+    SECURITY CHECK:
+
+    Event inayorudishwa lazima iwe
+    exactly ile iliyoombwa.
+
+    Hii inazuia accidental cross-event card.
+  */
+
+  if (
+    String(
+      data.event_key || ""
+    )
+      .trim()
+      .toUpperCase() !==
+    cleanEvent
+  ) {
+
+    throw new Error(
+      `Security error: Card ya Event ${cleanEvent} haikuthibitishwa.`
+    );
+
+  }
+
+  console.log(
+    "Event FOUND:",
+    data.event_key
+  );
+
+  console.log(
+    "Event Name:",
+    data.event_name
+  );
+
+  console.log(
+    "Card URL:",
+    data.card_image_url
+  );
+
+  console.log(
+    "Template:",
+    data.template_name
+  );
+
+  console.log(
+    "Language:",
+    data.template_language
+  );
 
   return data;
 
@@ -710,7 +800,9 @@ app.post(
 
       }
 
-      /* CHECK IF EVENT EXISTS */
+      /*
+        CHECK IF EVENT EXISTS
+      */
 
       const {
         data: existingEvent,
@@ -754,7 +846,9 @@ app.post(
 
       }
 
-      /* IMAGE */
+      /*
+        IMAGE
+      */
 
       const {
         buffer,
@@ -801,7 +895,9 @@ app.post(
       const filePath =
         `events/${cleanKey}/${Date.now()}-${originalName}.${extension}`;
 
-      /* UPLOAD */
+      /*
+        UPLOAD
+      */
 
       const {
         error: uploadError
@@ -834,7 +930,9 @@ app.post(
       uploadedPath =
         filePath;
 
-      /* PUBLIC URL */
+      /*
+        PUBLIC URL
+      */
 
       const {
         data: publicData
@@ -861,7 +959,9 @@ app.post(
 
       }
 
-      /* SAVE EVENT */
+      /*
+        SAVE EVENT
+      */
 
       const {
         data,
@@ -922,7 +1022,7 @@ app.post(
           true,
 
         message:
-          "Event imeundwa na kadi imehifadhiwa.",
+          `Event ${cleanKey} imeundwa na kadi imehifadhiwa.`,
 
         event:
           data
@@ -996,26 +1096,6 @@ app.put(
           normalizeEvent(
             event_key
           );
-
-        if (
-          !/^[A-Z0-9_-]+$/.test(
-            cleanKey
-          )
-        ) {
-
-          return res.status(
-            400
-          ).json({
-
-            success:
-              false,
-
-            message:
-              "Event Key si sahihi."
-
-          });
-
-        }
 
         updates.event_key =
           cleanKey;
@@ -1347,7 +1427,7 @@ app.post(
           true,
 
         message:
-          "Kadi ya Event imebadilishwa.",
+          `Kadi ya Event ${event.event_key} imebadilishwa.`,
 
         event:
           data
@@ -1536,6 +1616,8 @@ async function createQRImage(
 
 /* =========================================================
    LEGACY DEFAULT CARD
+   IMETOKA KWENYE NJIA YA INVITATION
+   HATUITUMII KWA EVENT INVITATION
 ========================================================= */
 
 async function downloadInvitationImage() {
@@ -1545,7 +1627,7 @@ async function downloadInvitationImage() {
   ) {
 
     throw new Error(
-      "INVITE_IMAGE_URL haijawekwa kwenye Render."
+      "INVITE_IMAGE_URL haijawekwa. Event lazima iwe na card_image_url."
     );
 
   }
@@ -1582,62 +1664,66 @@ async function downloadInvitationImage() {
 
 /* =========================================================
    CREATE PERSONAL CARD WITH QR
+   EVENT CARD INALAZIMISHWA
 ========================================================= */
 
 async function createCardWithQR(
   qrToken,
-  cardImageUrl
+  cardImageUrl,
+  eventKey
 ) {
+
+  if (!cardImageUrl) {
+
+    throw new Error(
+      `Event ${eventKey} haina card image.`
+    );
+
+  }
 
   let originalImage;
 
-  if (
+  console.log(
+    "Downloading Event card:"
+  );
+
+  console.log(
+    "Event:",
+    eventKey
+  );
+
+  console.log(
     cardImageUrl
+  );
+
+  const response =
+    await axios.get(
+      cardImageUrl,
+      {
+
+        responseType:
+          "arraybuffer",
+
+        timeout:
+          30000
+
+      }
+    );
+
+  if (
+    !response.data
   ) {
 
-    console.log(
-      "Downloading Event card:"
+    throw new Error(
+      `Kadi ya Event ${eventKey} haikupatikana.`
     );
-
-    console.log(
-      cardImageUrl
-    );
-
-    const response =
-      await axios.get(
-        cardImageUrl,
-        {
-
-          responseType:
-            "arraybuffer",
-
-          timeout:
-            30000
-
-        }
-      );
-
-    if (
-      !response.data
-    ) {
-
-      throw new Error(
-        "Kadi ya Event haikupatikana."
-      );
-
-    }
-
-    originalImage =
-      Buffer.from(
-        response.data
-      );
-
-  } else {
-
-    originalImage =
-      await downloadInvitationImage();
 
   }
+
+  originalImage =
+    Buffer.from(
+      response.data
+    );
 
   const qrImage =
     await createQRImage(
@@ -1903,14 +1989,20 @@ async function preparePersonalCard(
   eventKey
 ) {
 
+  /*
+    EVENT KEY LAZIMA IWEPO.
+  */
+
   const cleanEvent =
     normalizeEvent(
       eventKey
     );
 
   /*
-    HAPA NDIPO KADI YA EVENT
-    HUSIKA INAPATIKANA.
+    PATA CONFIGURATION YA EVENT HIYO HIYO.
+
+    EVENT_A -> CARD A
+    EVENT_B -> CARD B
   */
 
   const eventConfig =
@@ -1967,10 +2059,15 @@ async function preparePersonalCard(
     "=============================================="
   );
 
+  /*
+    HAPA CARD INATOKA KWENYE EVENT CONFIGURATION
+  */
+
   const cardBuffer =
     await createCardWithQR(
       qrToken,
-      eventConfig.card_image_url
+      eventConfig.card_image_url,
+      cleanEvent
     );
 
   const storage =
@@ -2041,6 +2138,38 @@ async function saveGuest(
     normalizeCode(
       code
     );
+
+  if (!phone) {
+
+    throw new Error(
+      "Namba ya simu si sahihi."
+    );
+
+  }
+
+  if (!name) {
+
+    throw new Error(
+      "Jina la mgeni linahitajika."
+    );
+
+  }
+
+  if (!cleanCode) {
+
+    throw new Error(
+      "Code ya mgeni inahitajika."
+    );
+
+  }
+
+  if (!cardImageUrl) {
+
+    throw new Error(
+      `Kadi ya Event ${cleanEvent} haipo.`
+    );
+
+  }
 
   const guestPayload = {
 
@@ -2120,8 +2249,7 @@ async function saveGuest(
 
   return data;
 
-}
-
+         }
 /* =========================================================
    SEND TEXT
 ========================================================= */
@@ -2189,6 +2317,7 @@ async function sendText(
 
 /* =========================================================
    SEND INVITATION TEMPLATE
+   TEMPLATE + CARD VINAfuata EVENT
 ========================================================= */
 
 async function sendInvitation(
@@ -2197,52 +2326,62 @@ async function sendInvitation(
   code,
   cardImageUrl,
   templateName,
-  templateLanguage
+  templateLanguage,
+  eventKey
 ) {
+
+  if (!eventKey) {
+
+    throw new Error(
+      "Event Key inahitajika kabla ya kutuma invitation."
+    );
+
+  }
+
+  if (!cardImageUrl) {
+
+    throw new Error(
+      `Card image ya Event ${eventKey} haipo.`
+    );
+
+  }
 
   const url =
     `https://graph.facebook.com/${GRAPH_VERSION}/${PHONE_NUMBER_ID}/messages`;
-
-  const imageUrl =
-    cardImageUrl ||
-    INVITE_IMAGE_URL;
 
   const components = [];
 
   /*
     HEADER IMAGE
+
+    HII NDIYO PERSONAL CARD:
+    Event Card + QR ya mgeni.
   */
 
-  if (
-    imageUrl
-  ) {
+  components.push({
 
-    components.push({
+    type:
+      "header",
 
-      type:
-        "header",
+    parameters: [
 
-      parameters: [
+      {
 
-        {
+        type:
+          "image",
 
-          type:
-            "image",
+        image: {
 
-          image: {
-
-            link:
-              imageUrl
-
-          }
+          link:
+            cardImageUrl
 
         }
 
-      ]
+      }
 
-    });
+    ]
 
-  }
+  });
 
   /*
     BODY
@@ -2284,6 +2423,25 @@ async function sendInvitation(
     ]
 
   });
+
+  console.log(
+    "Sending WhatsApp invitation:"
+  );
+
+  console.log(
+    "Event:",
+    eventKey
+  );
+
+  console.log(
+    "Template:",
+    templateName
+  );
+
+  console.log(
+    "Card:",
+    cardImageUrl
+  );
 
   const response =
     await axios.post(
@@ -2371,7 +2529,8 @@ app.post(
       if (
         !to ||
         !name ||
-        !code
+        !code ||
+        !event_key
       ) {
 
         return res.status(
@@ -2382,7 +2541,7 @@ app.post(
             false,
 
           message:
-            "to, name na code vinahitajika."
+            "to, name, code na event_key vinahitajika."
 
         });
 
@@ -2403,12 +2562,29 @@ app.post(
           code
         );
 
+      /*
+        EVENT KEY LAZIMA ITOKE KWENYE REQUEST.
+      */
+
       const cleanEvent =
         normalizeEvent(
           event_key
         );
 
       /*
+        VERIFY EVENT MAPEMA.
+
+        Hii inahakikisha Event ipo
+        kabla ya kutengeneza kadi.
+      */
+
+      const eventConfig =
+        await getEventConfig(
+          cleanEvent
+        );
+
+      /*
+        DUPLICATE:
         EVENT + CODE
       */
 
@@ -2446,7 +2622,7 @@ app.post(
       }
 
       /*
-        CREATE CARD
+        CREATE CARD YA EVENT HIYO HIYO
       */
 
       preparedCard =
@@ -2455,6 +2631,35 @@ app.post(
           cleanCode,
           cleanEvent
         );
+
+      /*
+        SECURITY CHECK:
+
+        Hakikisha card tuliyotengeneza
+        imetoka Event iliyotumwa.
+      */
+
+      if (
+        preparedCard.eventKey !==
+        cleanEvent
+      ) {
+
+        throw new Error(
+          `Security error: Event mismatch. Requested ${cleanEvent}, prepared ${preparedCard.eventKey}.`
+        );
+
+      }
+
+      if (
+        preparedCard.eventCardUrl !==
+        eventConfig.card_image_url
+      ) {
+
+        throw new Error(
+          `Security error: Card mismatch kwa Event ${cleanEvent}.`
+        );
+
+      }
 
       /*
         SEND WHATSAPP
@@ -2467,7 +2672,8 @@ app.post(
           cleanCode,
           preparedCard.cardImageUrl,
           preparedCard.templateName,
-          preparedCard.templateLanguage
+          preparedCard.templateLanguage,
+          cleanEvent
         );
 
       /*
@@ -2496,6 +2702,9 @@ app.post(
 
         event_name:
           preparedCard.eventName,
+
+        card_image_url:
+          preparedCard.cardImageUrl,
 
         result:
           result,
@@ -2569,6 +2778,7 @@ app.post(
 
 /* =========================================================
    BULK SEND
+   STRICT EVENT MODE
 ========================================================= */
 
 app.post(
@@ -2620,21 +2830,50 @@ app.post(
 
       }
 
-      const requestEvent =
-        req.body.event_key
-          ? normalizeEvent(
-              req.body.event_key
-            )
-          : DEFAULT_EVENT;
+      /*
+        EVENT KEY LAZIMA IWEPO KWENYE REQUEST.
 
-      const results = [];
+        Hakuna DEFAULT_EVENT.
+      */
+
+      if (
+        !req.body.event_key
+      ) {
+
+        return res.status(
+          400
+        ).json({
+
+          success:
+            false,
+
+          message:
+            "Event Key inahitajika kwa Bulk Send."
+
+        });
+
+      }
+
+      const requestEvent =
+        normalizeEvent(
+          req.body.event_key
+        );
+
+      /*
+        VERIFY EVENT MAPEMA
+      */
+
+      const requestEventConfig =
+        await getEventConfig(
+          requestEvent
+        );
 
       console.log(
         "=============================================="
       );
 
       console.log(
-        "BULK SEND STARTED"
+        "STRICT BULK SEND STARTED"
       );
 
       console.log(
@@ -2648,8 +2887,32 @@ app.post(
       );
 
       console.log(
+        "Request Event Card:",
+        requestEventConfig.card_image_url
+      );
+
+      console.log(
         "=============================================="
       );
+
+      const results = [];
+
+      /*
+        MUHIMU:
+
+        Bulk moja ni ya Event moja tu.
+
+        Hivyo kama frontend imetuma:
+        EVENT_A
+
+        contact yoyote mwenye:
+        EVENT_B
+
+        haitatumwa.
+
+        Hii inalinda dhidi ya kuchanganya
+        Card A na Card B.
+      */
 
       for (
         let i = 0;
@@ -2679,18 +2942,99 @@ app.post(
           );
 
         /*
-          EVENT PRIORITY:
+          CONTACT EVENT:
 
-          1. contact.event_key
-          2. request event
-          3. DEFAULT_EVENT
+          Kama ipo, lazima ilingane na
+          requestEvent.
+
+          Haturuhusu override.
         */
 
-        const eventKey =
-          normalizeEvent(
-            contact?.event_key ||
+        let contactEvent =
+          "";
+
+        if (
+          contact?.event_key
+        ) {
+
+          try {
+
+            contactEvent =
+              normalizeEvent(
+                contact.event_key
+              );
+
+          } catch (eventError) {
+
+            results.push({
+
+              to:
+                to,
+
+              name:
+                name,
+
+              code:
+                code,
+
+              event_key:
+                contact.event_key,
+
+              success:
+                false,
+
+              error:
+                eventError.message
+
+            });
+
+            continue;
+
+          }
+
+        }
+
+        /*
+          STRICT EVENT MATCH
+        */
+
+        if (
+          contactEvent &&
+          contactEvent !==
             requestEvent
-          );
+        ) {
+
+          results.push({
+
+            to:
+              to,
+
+            name:
+              name,
+
+            code:
+              code,
+
+            event_key:
+              contactEvent,
+
+            success:
+              false,
+
+            event_mismatch:
+              true,
+
+            error:
+              `Event mismatch: Bulk hii ni ${requestEvent}, lakini contact ametumwa na Event ${contactEvent}. Kadi haijatumwa ili kuzuia kuchanganya Event.`
+
+          });
+
+          continue;
+
+        }
+
+        const eventKey =
+          requestEvent;
 
         if (
           !to ||
@@ -2753,7 +3097,8 @@ app.post(
           );
 
           /*
-            DUPLICATE
+            DUPLICATE:
+            EVENT + CODE
           */
 
           const existingGuest =
@@ -2796,8 +3141,7 @@ app.post(
           }
 
           /*
-            HAPA KADI YA EVENT
-            HUSIKA INATUMIKA.
+            PREPARE CARD
           */
 
           preparedCard =
@@ -2806,6 +3150,32 @@ app.post(
               code,
               eventKey
             );
+
+          /*
+            SECURITY CHECK
+          */
+
+          if (
+            preparedCard.eventKey !==
+            eventKey
+          ) {
+
+            throw new Error(
+              `Security error: Prepared card Event ${preparedCard.eventKey} tofauti na requested Event ${eventKey}.`
+            );
+
+          }
+
+          if (
+            preparedCard.eventCardUrl !==
+            requestEventConfig.card_image_url
+          ) {
+
+            throw new Error(
+              `Security error: Card iliyotengenezwa si Card ya Event ${eventKey}.`
+            );
+
+          }
 
           /*
             SEND WHATSAPP
@@ -2818,7 +3188,8 @@ app.post(
               code,
               preparedCard.cardImageUrl,
               preparedCard.templateName,
-              preparedCard.templateLanguage
+              preparedCard.templateLanguage,
+              eventKey
             );
 
           /*
@@ -2930,7 +3301,7 @@ app.post(
         }
 
         /*
-          PAUSE
+          PAUSE YA SEKUNDE 1
         */
 
         if (
@@ -2968,6 +3339,12 @@ app.post(
             item.duplicate
         ).length;
 
+      const eventMismatches =
+        results.filter(
+          item =>
+            item.event_mismatch
+        ).length;
+
       return res.status(
         200
       ).json({
@@ -2978,6 +3355,15 @@ app.post(
         total:
           contacts.length,
 
+        event_key:
+          requestEvent,
+
+        event_name:
+          requestEventConfig.event_name,
+
+        card_image_url:
+          requestEventConfig.card_image_url,
+
         successful:
           successful,
 
@@ -2986,6 +3372,9 @@ app.post(
 
         duplicates:
           duplicates,
+
+        event_mismatches:
+          eventMismatches,
 
         results:
           results
@@ -3045,6 +3434,14 @@ async function updateAttendance(
         "phone",
         normalizedPhone
       );
+
+  /*
+    Kama Event imetolewa,
+    tunatumia Event hiyo.
+
+    Hatutafuti guest wa namba hiyo
+    kwenye Event nyingine.
+  */
 
   if (
     eventKey
@@ -3137,7 +3534,8 @@ async function updateAttendance(
 async function processAttendanceReply(
   from,
   buttonId,
-  buttonTitle
+  buttonTitle,
+  eventKey
 ) {
 
   const normalizedId =
@@ -3163,7 +3561,8 @@ async function processAttendanceReply(
 
     await updateAttendance(
       from,
-      "confirmed"
+      "confirmed",
+      eventKey
     );
 
     await sendText(
@@ -3184,7 +3583,8 @@ async function processAttendanceReply(
 
     await updateAttendance(
       from,
-      "declined"
+      "declined",
+      eventKey
     );
 
     await sendText(
@@ -3207,7 +3607,8 @@ async function processAttendanceReply(
 
     await updateAttendance(
       from,
-      "maybe"
+      "maybe",
+      eventKey
     );
 
     await sendText(
@@ -3221,8 +3622,7 @@ async function processAttendanceReply(
 
   return false;
 
-}
-
+      }
 /* =========================================================
    WHATSAPP WEBHOOK
 ========================================================= */
@@ -3329,6 +3729,20 @@ app.post(
         "button"
       ) {
 
+        /*
+          Template buttons za zamani
+          hazitoi Event Key hapa moja kwa moja.
+
+          Kwa hiyo updateAttendance()
+          inaweza kutumia record ya mwisho
+          ya namba hiyo.
+
+          Kwa mfumo wa Event nyingi,
+          ni salama zaidi kutumia Interactive
+          button yenye event context kwenye
+          message/template ikiwa inapatikana.
+        */
+
         await processAttendanceReply(
 
           from,
@@ -3397,6 +3811,12 @@ app.post(
         error.response?.data ||
         error.message
       );
+
+      /*
+        WhatsApp webhook inapaswa
+        kupata 200 ili isiendelee
+        kurudia event mara nyingi.
+      */
 
       return res.sendStatus(
         200
@@ -3679,6 +4099,7 @@ app.get(
 
 /* =========================================================
    MANUAL CHECK-IN BY CODE
+   STRICT EVENT
 ========================================================= */
 
 app.post(
@@ -3711,19 +4132,34 @@ app.post(
 
       }
 
+      /*
+        EVENT KEY LAZIMA ITUMWE.
+
+        Hatutumii DEFAULT_EVENT.
+      */
+
+      if (
+        !event_key
+      ) {
+
+        return res.status(
+          400
+        ).json({
+
+          success:
+            false,
+
+          message:
+            "Event Key inahitajika kwa Check-in. Mfano: EVENT_A"
+
+        });
+
+      }
+
       const guestCode =
         normalizeCode(
           code
         );
-
-      /*
-        Kama frontend imetuma event_key,
-        itatumika.
-
-        Kama haijatumwa,
-        DEFAULT_EVENT itatumika
-        kama mfumo wako wa zamani.
-      */
 
       const cleanEvent =
         normalizeEvent(
@@ -3835,6 +4271,10 @@ app.post(
             "id",
             guest.id
           )
+          .eq(
+            "event_key",
+            cleanEvent
+          )
           .select()
           .single();
 
@@ -3863,6 +4303,9 @@ app.post(
 
         message:
           "Mgeni ameingia ukumbini.",
+
+        event_key:
+          cleanEvent,
 
         guest:
           updatedGuest
@@ -3895,6 +4338,7 @@ app.post(
 
 /* =========================================================
    QR CHECK-IN
+   QR TOKEN NI UNIQUE KWA MGENI
 ========================================================= */
 
 app.post(
@@ -4023,6 +4467,10 @@ app.post(
             "id",
             guest.id
           )
+          .eq(
+            "qr_token",
+            qrToken
+          )
           .select()
           .single();
 
@@ -4051,6 +4499,9 @@ app.post(
 
         message:
           "QR Check-in imefanikiwa.",
+
+        event_key:
+          updatedGuest.event_key,
 
         guest:
           updatedGuest
@@ -4106,13 +4557,13 @@ app.get(
         "enabled",
 
       multi_event_cards:
-        "enabled",
+        "strict",
 
       event_card_upload:
         "enabled",
 
       default_event:
-        DEFAULT_EVENT,
+        "disabled",
 
       storage_bucket:
         STORAGE_BUCKET
@@ -4147,7 +4598,7 @@ app.listen(
     );
 
     console.log(
-      "Multi Event Cards: ENABLED"
+      "STRICT Multi Event Cards: ENABLED"
     );
 
     console.log(
@@ -4164,6 +4615,10 @@ app.listen(
 
     console.log(
       "QR Check-in: ENABLED"
+    );
+
+    console.log(
+      "Default Event Fallback: DISABLED"
     );
 
     console.log(
