@@ -1,592 +1,286 @@
 <!DOCTYPE html>
 <html lang="sw">
-
 <head>
-
 <meta charset="UTF-8">
-
-<meta
-  name="viewport"
-  content="width=device-width, initial-scale=1.0"
->
-
+<meta name="viewport" content="width=device-width,initial-scale=1.0">
 <title>GeitaCard - Dashboard</title>
 
-<script src="https://cdn.jsdelivr.net/npm/xlsx@0.18.5/dist/xlsx.full.min.js"></script>
-
-<script src="https://unpkg.com/html5-qrcode"></script>
-
-
 <style>
-
-*{
-  box-sizing:border-box;
-  margin:0;
-  padding:0;
-}
+*{box-sizing:border-box;margin:0;padding:0}
 
 body{
   font-family:Arial,sans-serif;
-  background:#f3f4f6;
-  color:#111827;
+  background:#f4f6f8;
+  color:#222
 }
 
 header{
   background:#111827;
-  color:white;
-  padding:14px 15px;
+  color:#fff;
+  padding:18px
 }
 
-header h1{
-  font-size:20px;
-}
+header h1{font-size:22px}
 
 header p{
-  margin-top:4px;
-  opacity:.75;
-  font-size:12px;
+  margin-top:5px;
+  opacity:.8
 }
 
 .container{
-  max-width:1300px;
+  max-width:1200px;
   margin:auto;
-  padding:15px;
+  padding:18px
 }
 
-.section{
-  background:white;
-  padding:15px;
-  border-radius:13px;
-  margin-bottom:15px;
-  box-shadow:0 2px 8px rgba(0,0,0,.07);
-}
-
-h2{
-  font-size:17px;
-  margin-bottom:8px;
-}
-
-h3{
-  font-size:15px;
-  margin-bottom:8px;
-}
-
-.description{
-  color:#6b7280;
-  line-height:1.55;
-  margin-bottom:14px;
-  font-size:13px;
-}
-
-.small{
-  color:#6b7280;
-  font-size:11px;
-  line-height:1.5;
-}
-
-.event-grid{
+.stats{
   display:grid;
-  grid-template-columns:1fr 1fr;
+  grid-template-columns:repeat(auto-fit,minmax(160px,1fr));
   gap:14px;
+  margin-bottom:18px
 }
 
-.event-form{
-  background:#eff6ff;
-  border:1px solid #bfdbfe;
-  padding:14px;
-  border-radius:11px;
+.card,
+.checkin-box,
+.controls,
+.table-container{
+  background:#fff;
+  border-radius:12px;
+  box-shadow:0 2px 8px rgba(0,0,0,.08)
 }
 
-.event-form h3{
-  color:#1e3a8a;
+.card{
+  padding:18px
+}
+
+.card h3{
+  font-size:13px;
+  color:#666;
+  margin-bottom:9px
+}
+
+.number{
+  font-size:30px;
+  font-weight:bold
+}
+
+.checkin-box{
+  padding:18px;
+  margin-bottom:18px
+}
+
+.checkin-box h2{
+  font-size:19px;
+  margin-bottom:7px
+}
+
+.checkin-box p{
+  color:#666;
+  margin-bottom:14px;
+  line-height:1.5
+}
+
+.checkin-form{
+  display:flex;
+  gap:9px;
+  flex-wrap:wrap
+}
+
+input,
+select,
+button{
+  padding:12px;
+  border-radius:8px;
+  font-size:15px
 }
 
 input,
 select{
-  width:100%;
-  padding:11px;
-  border:1px solid #d1d5db;
-  border-radius:8px;
-  font-size:14px;
-  margin-bottom:9px;
-  background:white;
+  border:1px solid #ddd;
+  background:#fff
 }
 
-input:focus,
-select:focus{
-  outline:none;
-  border-color:#2563eb;
-}
-
-input[type=file]{
-  padding:9px;
+.checkin-form input{
+  flex:1;
+  min-width:220px;
+  font-size:16px
 }
 
 button{
-  border:none;
-  border-radius:7px;
-  padding:10px 13px;
-  font-size:13px;
-  font-weight:bold;
+  border:0;
   cursor:pointer;
+  font-weight:bold
+}
+
+.checkin-button,
+.refresh-button{
+  background:#111827;
+  color:#fff
+}
+
+.checkin-button{
+  padding:13px 20px
+}
+
+.refresh-button{
+  padding:12px 16px
+}
+
+.excel-button{
+  background:#166534;
+  color:#fff;
+  padding:12px 16px
 }
 
 button:disabled{
-  opacity:.55;
-  cursor:not-allowed;
+  opacity:.6;
+  cursor:not-allowed
 }
 
-.primary{
-  background:#111827;
-  color:white;
+#checkinMessage{
+  margin-top:14px;
+  font-weight:bold
 }
 
-.blue{
-  background:#2563eb;
-  color:white;
-}
-
-.green{
-  background:#166534;
-  color:white;
-}
-
-.red{
-  background:#991b1b;
-  color:white;
-}
-
-.gray{
-  background:#e5e7eb;
-  color:#111827;
-}
-
-.orange{
-  background:#d97706;
-  color:white;
-}
-
-.button-row{
-  display:flex;
-  gap:8px;
-  flex-wrap:wrap;
-  margin-top:10px;
-}
-
-.event-select-box{
-  background:#eff6ff;
-  border:1px solid #93c5fd;
-  border-radius:11px;
-  padding:14px;
-}
-
-.selected-event{
-  background:#dbeafe;
-  color:#1e40af;
-  padding:11px;
-  border-radius:7px;
-  margin-top:8px;
-  line-height:1.55;
-  font-size:13px;
-}
-
-.card-preview{
-  margin-top:12px;
-  background:white;
-  border:1px solid #dbeafe;
-  border-radius:9px;
-  padding:10px;
-  text-align:center;
-}
-
-.card-preview img{
-  max-width:100%;
-  max-height:400px;
-  border-radius:7px;
-  border:1px solid #ddd;
-  display:block;
-  margin:10px auto;
-}
-
-.card-url{
-  font-size:11px;
-  color:#6b7280;
-  word-break:break-all;
-  text-align:left;
-  line-height:1.5;
-}
-
-.hidden{
-  display:none !important;
-}
-
-.message{
-  padding:10px;
-  border-radius:7px;
-  margin-top:10px;
-  line-height:1.5;
-  font-size:13px;
-}
-
-.success{
-  background:#dcfce7;
-  color:#166534;
-}
-
-.error{
-  background:#fee2e2;
-  color:#991b1b;
-}
-
-.warning{
-  background:#fef3c7;
-  color:#92400e;
-}
-
-.event-list{
-  display:grid;
-  grid-template-columns:repeat(
-    auto-fit,
-    minmax(250px,1fr)
-  );
-  gap:12px;
-  margin-top:12px;
-}
-
-.event-card{
-  border:1px solid #e5e7eb;
-  border-radius:10px;
+.success-message,
+.error-message,
+.warning-message{
   padding:12px;
-  background:#fff;
+  border-radius:8px;
+  line-height:1.5
 }
 
-.event-card h3{
-  color:#1e3a8a;
+.success-message{
+  color:#166534;
+  background:#dcfce7
 }
 
-.event-card img{
-  width:100%;
-  max-height:220px;
-  object-fit:contain;
-  border-radius:7px;
-  margin:8px 0;
-  border:1px solid #ddd;
+.error-message{
+  color:#991b1b;
+  background:#fee2e2
 }
 
-.event-key{
-  font-weight:bold;
-  color:#2563eb;
-  font-size:13px;
+.warning-message{
+  color:#92400e;
+  background:#fef3c7
 }
 
-.upload-box{
-  border:2px dashed #9ca3af;
-  border-radius:10px;
-  padding:18px;
-  text-align:center;
-  background:#f9fafb;
+.controls{
+  padding:14px;
+  margin-bottom:18px;
+  display:flex;
+  gap:9px;
+  flex-wrap:wrap
 }
 
-.upload-box input[type=file]{
-  display:none;
-}
-
-.upload-label{
-  display:inline-block;
-  background:#111827;
-  color:white;
-  padding:11px 15px;
-  border-radius:7px;
-  cursor:pointer;
-  font-weight:bold;
-  font-size:13px;
-}
-
-.file-name{
-  margin-top:9px;
-  font-weight:bold;
-  color:#374151;
-  font-size:12px;
+.controls input{
+  flex:1;
+  min-width:220px
 }
 
 .table-container{
-  overflow-x:auto;
-  border:1px solid #e5e7eb;
-  border-radius:8px;
-  margin-top:12px;
+  overflow-x:auto
 }
 
 table{
   width:100%;
   border-collapse:collapse;
-  min-width:950px;
+  min-width:850px
 }
 
 th,
 td{
-  padding:9px;
-  border-bottom:1px solid #eee;
+  padding:13px;
   text-align:left;
-  font-size:13px;
+  border-bottom:1px solid #eee
 }
 
 th{
-  background:#f9fafb;
-}
-
-.code{
-  font-weight:bold;
-  white-space:nowrap;
-}
-
-.type-kamati{
-  color:#1d4ed8;
-  font-weight:bold;
-}
-
-.type-single{
-  color:#166534;
-  font-weight:bold;
-}
-
-.type-other{
-  color:#6b7280;
-  font-weight:bold;
+  background:#f9fafb
 }
 
 .status{
-  display:inline-block;
-  padding:5px 8px;
+  padding:6px 10px;
   border-radius:20px;
-  font-size:11px;
+  font-size:13px;
   font-weight:bold;
-  white-space:nowrap;
+  display:inline-block;
+  white-space:nowrap
 }
 
 .confirmed{
   background:#dcfce7;
-  color:#166534;
+  color:#166534
 }
 
 .declined{
   background:#fee2e2;
-  color:#991b1b;
+  color:#991b1b
 }
 
 .maybe{
   background:#fef3c7;
-  color:#92400e;
+  color:#92400e
 }
 
 .pending{
   background:#e5e7eb;
-  color:#374151;
+  color:#374151
 }
 
 .checked{
   background:#dbeafe;
-  color:#1e40af;
+  color:#1e40af
 }
 
-.stats{
-  display:grid;
-  grid-template-columns:
-    repeat(
-      auto-fit,
-      minmax(125px,1fr)
-    );
-  gap:9px;
-  margin-bottom:15px;
+.not-checked{
+  color:#777
 }
 
-.stat-card{
-  background:white;
-  padding:12px;
-  border-radius:10px;
-  box-shadow:0 2px 7px rgba(0,0,0,.07);
-}
-
-.stat-card h3{
-  color:#6b7280;
-  font-size:11px;
-  margin-bottom:5px;
-}
-
-.number{
-  font-size:24px;
-  font-weight:bold;
-}
-
-.checkin-form{
-  display:grid;
-  grid-template-columns:210px 1fr auto;
-  gap:8px;
-}
-
-.checkin-form input,
-.checkin-form select{
-  margin:0;
-}
-
-.qr-box{
-  margin-top:15px;
-  background:#f9fafb;
-  border:1px solid #e5e7eb;
-  border-radius:10px;
-  padding:13px;
-}
-
-#qr-reader{
-  max-width:450px;
-  margin-top:12px;
-}
-
-.progress{
-  margin-top:12px;
-  display:none;
-}
-
-.progress-bar{
-  height:16px;
-  background:#e5e7eb;
-  border-radius:20px;
-  overflow:hidden;
-}
-
-.progress-fill{
-  width:0%;
-  height:100%;
-  background:#166534;
-  transition:width .3s;
-}
-
-.progress-text{
-  margin-top:7px;
-  font-weight:bold;
-  font-size:12px;
-}
-
-.loading{
-  padding:20px;
+.loading,
+.error,
+.empty{
   text-align:center;
-  color:#6b7280;
-  font-size:13px;
+  padding:25px
 }
 
-.url-box{
-  background:#fff;
-  border:1px solid #bfdbfe;
-  border-radius:8px;
-  padding:10px;
-  margin-top:10px;
-}
-
-.url-box label{
-  display:block;
-  font-weight:bold;
-  color:#1e3a8a;
-  font-size:12px;
-  margin-bottom:6px;
-}
-
-.event-row{
-  display:flex;
-  gap:8px;
-  align-items:center;
-  margin-top:10px;
-}
-
-.event-row select{
-  margin:0;
-  flex:1;
-}
-
-.badge{
-  display:inline-block;
-  padding:4px 7px;
-  border-radius:5px;
-  font-size:10px;
-  font-weight:bold;
-  background:#dbeafe;
-  color:#1e40af;
-}
-
-@media(max-width:800px){
-
-  .event-grid{
-    grid-template-columns:1fr;
-  }
-
-  .checkin-form{
-    grid-template-columns:1fr;
-  }
-
-  .checkin-form button{
-    width:100%;
-  }
-
+.error{
+  color:#b91c1c
 }
 
 @media(max-width:600px){
 
   .container{
-    padding:10px;
+    padding:12px
   }
 
-  .section{
-    padding:12px;
-  }
-
-  header{
-    padding:12px 10px;
-  }
-
-  header h1{
-    font-size:19px;
-  }
-
-  button{
+  .controls>*{
     width:100%;
+    min-width:0
   }
 
-  .button-row{
-    flex-direction:column;
+  .controls input{
+    min-width:0
   }
 
-  .stats{
-    grid-template-columns:repeat(3,1fr);
-  }
-
-  .stat-card{
-    padding:10px;
-  }
-
-  .number{
-    font-size:21px;
-  }
-
-  .event-row{
-    flex-direction:column;
-    align-items:stretch;
+  .checkin-form input,
+  .checkin-button{
+    width:100%
   }
 
 }
-
 </style>
-
 </head>
-
 
 <body>
 
-
 <header>
 
-  <h1>GeitaCard</h1>
+<h1>GeitaCard</h1>
 
-  <p>
-    Mfumo wa Mialiko na Dashboard ya Wahudhuriaji
-  </p>
+<p>
+Dashboard ya Wahudhuriaji
+</p>
 
 </header>
 
@@ -594,4825 +288,1090 @@ th{
 <div class="container">
 
 
-<!-- =====================================================
-     EVENT MANAGEMENT
-====================================================== -->
-
-<div class="section">
-
-  <h2>🎟️ EVENT MANAGEMENT</h2>
-
-  <p class="description">
-    Hapa ndipo unatengeneza Event na kuweka Kadi yake.
-    Kila Event inaweza kuwa na Kadi yake tofauti.
-  </p>
-
-
-  <div class="event-grid">
-
-
-    <!-- CREATE EVENT -->
-
-    <div class="event-form">
-
-      <h3>
-        ➕ Tengeneza Event Mpya
-      </h3>
-
-      <input
-        id="newEventKey"
-        type="text"
-        placeholder="Event Key mfano EVENT_A"
-      >
-
-      <input
-        id="newEventName"
-        type="text"
-        placeholder="Jina la Event mfano Harusi ya Rajabu"
-      >
-
-      <input
-        id="newTemplateName"
-        type="text"
-        placeholder="Template Name"
-      >
-
-      <input
-        id="newTemplateLanguage"
-        type="text"
-        placeholder="Template Language mfano sw"
-        value="sw"
-      >
-
-
-      <div class="upload-box">
-
-        <label
-          for="newEventCard"
-          class="upload-label"
-        >
-          🖼️ UPLOAD KADI YA EVENT
-        </label>
-
-        <input
-          type="file"
-          id="newEventCard"
-          accept="image/png,image/jpeg,image/webp"
-        >
-
-        <div
-          id="newEventCardName"
-          class="file-name"
-        >
-          Hakuna kadi iliyochaguliwa
-        </div>
-
-      </div>
-
-
-      <div class="button-row">
-
-        <button
-          class="blue"
-          onclick="createEvent()"
-        >
-          ➕ CREATE EVENT + KADI
-        </button>
-
-      </div>
-
-
-      <div id="createEventMessage"></div>
-
-    </div>
-
-
-    <!-- CHANGE CARD -->
-
-    <div class="event-form">
-
-      <h3>
-        🖼️ Badilisha Kadi ya Event
-      </h3>
-
-      <p class="small">
-        Chagua Event kisha upload Kadi mpya
-        au weka URL ya Kadi moja kwa moja.
-      </p>
-
-
-      <select id="cardEventSelect">
-
-        <option value="">
-          -- CHAGUA EVENT --
-        </option>
-
-      </select>
-
-
-      <input
-        type="file"
-        id="changeEventCard"
-        accept="image/png,image/jpeg,image/webp"
-      >
-
-
-      <div class="url-box">
-
-        <label>
-          🔗 AU WEKA URL YA KADI
-        </label>
-
-        <input
-          id="cardUrlInput"
-          type="url"
-          placeholder="https://example.com/kadi.jpg"
-        >
-
-        <button
-          class="primary"
-          style="width:100%"
-          onclick="changeCardUrl()"
-        >
-          🔗 HIFADHI CARD URL
-        </button>
-
-      </div>
-
-
-      <div
-        id="changeCardPreview"
-        class="card-preview hidden"
-      >
-
-        <strong>
-          Preview ya Kadi Mpya
-        </strong>
-
-        <img
-          id="changeCardImage"
-          src=""
-          alt="Preview"
-        >
-
-      </div>
-
-
-      <div class="button-row">
-
-        <button
-          class="orange"
-          onclick="changeEventCard()"
-        >
-          🔄 BADILISHA KADI
-        </button>
-
-      </div>
-
-
-      <div id="changeCardMessage"></div>
-
-    </div>
-
-  </div>
-
-</div>
-
-
-<!-- =====================================================
-     EVENTS ZILIZOPO
-====================================================== -->
-
-<div class="section">
-
-  <h2>
-    📋 EVENTS ZILIZOPO
-  </h2>
-
-  <div
-    id="eventsList"
-    class="event-list"
-  >
-
-    <div class="loading">
-      Inapakia Events...
-    </div>
-
-  </div>
-
-</div>
-
-
-<!-- =====================================================
-     CHAGUA EVENT
-====================================================== -->
-
-<div class="section">
-
-  <h2>
-    🎯 CHAGUA EVENT YA KUTUMIA
-  </h2>
-
-  <div class="event-select-box">
-
-    <select id="eventSelect">
-
-      <option value="">
-        ⏳ Inapakia Events...
-      </option>
-
-    </select>
-
-
-    <div
-      id="selectedEventDisplay"
-      class="selected-event"
-    >
-
-      🎟️ Event:
-      <strong>HAIJAWEKWA</strong>
-
-    </div>
-
-
-    <div
-      id="selectedCardPreview"
-      class="card-preview hidden"
-    >
-
-      <h3>
-        🖼️ Kadi ya Event Hii
-      </h3>
-
-      <img
-        id="selectedCardImage"
-        src=""
-        alt="Kadi ya Event"
-      >
-
-      <div
-        id="selectedCardUrl"
-        class="card-url"
-      ></div>
-
-    </div>
-
-  </div>
-
-</div>
-
-
-<!-- =====================================================
-     EXCEL
-====================================================== -->
-
-<div class="section">
-
-  <h2>
-    📁 UPLOAD EXCEL / CSV
-  </h2>
-
-  <p class="description">
-
-    Excel inaweza kuwa na columns:
-
-    <strong>
-      Namba | Jina | Code
-    </strong>
-
-    <br><br>
-
-    Au unaweza kuweka:
-
-    <strong>
-      Namba | Jina | Code | Event
-    </strong>
-
-    <br><br>
-
-    Mfano:
-
-    <strong>
-      255712345678 | Asha Rajabu | 9750-KAMATI
-    </strong>
-
-    <br>
-
-    au:
-
-    <strong>
-      255714567890 | Juma Mohamed | 9751-SINGLE | EVENT_B
-    </strong>
-
-    <br><br>
-
-    <strong>
-      💡 Kama Excel ina Event column,
-      kila mgeni atatumia Event yake.
-    </strong>
-
-    <br>
-
-    Kama Excel haina Event column,
-    mfumo utatumia Event uliyochagua hapo juu.
-
-  </p>
-
-
-  <div
-    class="selected-event"
-    id="excelEventInfo"
-  >
-
-    🎟️ Event ya kawaida:
-
-    <strong id="excelEventName">
-      HAIJAWEKWA
-    </strong>
-
-    <br>
-
-    🔑 Event Key:
-
-    <strong id="excelEventKey">
-      -
-    </strong>
-
-    <br><br>
-
-    <span class="small">
-      ⚠️ Kama Excel ina Event column,
-      Event ya kila row itatumika badala ya hii.
-    </span>
-
-  </div>
-
-
-  <div
-    class="upload-box"
-    style="margin-top:15px"
-  >
-
-    <label
-      for="excelFile"
-      class="upload-label"
-    >
-      📁 CHAGUA EXCEL / CSV
-    </label>
-
-    <input
-      type="file"
-      id="excelFile"
-      accept=".xlsx,.xls,.csv"
-    >
-
-    <div
-      id="fileName"
-      class="file-name"
-    >
-    </div>
-
-  </div>
-
-
-  <div id="uploadMessage"></div>
-
-
-  <!-- PREVIEW -->
-
-  <div
-    id="previewSection"
-    class="hidden"
-    style="margin-top:15px"
-  >
-
-    <h3>
-      👀 PREVIEW YA WAGENI
-    </h3>
-
-
-    <div class="selected-event">
-
-      Jumla ya Wageni:
-
-      <strong id="previewCount">
-        0
-      </strong>
-
-    </div>
-
-
-    <div class="table-container">
-
-      <table>
-
-        <thead>
-
-          <tr>
-
-            <th>#</th>
-
-            <th>Namba</th>
-
-            <th>Jina</th>
-
-            <th>Code</th>
-
-            <th>Aina</th>
-
-            <th>Event</th>
-
-            <th>Kadi</th>
-
-            <th>QR</th>
-
-          </tr>
-
-        </thead>
-
-        <tbody id="previewBody"></tbody>
-
-      </table>
-
-    </div>
-
-
-    <div class="button-row">
-
-      <button
-        class="green"
-        id="bulkButton"
-        onclick="sendBulkInvitations()"
-      >
-        🚀 TUMA BULK WHATSAPP
-      </button>
-
-
-      <button
-        class="gray"
-        onclick="clearExcel()"
-      >
-        🗑️ ONDOA EXCEL
-      </button>
-
-    </div>
-
-
-    <div
-      id="bulkProgress"
-      class="progress"
-    >
-
-      <div class="progress-bar">
-
-        <div
-          id="progressFill"
-          class="progress-fill"
-        ></div>
-
-      </div>
-
-      <div
-        id="progressText"
-        class="progress-text"
-      >
-        Inaanza...
-      </div>
-
-    </div>
-
-
-    <div id="bulkResult"></div>
-
-  </div>
-
-</div>
-
-
-<!-- =====================================================
-     STATS
-====================================================== -->
+<!-- STATS -->
 
 <div class="stats">
 
+<div class="card">
+<h3>Jumla ya Wageni</h3>
+<div class="number" id="total">0</div>
+</div>
 
-  <div class="stat-card">
+<div class="card">
+<h3>Watashiriki</h3>
+<div class="number" id="confirmed">0</div>
+</div>
 
-    <h3>
-      Jumla ya Wageni
-    </h3>
+<div class="card">
+<h3>Hawashiriki</h3>
+<div class="number" id="declined">0</div>
+</div>
 
-    <div
-      id="total"
-      class="number"
-    >
-      0
-    </div>
+<div class="card">
+<h3>Sina Uhakika</h3>
+<div class="number" id="maybe">0</div>
+</div>
 
-  </div>
+<div class="card">
+<h3>Bado Hawajajibu</h3>
+<div class="number" id="pending">0</div>
+</div>
 
-
-  <div class="stat-card">
-
-    <h3>
-      Watashiriki
-    </h3>
-
-    <div
-      id="confirmed"
-      class="number"
-    >
-      0
-    </div>
-
-  </div>
-
-
-  <div class="stat-card">
-
-    <h3>
-      Hawashiriki
-    </h3>
-
-    <div
-      id="declined"
-      class="number"
-    >
-      0
-    </div>
-
-  </div>
-
-
-  <div class="stat-card">
-
-    <h3>
-      Sina Uhakika
-    </h3>
-
-    <div
-      id="maybe"
-      class="number"
-    >
-      0
-    </div>
-
-  </div>
-
-
-  <div class="stat-card">
-
-    <h3>
-      Bado Hawajajibu
-    </h3>
-
-    <div
-      id="pending"
-      class="number"
-    >
-      0
-    </div>
-
-  </div>
-
-
-  <div class="stat-card">
-
-    <h3>
-      Wameingia Ukumbini
-    </h3>
-
-    <div
-      id="checkedIn"
-      class="number"
-    >
-      0
-    </div>
-
-  </div>
+<div class="card">
+<h3>Wameingia Ukumbini</h3>
+<div class="number" id="checkedIn">0</div>
+</div>
 
 </div>
 
 
-<!-- =====================================================
-     CHECK-IN
-====================================================== -->
+<!-- CHECK-IN -->
 
-<div class="section">
+<div class="checkin-box">
 
-  <h2>
-    🎟️ CHECK-IN YA MGENI
-  </h2>
+<h2>
+🎟️ CHECK-IN YA MGENI
+</h2>
 
-  <p class="description">
+<p>
+Andika Code ya mgeni kisha bonyeza CHECK-IN.
+Hakuna QR scan inayohitajika.
+</p>
 
-    Unaweza kutumia Code au QR Code ya mgeni.
+<div class="checkin-form">
 
-    <br>
+<input
+id="checkinCode"
+type="text"
+placeholder="Mfano: 9749-KAMATI"
+autocomplete="off"
+>
 
-    QR Code ya kila mgeni ni tofauti.
+<button
+class="checkin-button"
+id="checkinButton"
+onclick="checkInGuest()"
+>
+CHECK-IN
+</button>
 
-  </p>
+</div>
 
-
-  <h3>
-    🔢 Check-in kwa Code
-  </h3>
-
-
-  <div class="checkin-form">
-
-    <select id="checkinEvent">
-
-      <option value="">
-        -- CHAGUA EVENT --
-      </option>
-
-    </select>
-
-
-    <input
-      id="checkinCode"
-      type="text"
-      placeholder="Mfano: 9750-KAMATI"
-      autocomplete="off"
-    >
-
-
-    <button
-      id="checkinButton"
-      class="primary"
-      onclick="checkInGuest()"
-    >
-      CHECK-IN
-    </button>
-
-  </div>
-
-
-  <div id="checkinMessage"></div>
-
-
-  <!-- QR -->
-
-  <div class="qr-box">
-
-    <h3>
-      📷 Check-in kwa QR Code
-    </h3>
-
-    <p class="small">
-
-      Bonyeza ANZA KUSCAN QR,
-      ruhusu camera,
-      kisha elekeza camera kwenye QR
-      ya kadi ya mwaliko.
-
-    </p>
-
-
-    <div class="button-row">
-
-      <button
-        id="startQrButton"
-        class="blue"
-        onclick="startQRScanner()"
-      >
-        📷 ANZA KUSCAN QR
-      </button>
-
-
-      <button
-        id="stopQrButton"
-        class="red"
-        onclick="stopQRScanner()"
-        style="display:none"
-      >
-        ✖ SIMAMISHA CAMERA
-      </button>
-
-    </div>
-
-
-    <div
-      id="qr-reader"
-      style="display:none"
-    ></div>
-
-
-    <div id="qrMessage"></div>
-
-  </div>
+<div id="checkinMessage"></div>
 
 </div>
 
 
-<!-- =====================================================
-     WAHUDHURIAJI
-====================================================== -->
+<!-- CONTROLS -->
 
-<div class="section">
+<div class="controls">
 
-  <h2>
-    👥 WAHUDHURIAJI
-  </h2>
+<input
+id="search"
+type="text"
+placeholder="Tafuta jina, simu au code..."
+>
 
+<select id="statusFilter">
 
-  <div class="button-row">
+<option value="all">
+Hali zote
+</option>
 
-    <input
-      id="search"
-      type="text"
-      placeholder="Tafuta jina, simu, code au event..."
-      style="
-        flex:1;
-        min-width:200px;
-        margin:0
-      "
-    >
+<option value="confirmed">
+Nitashiriki
+</option>
 
+<option value="declined">
+Sitashiriki
+</option>
 
-    <select
-      id="eventFilter"
-      style="
-        flex:1;
-        min-width:170px;
-        margin:0
-      "
-    >
+<option value="maybe">
+Sina uhakika
+</option>
 
-      <option value="all">
-        Events zote
-      </option>
+<option value="pending">
+Pending
+</option>
 
-    </select>
+</select>
 
 
-    <select
-      id="statusFilter"
-      style="
-        flex:1;
-        min-width:150px;
-        margin:0
-      "
-    >
+<select id="checkinFilter">
 
-      <option value="all">
-        Hali zote
-      </option>
+<option value="all">
+Check-in zote
+</option>
 
-      <option value="confirmed">
-        Nitashiriki
-      </option>
+<option value="checked">
+Wameingia
+</option>
 
-      <option value="declined">
-        Sitashiriki
-      </option>
+<option value="not_checked">
+Hawajaingia
+</option>
 
-      <option value="maybe">
-        Sina uhakika
-      </option>
-
-      <option value="pending">
-        Pending
-      </option>
-
-    </select>
+</select>
 
 
-    <select
-      id="checkinFilter"
-      style="
-        flex:1;
-        min-width:150px;
-        margin:0
-      "
-    >
-
-      <option value="all">
-        Check-in zote
-      </option>
-
-      <option value="checked">
-        Wameingia
-      </option>
-
-      <option value="not_checked">
-        Hawajaingia
-      </option>
-
-    </select>
+<button
+class="refresh-button"
+id="refreshButton"
+onclick="loadGuests()"
+>
+🔄 Refresh
+</button>
 
 
-    <button
-      class="primary"
-      onclick="loadGuests()"
-    >
-      🔄 REFRESH
-    </button>
-
-
-    <button
-      class="green"
-      onclick="downloadAttendance()"
-    >
-      📥 PAKUA EXCEL
-    </button>
-
-  </div>
-
-
-  <div class="table-container">
-
-    <div
-      id="loading"
-      class="loading"
-    >
-      Inapakia wageni...
-    </div>
-
-
-    <div
-      id="guestError"
-      class="message error hidden"
-    ></div>
-
-
-    <table
-      id="guestTable"
-      style="display:none"
-    >
-
-      <thead>
-
-        <tr>
-
-          <th>#</th>
-
-          <th>Jina</th>
-
-          <th>Simu</th>
-
-          <th>Code</th>
-
-          <th>Event</th>
-
-          <th>Aina</th>
-
-          <th>Ushiriki</th>
-
-          <th>Check-in</th>
-
-        </tr>
-
-      </thead>
-
-
-      <tbody id="guestBody"></tbody>
-
-    </table>
-
-  </div>
+<button
+class="excel-button"
+id="excelButton"
+onclick="downloadExcel()"
+>
+📥 Pakua Excel
+</button>
 
 </div>
 
+
+<!-- TABLE -->
+
+<div class="table-container">
+
+<div
+id="loading"
+class="loading"
+>
+Inapakia wageni...
+</div>
+
+
+<div
+id="error"
+class="error"
+></div>
+
+
+<table
+id="guestTable"
+style="display:none"
+>
+
+<thead>
+
+<tr>
+
+<th>#</th>
+
+<th>Jina</th>
+
+<th>Simu</th>
+
+<th>Code</th>
+
+<th>Aina</th>
+
+<th>Ushiriki</th>
+
+<th>Check-in</th>
+
+</tr>
+
+</thead>
+
+
+<tbody
+id="guestBody"
+></tbody>
+
+</table>
+
+</div>
 
 </div>
 
 
 <script>
 
-/* =========================================================
-   GLOBAL VARIABLES
-========================================================= */
+let guests=[];
 
-let events = [];
 
-let selectedEvent = null;
-
-let uploadedContacts = [];
-
-let guests = [];
-
-let qrScanner = null;
-
-let qrProcessing = false;
-
-let bulkSending = false;
-
-
-/* =========================================================
-   DOM
-========================================================= */
-
-const eventSelect =
-  document.getElementById(
-    "eventSelect"
-  );
-
-const cardEventSelect =
-  document.getElementById(
-    "cardEventSelect"
-  );
-
-const checkinEvent =
-  document.getElementById(
-    "checkinEvent"
-  );
-
-const excelFile =
-  document.getElementById(
-    "excelFile"
-  );
-
-const newEventCard =
-  document.getElementById(
-    "newEventCard"
-  );
-
-const changeEventCardInput =
-  document.getElementById(
-    "changeEventCard"
-  );
-
-
-/* =========================================================
-   ESCAPE HTML
-========================================================= */
-
-function escapeHtml(value){
-
-  return String(
-    value ?? ""
-  )
-    .replace(
-      /&/g,
-      "&amp;"
-    )
-    .replace(
-      /</g,
-      "&lt;"
-    )
-    .replace(
-      />/g,
-      "&gt;"
-    )
-    .replace(
-      /"/g,
-      "&quot;"
-    )
-    .replace(
-      /'/g,
-      "&#039;"
-    );
-
-}
-
-
-/* =========================================================
-   FILE BASE64
-========================================================= */
-
-function fileToBase64(file){
-
-  return new Promise(
-    (resolve,reject)=>{
-
-      const reader =
-        new FileReader();
-
-      reader.onload =
-        () =>
-          resolve(
-            reader.result
-          );
-
-      reader.onerror =
-        reject;
-
-      reader.readAsDataURL(
-        file
-      );
-
-    }
-  );
-
-}
-
-
-/* =========================================================
-   FILE NAME
-========================================================= */
-
-newEventCard.addEventListener(
-  "change",
-  ()=>{
-
-    const file =
-      newEventCard.files[0];
-
-    document.getElementById(
-      "newEventCardName"
-    ).innerText =
-      file
-        ? "🖼️ " + file.name
-        : "Hakuna kadi iliyochaguliwa";
-
-  }
-);
-
-
-/* =========================================================
-   CARD PREVIEW
-========================================================= */
-
-changeEventCardInput.addEventListener(
-  "change",
-  ()=>{
-
-    const file =
-      changeEventCardInput.files[0];
-
-    const preview =
-      document.getElementById(
-        "changeCardPreview"
-      );
-
-    const image =
-      document.getElementById(
-        "changeCardImage"
-      );
-
-    if(!file){
-
-      preview.classList.add(
-        "hidden"
-      );
-
-      return;
-
-    }
-
-    image.src =
-      URL.createObjectURL(
-        file
-      );
-
-    preview.classList.remove(
-      "hidden"
-    );
-
-  }
-);
-
-
-/* =========================================================
-   EVENT SELECT
-========================================================= */
-
-eventSelect.addEventListener(
-  "change",
-  ()=>{
-
-    if(bulkSending){
-      return;
-    }
-
-    const key =
-      String(
-        eventSelect.value || ""
-      )
-        .trim()
-        .toUpperCase();
-
-    selectedEvent =
-      events.find(
-        event =>
-          String(
-            event.event_key || ""
-          )
-            .trim()
-            .toUpperCase() ===
-          key
-      ) || null;
-
-    updateSelectedEvent();
-
-  }
-);
-
-
-/* =========================================================
-   UPDATE SELECTED EVENT
-========================================================= */
-
-function updateSelectedEvent(){
-
-  const display =
-    document.getElementById(
-      "selectedEventDisplay"
-    );
-
-  const eventName =
-    document.getElementById(
-      "excelEventName"
-    );
-
-  const eventKeyBox =
-    document.getElementById(
-      "excelEventKey"
-    );
-
-  const preview =
-    document.getElementById(
-      "selectedCardPreview"
-    );
-
-  const image =
-    document.getElementById(
-      "selectedCardImage"
-    );
-
-  const url =
-    document.getElementById(
-      "selectedCardUrl"
-    );
-
-
-  if(!selectedEvent){
-
-    display.innerHTML =
-      "🎟️ Event: <strong>HAIJAWEKWA</strong>";
-
-    eventName.innerText =
-      "HAIJAWEKWA";
-
-    eventKeyBox.innerText =
-      "-";
-
-    preview.classList.add(
-      "hidden"
-    );
-
-    image.removeAttribute(
-      "src"
-    );
-
-    url.innerText =
-      "";
-
-    return;
-
-  }
-
-
-  const key =
-    String(
-      selectedEvent.event_key
-    )
-      .trim()
-      .toUpperCase();
-
-  const name =
-    selectedEvent.event_name ||
-    key;
-
-  const card =
-    selectedEvent.card_image_url ||
-    "";
-
-
-  display.innerHTML = `
-
-    🎟️ Event:
-    <strong>
-      ${escapeHtml(name)}
-    </strong>
-
-    <br>
-
-    🔑 Event Key:
-    <strong>
-      ${escapeHtml(key)}
-    </strong>
-
-    <br>
-
-    🖼️ Kadi:
-    <strong>
-      ${card ? "✅ IPO" : "❌ HAKUNA"}
-    </strong>
-
-  `;
-
-
-  eventName.innerText =
-    name;
-
-  eventKeyBox.innerText =
-    key;
-
-
-  if(card){
-
-    image.src =
-      card;
-
-    image.alt =
-      "Kadi ya " + name;
-
-    url.innerText =
-      card;
-
-    preview.classList.remove(
-      "hidden"
-    );
-
-  }else{
-
-    preview.classList.remove(
-      "hidden"
-    );
-
-    image.removeAttribute(
-      "src"
-    );
-
-    url.innerText =
-      "⚠️ Event hii haina kadi.";
-
-  }
-
-
-  if(uploadedContacts.length){
-
-    renderPreview();
-
-  }
-
-}
-
-
-/* =========================================================
-   LOAD EVENTS
-========================================================= */
-
-async function loadEvents(){
-
-  try{
-
-    const response =
-      await fetch(
-        "/api/events",
-        {
-          cache:"no-store"
-        }
-      );
-
-
-    const result =
-      await response.json();
-
-
-    if(
-      !response.ok ||
-      !result.success
-    ){
-
-      throw new Error(
-        result.error ||
-        result.message ||
-        "Events hazikupatikana."
-      );
-
-    }
-
-
-    events =
-      Array.isArray(
-        result.events
-      )
-        ? result.events
-        : [];
-
-
-    populateEventSelectors();
-
-    renderEventsList();
-
-
-    if(
-      events.length &&
-      !selectedEvent
-    ){
-
-      selectedEvent =
-        events[0];
-
-      eventSelect.value =
-        selectedEvent.event_key;
-
-      checkinEvent.value =
-        selectedEvent.event_key;
-
-      updateSelectedEvent();
-
-    }
-
-  }catch(error){
-
-    console.error(error);
-
-    document.getElementById(
-      "eventsList"
-    ).innerHTML = `
-
-      <div class="message error">
-
-        ❌
-        ${escapeHtml(
-          error.message
-        )}
-
-      </div>
-
-    `;
-
-  }
-
-}
-
-
-/* =========================================================
-   POPULATE EVENT SELECTORS
-========================================================= */
-
-function populateEventSelectors(){
-
-  eventSelect.innerHTML = `
-
-    <option value="">
-      -- CHAGUA EVENT --
-    </option>
-
-  `;
-
-
-  cardEventSelect.innerHTML = `
-
-    <option value="">
-      -- CHAGUA EVENT --
-    </option>
-
-  `;
-
-
-  checkinEvent.innerHTML = `
-
-    <option value="">
-      -- CHAGUA EVENT --
-    </option>
-
-  `;
-
-
-  events.forEach(
-    event =>{
-
-      const key =
-        String(
-          event.event_key || ""
-        )
-          .trim()
-          .toUpperCase();
-
-      const name =
-        event.event_name ||
-        key;
-
-      const label =
-        `${name} (${key})`;
-
-
-      eventSelect.appendChild(
-        makeOption(
-          key,
-          label
-        )
-      );
-
-
-      cardEventSelect.appendChild(
-        makeOption(
-          key,
-          label
-        )
-      );
-
-
-      checkinEvent.appendChild(
-        makeOption(
-          key,
-          label
-        )
-      );
-
-    }
-  );
-
-
-  if(selectedEvent){
-
-    eventSelect.value =
-      selectedEvent.event_key;
-
-    checkinEvent.value =
-      selectedEvent.event_key;
-
-  }
-
-}
-
-
-/* =========================================================
-   MAKE OPTION
-========================================================= */
-
-function makeOption(
-  value,
-  text
-){
-
-  const option =
-    document.createElement(
-      "option"
-    );
-
-  option.value =
-    value;
-
-  option.textContent =
-    text;
-
-  return option;
-
-}
-
-
-/* =========================================================
-   RENDER EVENTS
-========================================================= */
-
-function renderEventsList(){
-
-  const box =
-    document.getElementById(
-      "eventsList"
-    );
-
-
-  if(!events.length){
-
-    box.innerHTML = `
-
-      <div class="message warning">
-
-        Hakuna Event iliyopo.
-
-      </div>
-
-    `;
-
-    return;
-
-  }
-
-
-  box.innerHTML =
-    "";
-
-
-  events.forEach(
-    event =>{
-
-      const card =
-        document.createElement(
-          "div"
-        );
-
-      card.className =
-        "event-card";
-
-
-      const key =
-        String(
-          event.event_key || ""
-        )
-          .trim()
-          .toUpperCase();
-
-      const name =
-        event.event_name ||
-        key;
-
-
-      card.innerHTML = `
-
-        <h3>
-          ${escapeHtml(name)}
-        </h3>
-
-        <div class="event-key">
-          ${escapeHtml(key)}
-        </div>
-
-        ${
-          event.card_image_url
-
-          ? `
-
-            <img
-              src="${escapeHtml(
-                event.card_image_url
-              )}"
-              alt="Kadi"
-            >
-
-          `
-
-          : `
-
-            <div class="message warning">
-              ❌ Hakuna kadi
-            </div>
-
-          `
-        }
-
-
-        <p class="small">
-
-          Template:
-          ${escapeHtml(
-            event.template_name || "-"
-          )}
-
-          <br>
-
-          Language:
-          ${escapeHtml(
-            event.template_language || "-"
-          )}
-
-        </p>
-
-
-        <div class="button-row">
-
-          <button
-            class="blue"
-            onclick="selectEventByKey('${escapeHtml(key)}')"
-          >
-            🎯 CHAGUA
-          </button>
-
-
-          <button
-            class="orange"
-            onclick="selectCardEvent('${escapeHtml(key)}')"
-          >
-            🖼️ BADILISHA KADI
-          </button>
-
-        </div>
-
-      `;
-
-
-      box.appendChild(
-        card
-      );
-
-    }
-  );
-
-}
-
-
-/* =========================================================
-   SELECT EVENT
-========================================================= */
-
-function selectEventByKey(
-  key
-){
-
-  selectedEvent =
-    events.find(
-      event =>
-        String(
-          event.event_key || ""
-        )
-          .trim()
-          .toUpperCase() ===
-        String(key)
-          .trim()
-          .toUpperCase()
-    ) || null;
-
-
-  if(!selectedEvent){
-    return;
-  }
-
-
-  eventSelect.value =
-    selectedEvent.event_key;
-
-  checkinEvent.value =
-    selectedEvent.event_key;
-
-  updateSelectedEvent();
-
-
-  eventSelect.scrollIntoView({
-    behavior:"smooth",
-    block:"center"
-  });
-
-}
-
-
-/* =========================================================
-   SELECT CARD EVENT
-========================================================= */
-
-function selectCardEvent(
-  key
-){
-
-  cardEventSelect.value =
-    key;
-
-  document.getElementById(
-    "cardUrlInput"
-  ).value =
-    "";
-
-  cardEventSelect.scrollIntoView({
-    behavior:"smooth",
-    block:"center"
-  });
-
-}
-
-
-/* =========================================================
-   CREATE EVENT
-========================================================= */
-
-async function createEvent(){
-
-  const message =
-    document.getElementById(
-      "createEventMessage"
-    );
-
-
-  message.innerHTML =
-    "";
-
-
-  const eventKey =
-    document.getElementById(
-      "newEventKey"
-    )
-      .value
-      .trim()
-      .toUpperCase();
-
-
-  const eventName =
-    document.getElementById(
-      "newEventName"
-    )
-      .value
-      .trim();
-
-
-  const templateName =
-    document.getElementById(
-      "newTemplateName"
-    )
-      .value
-      .trim();
-
-
-  const templateLanguage =
-    document.getElementById(
-      "newTemplateLanguage"
-    )
-      .value
-      .trim();
-
-
-  const cardFile =
-    newEventCard.files[0];
-
-
-  if(!eventKey){
-
-    showMessage(
-      message,
-      "error",
-      "⚠️ Weka Event Key."
-    );
-
-    return;
-
-  }
-
-
-  if(
-    !/^[A-Z0-9_-]+$/.test(
-      eventKey
-    )
-  ){
-
-    showMessage(
-      message,
-      "error",
-      "⚠️ Event Key si sahihi."
-    );
-
-    return;
-
-  }
-
-
-  if(!cardFile){
-
-    showMessage(
-      message,
-      "error",
-      "⚠️ Upload Kadi ya Event."
-    );
-
-    return;
-
-  }
-
-
-  try{
-
-    showMessage(
-      message,
-      "warning",
-      "⏳ Ina-upload Event na Kadi..."
-    );
-
-
-    const base64 =
-      await fileToBase64(
-        cardFile
-      );
-
-
-    const response =
-      await fetch(
-        "/api/events",
-        {
-
-          method:"POST",
-
-          headers:{
-            "Content-Type":
-              "application/json"
-          },
-
-          body:
-            JSON.stringify({
-
-              event_key:
-                eventKey,
-
-              event_name:
-                eventName ||
-                eventKey,
-
-              template_name:
-                templateName,
-
-              template_language:
-                templateLanguage ||
-                "sw",
-
-              card_image_base64:
-                base64,
-
-              card_image_name:
-                cardFile.name
-
-            })
-
-        }
-      );
-
-
-    const result =
-      await response.json();
-
-
-    if(
-      !response.ok ||
-      !result.success
-    ){
-
-      throw new Error(
-        result.error ||
-        result.message ||
-        "Event haikuundwa."
-      );
-
-    }
-
-
-    showMessage(
-      message,
-      "success",
-      "✅ " +
-      result.message
-    );
-
-
-    document.getElementById(
-      "newEventKey"
-    ).value = "";
-
-    document.getElementById(
-      "newEventName"
-    ).value = "";
-
-    document.getElementById(
-      "newTemplateName"
-    ).value = "";
-
-    document.getElementById(
-      "newTemplateLanguage"
-    ).value = "sw";
-
-    newEventCard.value = "";
-
-    document.getElementById(
-      "newEventCardName"
-    ).innerText =
-      "Hakuna kadi iliyochaguliwa";
-
-
-    await loadEvents();
-
-
-  }catch(error){
-
-    showMessage(
-      message,
-      "error",
-      "❌ " +
-      error.message
-    );
-
-  }
-
-}
-
-
-/* =========================================================
-   CHANGE CARD
-========================================================= */
-
-async function changeEventCard(){
-
-  const message =
-    document.getElementById(
-      "changeCardMessage"
-    );
-
-
-  message.innerHTML =
-    "";
-
-
-  const key =
-    cardEventSelect.value;
-
-
-  const file =
-    changeEventCardInput.files[0];
-
-
-  if(!key){
-
-    showMessage(
-      message,
-      "error",
-      "⚠️ Chagua Event."
-    );
-
-    return;
-
-  }
-
-
-  if(!file){
-
-    showMessage(
-      message,
-      "error",
-      "⚠️ Chagua Kadi mpya."
-    );
-
-    return;
-
-  }
-
-
-  const event =
-    events.find(
-      item =>
-        String(
-          item.event_key
-        )
-          .trim()
-          .toUpperCase() ===
-        String(key)
-          .trim()
-          .toUpperCase()
-    );
-
-
-  if(!event){
-
-    showMessage(
-      message,
-      "error",
-      "❌ Event haikupatikana."
-    );
-
-    return;
-
-  }
-
-
-  try{
-
-    showMessage(
-      message,
-      "warning",
-      "⏳ Ina-upload Kadi mpya..."
-    );
-
-
-    const base64 =
-      await fileToBase64(
-        file
-      );
-
-
-    const response =
-      await fetch(
-        `/api/events/${event.id}/card`,
-        {
-
-          method:"POST",
-
-          headers:{
-            "Content-Type":
-              "application/json"
-          },
-
-          body:
-            JSON.stringify({
-
-              card_image_base64:
-                base64,
-
-              card_image_name:
-                file.name
-
-            })
-
-        }
-      );
-
-
-    const result =
-      await response.json();
-
-
-    if(
-      !response.ok ||
-      !result.success
-    ){
-
-      throw new Error(
-        result.error ||
-        result.message ||
-        "Kadi haikubadilishwa."
-      );
-
-    }
-
-
-    showMessage(
-      message,
-      "success",
-      "✅ " +
-      result.message
-    );
-
-
-    changeEventCardInput.value =
-      "";
-
-
-    document.getElementById(
-      "changeCardPreview"
-    ).classList.add(
-      "hidden"
-    );
-
-
-    await loadEvents();
-
-
-  }catch(error){
-
-    showMessage(
-      message,
-      "error",
-      "❌ " +
-      error.message
-    );
-
-  }
-
-}
-
-
-/* =========================================================
-   CHANGE CARD URL
-========================================================= */
-
-async function changeCardUrl(){
-
-  const message =
-    document.getElementById(
-      "changeCardMessage"
-    );
-
-
-  const key =
-    cardEventSelect.value;
-
-
-  const url =
-    document.getElementById(
-      "cardUrlInput"
-    )
-      .value
-      .trim();
-
-
-  message.innerHTML =
-    "";
-
-
-  if(!key){
-
-    showMessage(
-      message,
-      "error",
-      "⚠️ Chagua Event kwanza."
-    );
-
-    return;
-
-  }
-
-
-  if(!url){
-
-    showMessage(
-      message,
-      "error",
-      "⚠️ Weka URL ya Kadi."
-    );
-
-    return;
-
-  }
-
-
-  if(
-    !/^https?:\/\//i.test(
-      url
-    )
-  ){
-
-    showMessage(
-      message,
-      "error",
-      "⚠️ URL lazima ianze na https:// au http://"
-    );
-
-    return;
-
-  }
-
-
-  const event =
-    events.find(
-      item =>
-        String(
-          item.event_key
-        )
-          .trim()
-          .toUpperCase() ===
-        String(key)
-          .trim()
-          .toUpperCase()
-    );
-
-
-  if(!event){
-
-    showMessage(
-      message,
-      "error",
-      "❌ Event haikupatikana."
-    );
-
-    return;
-
-  }
-
-
-  try{
-
-    showMessage(
-      message,
-      "warning",
-      "⏳ Inahifadhi Card URL..."
-    );
-
-
-    const response =
-      await fetch(
-        `/api/events/${event.id}/card-url`,
-        {
-
-          method:"POST",
-
-          headers:{
-            "Content-Type":
-              "application/json"
-          },
-
-          body:
-            JSON.stringify({
-
-              card_image_url:
-                url
-
-            })
-
-        }
-      );
-
-
-    const result =
-      await response.json();
-
-
-    if(
-      !response.ok ||
-      !result.success
-    ){
-
-      throw new Error(
-        result.error ||
-        result.message ||
-        "URL haikuhifadhiwa."
-      );
-
-    }
-
-
-    showMessage(
-      message,
-      "success",
-      "✅ URL ya Kadi imehifadhiwa."
-    );
-
-
-    await loadEvents();
-
-
-    selectedEvent =
-      events.find(
-        item =>
-          item.id ===
-          event.id
-      ) || selectedEvent;
-
-
-    eventSelect.value =
-      selectedEvent.event_key;
-
-    updateSelectedEvent();
-
-
-  }catch(error){
-
-    showMessage(
-      message,
-      "error",
-      "❌ " +
-      error.message
-    );
-
-  }
-
-}
-
-
-/* =========================================================
-   EXCEL FILE
-========================================================= */
-
-excelFile.addEventListener(
-  "change",
-  handleExcelFile
-);
-
-
-async function handleExcelFile(
-  event
-){
-
-  const file =
-    event.target.files[0];
-
-
-  const message =
-    document.getElementById(
-      "uploadMessage"
-    );
-
-
-  message.innerHTML =
-    "";
-
-
-  if(!file){
-    return;
-  }
-
-
-  document.getElementById(
-    "fileName"
-  ).innerText =
-    "📄 " + file.name;
-
-
-  /*
-    MUHIMU:
-
-    Hapa HATUKATAZI Excel ikiwa ina Event
-    tofauti na Event iliyochaguliwa.
-
-    Excel inaweza kuwa ya Events nyingi.
-  */
-
-
-  if(!selectedEvent){
-
-    showMessage(
-      message,
-      "error",
-      "⚠️ Chagua Event kwanza. Event hii itatumika kwa rows ambazo hazina Event."
-    );
-
-    excelFile.value =
-      "";
-
-    return;
-
-  }
-
-
-  try{
-
-    const buffer =
-      await file.arrayBuffer();
-
-
-    const workbook =
-      XLSX.read(
-        buffer,
-        {
-          type:"array"
-        }
-      );
-
-
-    if(
-      !workbook.SheetNames.length
-    ){
-
-      throw new Error(
-        "Excel haina worksheet."
-      );
-
-    }
-
-
-    const sheet =
-      workbook.Sheets[
-        workbook.SheetNames[0]
-      ];
-
-
-    const rows =
-      XLSX.utils.sheet_to_json(
-        sheet,
-        {
-          defval:""
-        }
-      );
-
-
-    if(!rows.length){
-
-      throw new Error(
-        "Excel/CSV haina data."
-      );
-
-    }
-
-
-    uploadedContacts =
-      normalizeContacts(
-        rows
-      );
-
-
-    validateContacts(
-      uploadedContacts
-    );
-
-
-    await validateRowEvents(
-      uploadedContacts
-    );
-
-
-    renderPreview();
-
-
-    showMessage(
-      message,
-      "success",
-      `✅ Excel imepakiwa. Wageni ${uploadedContacts.length}.`
-    );
-
-
-  }catch(error){
-
-    uploadedContacts =
-      [];
-
-
-    document.getElementById(
-      "previewSection"
-    ).classList.add(
-      "hidden"
-    );
-
-
-    showMessage(
-      message,
-      "error",
-      "❌ " +
-      error.message
-    );
-
-  }
-
-}
-
-
-/* =========================================================
-   NORMALIZE CONTACTS
-========================================================= */
-
-function normalizeContacts(
-  rows
-){
-
-  return rows.map(
-    row =>{
-
-      const phone =
-        getColumn(
-          row,
-          [
-            "Namba",
-            "namba",
-            "Number",
-            "number",
-            "Phone",
-            "phone",
-            "Simu",
-            "simu",
-            "To",
-            "to"
-          ]
-        );
-
-
-      const name =
-        getColumn(
-          row,
-          [
-            "Jina",
-            "jina",
-            "Name",
-            "name",
-            "Full Name",
-            "full_name",
-            "FullName"
-          ]
-        );
-
-
-      const code =
-        getColumn(
-          row,
-          [
-            "Code",
-            "code",
-            "Guest Code",
-            "guest_code"
-          ]
-        );
-
-
-      const rowEvent =
-        getColumn(
-          row,
-          [
-            "Event",
-            "event",
-            "Event Key",
-            "event_key",
-            "EventKey"
-          ]
-        );
-
-
-      return {
-
-        to:
-          String(
-            phone || ""
-          ).trim(),
-
-        name:
-          String(
-            name || ""
-          ).trim(),
-
-        code:
-          String(
-            code || ""
-          ).trim(),
-
-        event_key:
-          String(
-            rowEvent || ""
-          )
-            .trim()
-            .toUpperCase()
-
-      };
-
-    }
-  );
-
-}
-
-
-/* =========================================================
-   GET COLUMN
-========================================================= */
-
-function getColumn(
-  row,
-  names
-){
-
-  const keys =
-    Object.keys(
-      row
-    );
-
-
-  for(
-    const name of names
-  ){
-
-    const found =
-      keys.find(
-        key =>
-          key.trim()
-            .toLowerCase() ===
-          name.trim()
-            .toLowerCase()
-      );
-
-
-    if(found){
-
-      return row[found];
-
-    }
-
-  }
-
-
-  return "";
-
-}
-
-
-/* =========================================================
-   VALIDATE CONTACTS
-========================================================= */
-
-function validateContacts(
-  contacts
-){
-
-  const errors = [];
-
-
-  contacts.forEach(
-    (contact,index)=>{
-
-      const row =
-        index + 2;
-
-
-      if(!contact.to){
-
-        errors.push(
-          `Row ${row}: Namba haipo`
-        );
-
-      }
-
-
-      if(!contact.name){
-
-        errors.push(
-          `Row ${row}: Jina halipo`
-        );
-
-      }
-
-
-      if(!contact.code){
-
-        errors.push(
-          `Row ${row}: Code haipo`
-        );
-
-      }
-
-    }
-  );
-
-
-  if(errors.length){
-
-    throw new Error(
-      errors
-        .slice(
-          0,
-          15
-        )
-        .join(
-          " | "
-        )
-    );
-
-  }
-
-}
-
-
-/* =========================================================
-   VALIDATE EVENTS IN EXCEL
-========================================================= */
-
-async function validateRowEvents(
-  contacts
-){
-
-  const missing =
-    new Set();
-
-
-  contacts.forEach(
-    contact =>{
-
-      const key =
-        contact.event_key ||
-        upperSelectedEvent();
-
-
-      if(
-        !events.some(
-          event =>
-            String(
-              event.event_key || ""
-            )
-              .trim()
-              .toUpperCase() ===
-            key
-        )
-      ){
-
-        missing.add(
-          key
-        );
-
-      }
-
-    }
-  );
-
-
-  if(missing.size){
-
-    throw new Error(
-      "Event hizi hazipo kwenye Dashboard: " +
-      Array.from(
-        missing
-      ).join(
-        ", "
-      )
-    );
-
-  }
-
-
-  const noCard =
-    new Set();
-
-
-  contacts.forEach(
-    contact =>{
-
-      const key =
-        contact.event_key ||
-        upperSelectedEvent();
-
-
-      const event =
-        events.find(
-          item =>
-            String(
-              item.event_key || ""
-            )
-              .trim()
-              .toUpperCase() ===
-            key
-        );
-
-
-      if(
-        event &&
-        !event.card_image_url
-      ){
-
-        noCard.add(
-          key
-        );
-
-      }
-
-    }
-  );
-
-
-  if(noCard.size){
-
-    throw new Error(
-      "Event hizi hazina Kadi: " +
-      Array.from(
-        noCard
-      ).join(
-        ", "
-      ) +
-      ". Weka Kadi kwanza."
-    );
-
-  }
-
-}
-
-
-/* =========================================================
-   SELECTED EVENT KEY
-========================================================= */
-
-function upperSelectedEvent(){
-
-  return String(
-    selectedEvent?.event_key || ""
-  )
-    .trim()
-    .toUpperCase();
-
-}
-
-
-/* =========================================================
-   RENDER PREVIEW
-========================================================= */
-
-function renderPreview(){
-
-  if(!selectedEvent){
-    return;
-  }
-
-
-  const body =
-    document.getElementById(
-      "previewBody"
-    );
-
-
-  body.innerHTML =
-    "";
-
-
-  const defaultKey =
-    upperSelectedEvent();
-
-
-  uploadedContacts.forEach(
-    (contact,index)=>{
-
-      const row =
-        document.createElement(
-          "tr"
-        );
-
-
-      const rowEventKey =
-        contact.event_key ||
-        defaultKey;
-
-
-      const event =
-        events.find(
-          item =>
-            String(
-              item.event_key || ""
-            )
-              .trim()
-              .toUpperCase() ===
-            rowEventKey
-        );
-
-
-      const eventName =
-        event?.event_name ||
-        rowEventKey;
-
-
-      const hasCard =
-        Boolean(
-          event?.card_image_url
-        );
-
-
-      row.innerHTML = `
-
-        <td>
-          ${index + 1}
-        </td>
-
-        <td>
-          ${escapeHtml(
-            contact.to
-          )}
-        </td>
-
-        <td>
-          ${escapeHtml(
-            contact.name
-          )}
-        </td>
-
-        <td class="code">
-          ${escapeHtml(
-            contact.code
-          )}
-        </td>
-
-        <td>
-          ${typeLabel(
-            contact.code
-          )}
-        </td>
-
-        <td>
-
-          <strong>
-            ${escapeHtml(
-              rowEventKey
-            )}
-          </strong>
-
-          <br>
-
-          <span class="small">
-            ${escapeHtml(
-              eventName
-            )}
-          </span>
-
-        </td>
-
-        <td>
-          ${
-            hasCard
-              ? "✅ Kadi ipo"
-              : "❌ Hakuna"
-          }
-        </td>
-
-        <td>
-
-          <span class="badge">
-            QR MPYA
-          </span>
-
-        </td>
-
-      `;
-
-
-      body.appendChild(
-        row
-      );
-
-    }
-  );
-
-
-  document.getElementById(
-    "previewCount"
-  ).innerText =
-    uploadedContacts.length;
-
-
-  document.getElementById(
-    "previewSection"
-  ).classList.remove(
-    "hidden"
-  );
-
-}
-
-
-/* =========================================================
-   TYPE
-========================================================= */
-
-function typeLabel(
-  code
-){
-
-  const value =
-    String(
-      code || ""
-    )
-      .trim()
-      .toUpperCase();
-
-
-  if(
-    value.endsWith(
-      "-KAMATI"
-    )
-  ){
-
-    return `
-
-      <span class="type-kamati">
-        KAMATI
-      </span>
-
-    `;
-
-  }
-
-
-  if(
-    value.endsWith(
-      "-SINGLE"
-    )
-  ){
-
-    return `
-
-      <span class="type-single">
-        SINGLE
-      </span>
-
-    `;
-
-  }
-
-
-  return `
-
-    <span class="type-other">
-      -
-    </span>
-
-  `;
-
-}
-
-
-/* =========================================================
-   BULK SEND
-========================================================= */
-
-async function sendBulkInvitations(){
-
-  if(!uploadedContacts.length){
-
-    alert(
-      "⚠️ Hakuna wageni wa kutuma."
-    );
-
-    return;
-
-  }
-
-
-  if(!selectedEvent){
-
-    alert(
-      "⚠️ Chagua Event kwanza."
-    );
-
-    return;
-
-  }
-
-
-  const confirmed =
-    confirm(
-
-      "⚠️ THIBITISHA BULK SEND\n\n" +
-
-      "Event ya kawaida: " +
-
-      (
-        selectedEvent.event_name ||
-        selectedEvent.event_key
-      ) +
-
-      "\n\n" +
-
-      "Excel inaweza kuwa na Event tofauti kwa kila mgeni." +
-
-      "\n\nWageni: " +
-
-      uploadedContacts.length +
-
-      "\n\n" +
-
-      "Endelea kutuma?"
-
-    );
-
-
-  if(!confirmed){
-    return;
-  }
-
-
-  bulkSending =
-    true;
-
-
-  const button =
-    document.getElementById(
-      "bulkButton"
-    );
-
-
-  const progress =
-    document.getElementById(
-      "bulkProgress"
-    );
-
-
-  const fill =
-    document.getElementById(
-      "progressFill"
-    );
-
-
-  const text =
-    document.getElementById(
-      "progressText"
-    );
-
-
-  const resultBox =
-    document.getElementById(
-      "bulkResult"
-    );
-
-
-  button.disabled =
-    true;
-
-  eventSelect.disabled =
-    true;
-
-
-  progress.style.display =
-    "block";
-
-  resultBox.innerHTML =
-    "";
-
-  fill.style.width =
-    "10%";
-
-  text.innerText =
-    "Inatuma...";
-
-
-  try{
-
-    /*
-      HAPA NDIPO EVENT YA KILA ROW
-      INAPELEKWA SERVER.
-
-      Kama row haina Event:
-      selectedEvent inatumika.
-    */
-
-    const defaultKey =
-      upperSelectedEvent();
-
-
-    const contacts =
-      uploadedContacts.map(
-        contact =>({
-
-          to:
-            contact.to,
-
-          name:
-            contact.name,
-
-          code:
-            contact.code,
-
-          event_key:
-            contact.event_key ||
-            defaultKey
-
-        })
-      );
-
-
-    fill.style.width =
-      "20%";
-
-    text.innerText =
-      "Inawasiliana na server...";
-
-
-    const response =
-      await fetch(
-        "/send-bulk",
-        {
-
-          method:"POST",
-
-          headers:{
-            "Content-Type":
-              "application/json"
-          },
-
-          body:
-            JSON.stringify({
-
-              event_key:
-                defaultKey,
-
-              contacts:
-                contacts
-
-            })
-
-        }
-      );
-
-
-    const result =
-      await response.json();
-
-
-    if(
-      !response.ok ||
-      !result.success
-    ){
-
-      throw new Error(
-        result.error ||
-        result.message ||
-        "Bulk send imeshindikana."
-      );
-
-    }
-
-
-    fill.style.width =
-      "100%";
-
-    text.innerText =
-      "✅ Bulk send imekamilika.";
-
-
-    showBulkResult(
-      result
-    );
-
-
-    await loadGuests();
-
-
-  }catch(error){
-
-    fill.style.width =
-      "0%";
-
-    text.innerText =
-      "❌ Imeshindikana.";
-
-
-    resultBox.innerHTML = `
-
-      <div class="message error">
-
-        ❌
-        ${escapeHtml(
-          error.message
-        )}
-
-      </div>
-
-    `;
-
-  }finally{
-
-    bulkSending =
-      false;
-
-    button.disabled =
-      false;
-
-    eventSelect.disabled =
-      false;
-
-  }
-
-}
-
-
-/* =========================================================
-   BULK RESULT
-========================================================= */
-
-function showBulkResult(
-  result
-){
-
-  const box =
-    document.getElementById(
-      "bulkResult"
-    );
-
-
-  const results =
-    result.results || [];
-
-
-  const successful =
-    Number(
-      result.successful || 0
-    );
-
-
-  const failed =
-    Number(
-      result.failed || 0
-    );
-
-
-  const duplicates =
-    Number(
-      result.duplicates || 0
-    );
-
-
-  box.innerHTML = `
-
-    <div class="message success">
-
-      ✅
-      <strong>
-        Bulk send imekamilika
-      </strong>
-
-      <br><br>
-
-      Jumla:
-      <strong>
-        ${
-          result.total ||
-          results.length
-        }
-      </strong>
-
-      <br>
-
-      Zilizofanikiwa:
-      <strong>
-        ${successful}
-      </strong>
-
-      <br>
-
-      Zilizoshindikana:
-      <strong>
-        ${failed}
-      </strong>
-
-      <br>
-
-      Duplicates:
-      <strong>
-        ${duplicates}
-      </strong>
-
-    </div>
-
-  `;
-
-
-  if(failed > 0){
-
-    const failedItems =
-      results
-        .filter(
-          item =>
-            !item.success
-        )
-        .slice(
-          0,
-          20
-        );
-
-
-    let html = `
-
-      <div class="message error">
-
-        <strong>
-          ⚠️ Zilizoshindikana:
-        </strong>
-
-        <br><br>
-
-    `;
-
-
-    failedItems.forEach(
-      item =>{
-
-        html += `
-
-          ${escapeHtml(
-            item.name || "-"
-          )}
-
-          -
-
-          ${escapeHtml(
-            item.code || "-"
-          )}
-
-          -
-
-          ${escapeHtml(
-            item.event_key || "-"
-          )}
-
-          <br>
-
-          ${escapeHtml(
-            item.error || "-"
-          )}
-
-          <br><br>
-
-        `;
-
-      }
-    );
-
-
-    html +=
-      "</div>";
-
-
-    box.innerHTML +=
-      html;
-
-  }
-
-}
-
-
-/* =========================================================
-   CLEAR EXCEL
-========================================================= */
-
-function clearExcel(){
-
-  uploadedContacts =
-    [];
-
-
-  excelFile.value =
-    "";
-
-
-  document.getElementById(
-    "fileName"
-  ).innerText =
-    "";
-
-
-  document.getElementById(
-    "previewBody"
-  ).innerHTML =
-    "";
-
-
-  document.getElementById(
-    "previewSection"
-  ).classList.add(
-    "hidden"
-  );
-
-
-  document.getElementById(
-    "uploadMessage"
-  ).innerHTML =
-    "";
-
-
-  document.getElementById(
-    "bulkResult"
-  ).innerHTML =
-    "";
-
-
-  document.getElementById(
-    "bulkProgress"
-  ).style.display =
-    "none";
-
-}
-
-
-/* =========================================================
-   CHECK-IN CODE
-========================================================= */
-
-async function checkInGuest(){
-
-  const eventKey =
-    String(
-      checkinEvent.value || ""
-    )
-      .trim()
-      .toUpperCase();
-
-
-  const code =
-    document.getElementById(
-      "checkinCode"
-    )
-      .value
-      .trim();
-
-
-  const message =
-    document.getElementById(
-      "checkinMessage"
-    );
-
-
-  const button =
-    document.getElementById(
-      "checkinButton"
-    );
-
-
-  message.innerHTML =
-    "";
-
-
-  if(!eventKey){
-
-    showMessage(
-      message,
-      "error",
-      "⚠️ Chagua Event."
-    );
-
-    return;
-
-  }
-
-
-  if(!code){
-
-    showMessage(
-      message,
-      "error",
-      "⚠️ Weka Code ya mgeni."
-    );
-
-    return;
-
-  }
-
-
-  button.disabled =
-    true;
-
-  button.innerText =
-    "Inachakata...";
-
-
-  try{
-
-    const response =
-      await fetch(
-        "/api/check-in",
-        {
-
-          method:"POST",
-
-          headers:{
-            "Content-Type":
-              "application/json"
-          },
-
-          body:
-            JSON.stringify({
-
-              code:
-                code,
-
-              event_key:
-                eventKey
-
-            })
-
-        }
-      );
-
-
-    const result =
-      await response.json();
-
-
-    if(
-      response.ok &&
-      result.success
-    ){
-
-      const guest =
-        result.guest || {};
-
-
-      showMessage(
-        message,
-        "success",
-        `
-
-          ✅
-          <strong>
-            CHECK-IN IMEFANIKIWA!
-          </strong>
-
-          <br><br>
-
-          Jina:
-          <strong>
-            ${escapeHtml(
-              guest.full_name || "-"
-            )}
-          </strong>
-
-          <br>
-
-          Code:
-          <strong>
-            ${escapeHtml(
-              guest.guest_code ||
-              code
-            )}
-          </strong>
-
-          <br>
-
-          Event:
-          <strong>
-            ${escapeHtml(
-              guest.event_key ||
-              eventKey
-            )}
-          </strong>
-
-        `
-      );
-
-
-      document.getElementById(
-        "checkinCode"
-      ).value =
-        "";
-
-
-      await loadGuests();
-
-      return;
-
-    }
-
-
-    if(
-      response.status === 409
-    ){
-
-      const guest =
-        result.guest || {};
-
-
-      showMessage(
-        message,
-        "warning",
-        `
-
-          ⚠️
-          <strong>
-            MGENI AMESHA-CHECK-IN!
-          </strong>
-
-          <br><br>
-
-          Jina:
-          <strong>
-            ${escapeHtml(
-              guest.full_name || "-"
-            )}
-          </strong>
-
-          <br>
-
-          Event:
-          <strong>
-            ${escapeHtml(
-              guest.event_key ||
-              eventKey
-            )}
-          </strong>
-
-        `
-      );
-
-
-      return;
-
-    }
-
-
-    throw new Error(
-      result.message ||
-      result.error ||
-      "Mgeni hakupatikana."
-    );
-
-
-  }catch(error){
-
-    showMessage(
-      message,
-      "error",
-      "❌ " +
-      error.message
-    );
-
-  }finally{
-
-    button.disabled =
-      false;
-
-    button.innerText =
-      "CHECK-IN";
-
-  }
-
-}
-
-
-/* =========================================================
-   START QR
-========================================================= */
-
-async function startQRScanner(){
-
-  const reader =
-    document.getElementById(
-      "qr-reader"
-    );
-
-
-  const start =
-    document.getElementById(
-      "startQrButton"
-    );
-
-
-  const stop =
-    document.getElementById(
-      "stopQrButton"
-    );
-
-
-  const message =
-    document.getElementById(
-      "qrMessage"
-    );
-
-
-  message.innerHTML =
-    "";
-
-
-  if(
-    typeof Html5Qrcode ===
-    "undefined"
-  ){
-
-    showMessage(
-      message,
-      "error",
-      "❌ QR Scanner haijapakia. Refresh ukurasa."
-    );
-
-    return;
-
-  }
-
-
-  if(qrScanner){
-
-    showMessage(
-      message,
-      "warning",
-      "⚠️ Camera tayari imewashwa."
-    );
-
-    return;
-
-  }
-
-
-  qrProcessing =
-    false;
-
-
-  reader.style.display =
-    "block";
-
-  start.style.display =
-    "none";
-
-  stop.style.display =
-    "inline-block";
-
-
-  qrScanner =
-    new Html5Qrcode(
-      "qr-reader"
-    );
-
-
-  try{
-
-    await qrScanner.start(
-
-      {
-        facingMode:
-          "environment"
-      },
-
-      {
-        fps:
-          10,
-
-        qrbox:{
-          width:250,
-          height:250
-        }
-
-      },
-
-      async decodedText =>{
-
-        if(qrProcessing){
-          return;
-        }
-
-
-        qrProcessing =
-          true;
-
-
-        await processQRCheckin(
-          decodedText
-        );
-
-      },
-
-      ()=>{}
-
-    );
-
-
-  }catch(error){
-
-    qrScanner =
-      null;
-
-
-    reader.style.display =
-      "none";
-
-    start.style.display =
-      "inline-block";
-
-    stop.style.display =
-      "none";
-
-
-    showMessage(
-      message,
-      "error",
-      "❌ Imeshindikana kuwasha camera: " +
-      error.message
-    );
-
-  }
-
-}
-
-
-/* =========================================================
-   STOP QR
-========================================================= */
-
-async function stopQRScanner(){
-
-  const reader =
-    document.getElementById(
-      "qr-reader"
-    );
-
-
-  const start =
-    document.getElementById(
-      "startQrButton"
-    );
-
-
-  const stop =
-    document.getElementById(
-      "stopQrButton"
-    );
-
-
-  if(qrScanner){
-
-    try{
-
-      await qrScanner.stop();
-
-    }catch(error){
-
-      console.error(error);
-
-    }
-
-
-    try{
-
-      qrScanner.clear();
-
-    }catch(error){
-
-      console.error(error);
-
-    }
-
-  }
-
-
-  qrScanner =
-    null;
-
-  qrProcessing =
-    false;
-
-
-  reader.style.display =
-    "none";
-
-  start.style.display =
-    "inline-block";
-
-  stop.style.display =
-    "none";
-
-}
-
-
-/* =========================================================
-   PROCESS QR
-========================================================= */
-
-async function processQRCheckin(
-  qrToken
-){
-
-  const message =
-    document.getElementById(
-      "qrMessage"
-    );
-
-
-  try{
-
-    const response =
-      await fetch(
-        "/api/check-in-qr",
-        {
-
-          method:"POST",
-
-          headers:{
-            "Content-Type":
-              "application/json"
-          },
-
-          body:
-            JSON.stringify({
-
-              qr_token:
-                String(
-                  qrToken
-                ).trim()
-
-            })
-
-        }
-      );
-
-
-    const result =
-      await response.json();
-
-
-    if(
-      response.ok &&
-      result.success
-    ){
-
-      const guest =
-        result.guest || {};
-
-
-      showMessage(
-        message,
-        "success",
-        `
-
-          ✅
-          <strong>
-            QR CHECK-IN IMEFANIKIWA!
-          </strong>
-
-          <br><br>
-
-          Jina:
-          <strong>
-            ${escapeHtml(
-              guest.full_name || "-"
-            )}
-          </strong>
-
-          <br>
-
-          Code:
-          <strong>
-            ${escapeHtml(
-              guest.guest_code || "-"
-            )}
-          </strong>
-
-          <br>
-
-          Event:
-          <strong>
-            ${escapeHtml(
-              guest.event_key || "-"
-            )}
-          </strong>
-
-        `
-      );
-
-
-      await loadGuests();
-
-
-      setTimeout(
-        ()=>{
-          qrProcessing =
-            false;
-        },
-        1500
-      );
-
-
-      return;
-
-    }
-
-
-    if(
-      response.status ===
-      409
-    ){
-
-      const guest =
-        result.guest || {};
-
-
-      showMessage(
-        message,
-        "warning",
-        `
-
-          ⚠️
-          <strong>
-            QR HII IMESHA-CHECK-IN!
-          </strong>
-
-          <br><br>
-
-          Jina:
-          <strong>
-            ${escapeHtml(
-              guest.full_name || "-"
-            )}
-          </strong>
-
-          <br>
-
-          Event:
-          <strong>
-            ${escapeHtml(
-              guest.event_key || "-"
-            )}
-          </strong>
-
-        `
-      );
-
-
-      qrProcessing =
-        false;
-
-      return;
-
-    }
-
-
-    throw new Error(
-      result.message ||
-      result.error ||
-      "QR haijatambuliwa."
-    );
-
-
-  }catch(error){
-
-    showMessage(
-      message,
-      "error",
-      "❌ " +
-      error.message
-    );
-
-
-    qrProcessing =
-      false;
-
-  }
-
-}
-
-
-/* =========================================================
+/* ===============================
    LOAD GUESTS
-========================================================= */
+================================ */
 
 async function loadGuests(){
 
-  const loading =
-    document.getElementById(
-      "loading"
-    );
+const loading =
+document.getElementById("loading");
+
+const error =
+document.getElementById("error");
+
+const table =
+document.getElementById("guestTable");
+
+const btn =
+document.getElementById("refreshButton");
 
 
-  const table =
-    document.getElementById(
-      "guestTable"
-    );
+loading.style.display="block";
+
+error.textContent="";
+
+table.style.display="none";
+
+btn.disabled=true;
 
 
-  const error =
-    document.getElementById(
-      "guestError"
-    );
+try{
+
+const r =
+await fetch(
+"/api/attendance",
+{
+cache:"no-store"
+}
+);
+
+const x =
+await r.json();
 
 
-  loading.style.display =
-    "block";
+if(
+!r.ok ||
+!x.success
+){
 
-
-  table.style.display =
-    "none";
-
-
-  error.classList.add(
-    "hidden"
-  );
-
-
-  error.innerText =
-    "";
-
-
-  try{
-
-    const response =
-      await fetch(
-        "/api/attendance",
-        {
-          cache:"no-store"
-        }
-      );
-
-
-    const result =
-      await response.json();
-
-
-    if(
-      !response.ok ||
-      !result.success
-    ){
-
-      throw new Error(
-        result.error ||
-        result.message ||
-        "Data haikupatikana."
-      );
-
-    }
-
-
-    guests =
-      Array.isArray(
-        result.guests
-      )
-        ? result.guests
-        : [];
-
-
-    populateEventFilter();
-
-    updateStats();
-
-    renderGuests();
-
-
-    loading.style.display =
-      "none";
-
-
-    table.style.display =
-      "table";
-
-
-  }catch(err){
-
-    loading.style.display =
-      "none";
-
-
-    error.innerText =
-      "❌ " +
-      err.message;
-
-
-    error.classList.remove(
-      "hidden"
-    );
-
-  }
+throw new Error(
+x.error ||
+x.message ||
+"Imeshindikana kupakia data."
+);
 
 }
 
 
-/* =========================================================
-   EVENT FILTER
-========================================================= */
-
-function populateEventFilter(){
-
-  const select =
-    document.getElementById(
-      "eventFilter"
-    );
+guests =
+Array.isArray(x.guests)
+? x.guests
+: [];
 
 
-  const current =
-    select.value ||
-    "all";
+updateStats();
+
+renderGuests();
 
 
-  const set =
-    new Set();
+loading.style.display="none";
+
+table.style.display="table";
 
 
-  events.forEach(
-    event =>{
+}catch(e){
 
-      if(event.event_key){
+loading.style.display="none";
 
-        set.add(
-          String(
-            event.event_key
-          )
-            .trim()
-            .toUpperCase()
-        );
+error.textContent =
+"❌ Imeshindikana kupakia wageni: "
++
+e.message;
 
-      }
+}
 
-    }
-  );
+finally{
 
+btn.disabled=false;
 
-  guests.forEach(
-    guest =>{
-
-      if(guest.event_key){
-
-        set.add(
-          String(
-            guest.event_key
-          )
-            .trim()
-            .toUpperCase()
-        );
-
-      }
-
-    }
-  );
-
-
-  select.innerHTML = `
-
-    <option value="all">
-      Events zote
-    </option>
-
-  `;
-
-
-  Array.from(
-    set
-  )
-    .sort()
-    .forEach(
-      key =>{
-
-        const event =
-          events.find(
-            item =>
-              String(
-                item.event_key || ""
-              )
-                .trim()
-                .toUpperCase() ===
-              key
-          );
-
-
-        const option =
-          document.createElement(
-            "option"
-          );
-
-
-        option.value =
-          key;
-
-
-        option.textContent =
-          event?.event_name
-            ? `${event.event_name} (${key})`
-            : key;
-
-
-        select.appendChild(
-          option
-        );
-
-      }
-    );
-
-
-  if(
-    current === "all" ||
-    set.has(current)
-  ){
-
-    select.value =
-      current;
-
-  }else{
-
-    select.value =
-      "all";
-
-  }
+}
 
 }
 
 
-/* =========================================================
+/* ===============================
    STATS
-========================================================= */
+================================ */
 
 function updateStats(){
 
-  const filter =
-    document.getElementById(
-      "eventFilter"
-    )?.value ||
-    "all";
+document.getElementById(
+"total"
+).textContent =
+guests.length;
 
 
-  const list =
-    filter === "all"
-
-      ? guests
-
-      : guests.filter(
-          guest =>
-            String(
-              guest.event_key || ""
-            )
-              .trim()
-              .toUpperCase() ===
-            filter
-        );
+document.getElementById(
+"confirmed"
+).textContent =
+guests.filter(
+g =>
+g.attendance_status ===
+"confirmed"
+).length;
 
 
-  document.getElementById(
-    "total"
-  ).innerText =
-    list.length;
+document.getElementById(
+"declined"
+).textContent =
+guests.filter(
+g =>
+g.attendance_status ===
+"declined"
+).length;
 
 
-  document.getElementById(
-    "confirmed"
-  ).innerText =
-    list.filter(
-      g =>
-        g.attendance_status ===
-        "confirmed"
-    ).length;
+document.getElementById(
+"maybe"
+).textContent =
+guests.filter(
+g =>
+g.attendance_status ===
+"maybe"
+).length;
 
 
-  document.getElementById(
-    "declined"
-  ).innerText =
-    list.filter(
-      g =>
-        g.attendance_status ===
-        "declined"
-    ).length;
+document.getElementById(
+"pending"
+).textContent =
+guests.filter(
+g =>
+!g.attendance_status ||
+g.attendance_status ===
+"pending"
+).length;
 
 
-  document.getElementById(
-    "maybe"
-  ).innerText =
-    list.filter(
-      g =>
-        g.attendance_status ===
-        "maybe"
-    ).length;
-
-
-  document.getElementById(
-    "pending"
-  ).innerText =
-    list.filter(
-      g =>
-        !g.attendance_status ||
-        g.attendance_status ===
-        "pending"
-    ).length;
-
-
-  document.getElementById(
-    "checkedIn"
-  ).innerText =
-    list.filter(
-      g =>
-        Boolean(
-          g.scanned_at
-        )
-    ).length;
+document.getElementById(
+"checkedIn"
+).textContent =
+guests.filter(
+g =>
+!!g.scanned_at
+).length;
 
 }
 
 
-/* =========================================================
+/* ===============================
    RENDER GUESTS
-========================================================= */
+================================ */
 
 function renderGuests(){
 
-  const search =
-    document.getElementById(
-      "search"
-    )
-      .value
-      .toLowerCase()
-      .trim();
+const q =
+document.getElementById(
+"search"
+).value
+.toLowerCase()
+.trim();
 
 
-  const status =
-    document.getElementById(
-      "statusFilter"
-    ).value;
+const sf =
+document.getElementById(
+"statusFilter"
+).value;
 
 
-  const checkin =
-    document.getElementById(
-      "checkinFilter"
-    ).value;
+const cf =
+document.getElementById(
+"checkinFilter"
+).value;
 
 
-  const event =
-    document.getElementById(
-      "eventFilter"
-    ).value;
+const rows =
+guests.filter(g=>{
 
+const text =
+(g.full_name||"")
++
+" "
++
+(g.phone||"")
++
+" "
++
+(g.guest_code||"");
 
-  const filtered =
-    guests.filter(
-      guest =>{
 
-        const text = [
+const status =
+g.attendance_status ||
+"pending";
 
-          guest.full_name,
 
-          guest.phone,
+const checked =
+!!g.scanned_at;
 
-          guest.guest_code,
 
-          guest.event_key
+return (
 
-        ]
-          .map(
-            value =>
-              String(
-                value || ""
-              )
-                .toLowerCase()
-          )
-          .join(
-            " "
-          );
+text
+.toLowerCase()
+.includes(q)
 
+&&
 
-        const matchSearch =
-          text.includes(
-            search
-          );
+(
+sf==="all" ||
+status===sf
+)
 
+&&
 
-        const guestStatus =
-          guest.attendance_status ||
-          "pending";
+(
+cf==="all" ||
+(
+cf==="checked" &&
+checked
+) ||
+(
+cf==="not_checked" &&
+!checked
+)
 
+)
 
-        const matchStatus =
-          status === "all" ||
-          guestStatus === status;
+);
 
+});
 
-        const matchEvent =
-          event === "all" ||
-          String(
-            guest.event_key || ""
-          )
-            .trim()
-            .toUpperCase() ===
-          event;
 
+const body =
+document.getElementById(
+"guestBody"
+);
 
-        const checked =
-          Boolean(
-            guest.scanned_at
-          );
 
+body.innerHTML="";
 
-        const matchCheckin =
-          checkin === "all" ||
 
-          (
-            checkin === "checked" &&
-            checked
-          ) ||
+if(!rows.length){
 
-          (
-            checkin === "not_checked" &&
-            !checked
-          );
+body.innerHTML =
+'<tr><td colspan="7" class="empty">Hakuna mgeni aliyepatikana.</td></tr>';
 
-
-        return(
-          matchSearch &&
-          matchStatus &&
-          matchEvent &&
-          matchCheckin
-        );
-
-      }
-    );
-
-
-  const body =
-    document.getElementById(
-      "guestBody"
-    );
-
-
-  body.innerHTML =
-    "";
-
-
-  if(!filtered.length){
-
-    body.innerHTML = `
-
-      <tr>
-
-        <td
-          colspan="8"
-          style="
-            text-align:center;
-            padding:25px
-          "
-        >
-
-          Hakuna mgeni aliyepatikana.
-
-        </td>
-
-      </tr>
-
-    `;
-
-
-    updateStats();
-
-    return;
-
-  }
-
-
-  filtered.forEach(
-    (guest,index)=>{
-
-      const row =
-        document.createElement(
-          "tr"
-        );
-
-
-      row.innerHTML = `
-
-        <td>
-          ${index + 1}
-        </td>
-
-        <td>
-          ${escapeHtml(
-            guest.full_name || "-"
-          )}
-        </td>
-
-        <td>
-          ${escapeHtml(
-            guest.phone || "-"
-          )}
-        </td>
-
-        <td class="code">
-          ${escapeHtml(
-            guest.guest_code || "-"
-          )}
-        </td>
-
-        <td>
-
-          <strong>
-            ${escapeHtml(
-              guest.event_key || "-"
-            )}
-          </strong>
-
-        </td>
-
-        <td>
-          ${typeLabel(
-            guest.guest_code
-          )}
-        </td>
-
-        <td>
-          ${statusLabel(
-            guest.attendance_status
-          )}
-        </td>
-
-        <td>
-
-          ${
-            guest.scanned_at
-
-              ? `
-
-                <span class="status checked">
-                  ✅ Checked-in
-                </span>
-
-              `
-
-              : "—"
-          }
-
-        </td>
-
-      `;
-
-
-      body.appendChild(
-        row
-      );
-
-    }
-  );
-
-
-  updateStats();
+return;
 
 }
 
 
-/* =========================================================
+rows.forEach(
+(g,i)=>{
+
+const tr =
+document.createElement(
+"tr"
+);
+
+
+tr.innerHTML =
+
+"<td>"
++
+(i+1)
++
+"</td>"
+
++
+
+"<td>"
++
+esc(
+g.full_name || "-"
+)
++
+"</td>"
+
++
+
+"<td>"
++
+esc(
+g.phone || "-"
+)
++
+"</td>"
+
++
+
+"<td>"
++
+esc(
+g.guest_code || "-"
+)
++
+"</td>"
+
++
+
+"<td>"
++
+esc(
+g.invitation_type || "-"
+)
++
+"</td>"
+
++
+
+"<td>"
++
+statusLabel(
+g.attendance_status
+)
++
+"</td>"
+
++
+
+"<td>"
++
+checkLabel(
+g.scanned_at
+)
++
+"</td>";
+
+
+body.appendChild(tr);
+
+});
+
+}
+
+
+/* ===============================
+   CHECK-IN
+================================ */
+
+async function checkInGuest(){
+
+const input =
+document.getElementById(
+"checkinCode"
+);
+
+
+const btn =
+document.getElementById(
+"checkinButton"
+);
+
+
+const msg =
+document.getElementById(
+"checkinMessage"
+);
+
+
+const code =
+input.value.trim();
+
+
+msg.innerHTML="";
+
+
+if(!code){
+
+msg.innerHTML =
+'<div class="error-message">⚠️ Tafadhali andika Code ya mgeni.</div>';
+
+input.focus();
+
+return;
+
+}
+
+
+btn.disabled=true;
+
+btn.textContent=
+"Inachakata...";
+
+
+try{
+
+const r =
+await fetch(
+"/api/check-in",
+{
+
+method:"POST",
+
+headers:{
+"Content-Type":
+"application/json"
+},
+
+body:
+JSON.stringify({
+code
+})
+
+}
+);
+
+
+const x =
+await r.json();
+
+
+const g =
+x.guest || {};
+
+
+if(
+r.ok &&
+x.success
+){
+
+msg.innerHTML =
+
+'<div class="success-message">' +
+
+'✅ <strong>CHECK-IN IMEFANIKIWA!</strong>' +
+
+'<br><br>' +
+
+'Jina: <strong>' +
+esc(
+g.full_name || "-"
+) +
+'</strong>' +
+
+'<br>' +
+
+'Code: <strong>' +
+esc(
+g.guest_code ||
+code
+) +
+'</strong>' +
+
+'<br>' +
+
+'Muda: ' +
+date(
+g.scanned_at
+) +
+
+'</div>';
+
+
+input.value="";
+
+await loadGuests();
+
+return;
+
+}
+
+
+if(
+r.status===409
+){
+
+msg.innerHTML =
+
+'<div class="warning-message">' +
+
+'⚠️ <strong>MGENI HUYU AMESHA-CHECK-IN!</strong>' +
+
+'<br><br>' +
+
+'Jina: <strong>' +
+esc(
+g.full_name || "-"
+) +
+'</strong>' +
+
+'<br>' +
+
+'Code: <strong>' +
+esc(
+g.guest_code ||
+code
+) +
+'</strong>' +
+
+'<br>' +
+
+'Aliingia: ' +
+date(
+g.scanned_at
+) +
+
+'</div>';
+
+
+input.value="";
+
+return;
+
+}
+
+
+msg.innerHTML =
+
+'<div class="error-message">' +
+
+'❌ ' +
+
+esc(
+x.message ||
+x.error ||
+"Mgeni hakupatikana."
+) +
+
+'</div>';
+
+
+}catch(e){
+
+msg.innerHTML =
+
+'<div class="error-message">' +
+
+'❌ Kuna tatizo la kuwasiliana na server.<br>' +
+
+esc(e.message) +
+
+'</div>';
+
+}
+
+finally{
+
+btn.disabled=false;
+
+btn.textContent=
+"CHECK-IN";
+
+}
+
+}
+
+
+/* ===============================
+   DOWNLOAD EXCEL
+================================ */
+
+async function downloadExcel(){
+
+const btn =
+document.getElementById(
+"excelButton"
+);
+
+
+const old =
+btn.textContent;
+
+
+btn.disabled=true;
+
+btn.textContent=
+"⏳ Inatengeneza Excel...";
+
+
+try{
+
+const r =
+await fetch(
+"/api/attendance/export",
+{
+cache:"no-store"
+}
+);
+
+
+if(!r.ok){
+
+let m =
+"Imeshindikana kutengeneza Excel.";
+
+
+try{
+
+const x =
+await r.json();
+
+m =
+x.error ||
+x.message ||
+m;
+
+}catch(_){}
+
+
+throw new Error(m);
+
+}
+
+
+const blob =
+await r.blob();
+
+
+if(!blob.size){
+
+throw new Error(
+"Server imerudisha file tupu."
+);
+
+}
+
+
+const url =
+URL.createObjectURL(
+blob
+);
+
+
+const a =
+document.createElement(
+"a"
+);
+
+
+a.href=url;
+
+a.download=
+"GeitaCard_Wahudhuriaji.xlsx";
+
+
+document.body.appendChild(a);
+
+a.click();
+
+a.remove();
+
+URL.revokeObjectURL(url);
+
+
+}catch(e){
+
+alert(
+"❌ Imeshindikana kupakua Excel.\n\n"
++
+e.message
+);
+
+}
+
+
+finally{
+
+btn.disabled=false;
+
+btn.textContent=old;
+
+}
+
+}
+
+
+/* ===============================
    STATUS
-========================================================= */
+================================ */
 
-function statusLabel(
-  status
+function statusLabel(s){
+
+if(
+s==="confirmed"
 ){
 
-  if(
-    status ===
-    "confirmed"
-  ){
-
-    return `
-
-      <span class="status confirmed">
-        Nitashiriki
-      </span>
-
-    `;
-
-  }
-
-
-  if(
-    status ===
-    "declined"
-  ){
-
-    return `
-
-      <span class="status declined">
-        Sitashiriki
-      </span>
-
-    `;
-
-  }
-
-
-  if(
-    status ===
-    "maybe"
-  ){
-
-    return `
-
-      <span class="status maybe">
-        Sina uhakika
-      </span>
-
-    `;
-
-  }
-
-
-  return `
-
-    <span class="status pending">
-      Pending
-    </span>
-
-  `;
+return `
+<span class="status confirmed">
+Nitashiriki
+</span>
+`;
 
 }
 
 
-/* =========================================================
-   DOWNLOAD
-========================================================= */
-
-function downloadAttendance(){
-
-  window.location.href =
-    "/api/attendance/export";
-
-}
-
-
-/* =========================================================
-   SEARCH
-========================================================= */
-
-document.getElementById(
-  "search"
-).addEventListener(
-  "input",
-  renderGuests
-);
-
-
-document.getElementById(
-  "statusFilter"
-).addEventListener(
-  "change",
-  renderGuests
-);
-
-
-document.getElementById(
-  "checkinFilter"
-).addEventListener(
-  "change",
-  renderGuests
-);
-
-
-document.getElementById(
-  "eventFilter"
-).addEventListener(
-  "change",
-  ()=>{
-
-    updateStats();
-
-    renderGuests();
-
-  }
-);
-
-
-/* =========================================================
-   MESSAGE
-========================================================= */
-
-function showMessage(
-  element,
-  type,
-  html
+if(
+s==="declined"
 ){
 
-  element.innerHTML = `
-
-    <div class="message ${type}">
-      ${html}
-    </div>
-
-  `;
+return `
+<span class="status declined">
+Sitashiriki
+</span>
+`;
 
 }
 
 
-/* =========================================================
+if(
+s==="maybe"
+){
+
+return `
+<span class="status maybe">
+Sina uhakika
+</span>
+`;
+
+}
+
+
+return `
+<span class="status pending">
+Pending
+</span>
+`;
+
+}
+
+
+/* ===============================
+   CHECK-IN LABEL
+================================ */
+
+function checkLabel(v){
+
+return v
+
+?
+
+'<span class="status checked">✅ Checked-in</span>'
+
+:
+
+'<span class="not-checked">—</span>';
+
+}
+
+
+/* ===============================
+   DATE
+================================ */
+
+function date(v){
+
+if(!v)
+return "-";
+
+
+try{
+
+return new Date(v)
+.toLocaleString(
+"sw-TZ",
+{
+dateStyle:"medium",
+timeStyle:"short"
+}
+);
+
+}catch(_){
+
+return String(v);
+
+}
+
+}
+
+
+/* ===============================
+   ESCAPE HTML
+================================ */
+
+function esc(v){
+
+return String(v)
+
+.replace(
+/&/g,
+"&amp;"
+)
+
+.replace(
+/</g,
+"&lt;"
+)
+
+.replace(
+/>/g,
+"&gt;"
+)
+
+.replace(
+/"/g,
+"&quot;"
+)
+
+.replace(
+/'/g,
+"&#039;"
+);
+
+}
+
+
+/* ===============================
+   EVENTS
+================================ */
+
+document
+.getElementById(
+"checkinCode"
+)
+.addEventListener(
+"keydown",
+e=>{
+
+if(
+e.key==="Enter"
+){
+
+e.preventDefault();
+
+checkInGuest();
+
+}
+
+}
+);
+
+
+document
+.getElementById(
+"search"
+)
+.addEventListener(
+"input",
+renderGuests
+);
+
+
+document
+.getElementById(
+"statusFilter"
+)
+.addEventListener(
+"change",
+renderGuests
+);
+
+
+document
+.getElementById(
+"checkinFilter"
+)
+.addEventListener(
+"change",
+renderGuests
+);
+
+
+/* ===============================
    START
-========================================================= */
+================================ */
 
-document.addEventListener(
-  "DOMContentLoaded",
-  async ()=>{
-
-    await loadEvents();
-
-    await loadGuests();
-
-  }
-);
+loadGuests();
 
 </script>
 
 </body>
-
-  </html>
+</html>
