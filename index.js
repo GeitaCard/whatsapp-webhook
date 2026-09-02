@@ -17,7 +17,20 @@ const SUPABASE_SERVICE_ROLE_KEY =
 const WHATSAPP_TOKEN = process.env.WHATSAPP_TOKEN;
 const VERIFY_TOKEN = process.env.VERIFY_TOKEN;
 
+const WHATSAPP_PHONE_NUMBER_ID =
+  process.env.WHATSAPP_PHONE_NUMBER_ID;
+
+const INVITE_IMAGE_URL =
+  process.env.INVITE_IMAGE_URL;
+
+const GRAPH_API_VERSION =
+  process.env.GRAPH_API_VERSION || "v23.0";
+
 const EVENT_KEY = "EVENT_A";
+
+// Template yako ya Meta
+const TEMPLATE_NAME = "kadi_ya_mwaliko";
+const TEMPLATE_LANGUAGE = "sw";
 
 // =====================================================
 // SUPABASE
@@ -33,17 +46,20 @@ if (SUPABASE_URL && SUPABASE_SERVICE_ROLE_KEY) {
 }
 
 // =====================================================
-// STARTUP LOG
+// STARTUP
 // =====================================================
 
 console.log("==============================================");
 console.log("🎟️ GeitaCard Server inaanza...");
 console.log("==============================================");
+
 console.log(`📌 EVENT: ${EVENT_KEY}`);
 console.log(`🌐 PORT: ${PORT}`);
 
 console.log(
-  `🟢 SUPABASE_URL: ${SUPABASE_URL ? "SET" : "MISSING"}`
+  `🟢 SUPABASE_URL: ${
+    SUPABASE_URL ? "SET" : "MISSING"
+  }`
 );
 
 console.log(
@@ -59,10 +75,25 @@ console.log(
 );
 
 console.log(
+  `🟢 WHATSAPP_PHONE_NUMBER_ID: ${
+    WHATSAPP_PHONE_NUMBER_ID ? "SET" : "MISSING"
+  }`
+);
+
+console.log(
   `🟢 VERIFY_TOKEN: ${
     VERIFY_TOKEN ? "SET" : "MISSING"
   }`
 );
+
+console.log(
+  `🟢 INVITE_IMAGE_URL: ${
+    INVITE_IMAGE_URL ? "SET" : "MISSING"
+  }`
+);
+
+console.log(`🟢 TEMPLATE: ${TEMPLATE_NAME}`);
+console.log(`🟢 LANGUAGE: ${TEMPLATE_LANGUAGE}`);
 
 console.log("==============================================");
 
@@ -90,72 +121,84 @@ app.get("/", async (req, res) => {
   }
 
   res.send(`
-    <!DOCTYPE html>
-    <html>
-    <head>
-      <meta charset="UTF-8">
-      <meta name="viewport"
-            content="width=device-width, initial-scale=1.0">
-      <title>GeitaCard</title>
-      <style>
-        body {
-          font-family: Arial, sans-serif;
-          background: #f4f6fb;
-          padding: 25px;
-        }
+<!DOCTYPE html>
+<html>
+<head>
+<meta charset="UTF-8">
+<meta name="viewport"
+      content="width=device-width, initial-scale=1.0">
+<title>GeitaCard</title>
 
-        .card {
-          max-width: 650px;
-          margin: auto;
-          background: white;
-          padding: 25px;
-          border-radius: 15px;
-          box-shadow: 0 3px 15px rgba(0,0,0,.08);
-        }
+<style>
+body {
+  font-family: Arial, sans-serif;
+  background: #f4f6fb;
+  padding: 25px;
+}
 
-        .status {
-          display: inline-block;
-          padding: 8px 12px;
-          border-radius: 20px;
-          background: #dff5e5;
-          color: #238636;
-          font-weight: bold;
-        }
-      </style>
-    </head>
+.card {
+  max-width: 650px;
+  margin: auto;
+  background: white;
+  padding: 25px;
+  border-radius: 15px;
+  box-shadow: 0 3px 15px rgba(0,0,0,.08);
+}
 
-    <body>
-      <div class="card">
-        <h1>🎟️ GeitaCard</h1>
+.status {
+  display: inline-block;
+  padding: 8px 12px;
+  border-radius: 20px;
+  background: #dff5e5;
+  color: #238636;
+  font-weight: bold;
+}
+</style>
+</head>
 
-        <p>
-          <span class="status">
-            ${EVENT_KEY} ACTIVE
-          </span>
-        </p>
+<body>
 
-        <p>WhatsApp Invitation System</p>
+<div class="card">
 
-        <p>
-          <strong>Event:</strong> ${EVENT_KEY}
-        </p>
+<h1>🎟️ GeitaCard</h1>
 
-        <p>
-          <strong>Database:</strong> ${databaseStatus}
-        </p>
+<p>
+<span class="status">
+${EVENT_KEY} ACTIVE
+</span>
+</p>
 
-        <p>
-          <strong>WhatsApp:</strong>
-          ${WHATSAPP_TOKEN ? "CONFIGURED" : "NOT CONFIGURED"}
-        </p>
-      </div>
-    </body>
-    </html>
-  `);
+<p>WhatsApp Invitation System</p>
+
+<p>
+<strong>Database:</strong>
+${databaseStatus}
+</p>
+
+<p>
+<strong>WhatsApp:</strong>
+${WHATSAPP_TOKEN ? "CONFIGURED" : "NOT CONFIGURED"}
+</p>
+
+<p>
+<strong>Phone ID:</strong>
+${WHATSAPP_PHONE_NUMBER_ID ? "CONFIGURED" : "MISSING"}
+</p>
+
+<p>
+<strong>Template:</strong>
+${TEMPLATE_NAME}
+</p>
+
+</div>
+
+</body>
+</html>
+`);
 });
 
 // =====================================================
-// HEALTH CHECK
+// HEALTH
 // =====================================================
 
 app.get("/health", (req, res) => {
@@ -164,12 +207,16 @@ app.get("/health", (req, res) => {
     event: EVENT_KEY,
     supabase: !!supabase,
     whatsapp: !!WHATSAPP_TOKEN,
+    phone_number_id: !!WHATSAPP_PHONE_NUMBER_ID,
+    invite_image: !!INVITE_IMAGE_URL,
+    template: TEMPLATE_NAME,
+    language: TEMPLATE_LANGUAGE,
     time: new Date().toISOString()
   });
 });
 
 // =====================================================
-// WHATSAPP WEBHOOK VERIFICATION
+// WHATSAPP WEBHOOK VERIFY
 // =====================================================
 
 app.get("/webhook", (req, res) => {
@@ -183,18 +230,45 @@ app.get("/webhook", (req, res) => {
     mode === "subscribe" &&
     token === VERIFY_TOKEN
   ) {
-    console.log("✅ Webhook verification successful");
+    console.log(
+      "✅ Webhook verification successful"
+    );
 
     return res.status(200).send(challenge);
   }
 
-  console.log("❌ Webhook verification failed");
+  console.log(
+    "❌ Webhook verification failed"
+  );
 
   return res.sendStatus(403);
 });
 
 // =====================================================
-// EXTRACT MESSAGE
+// NORMALIZE PHONE
+// =====================================================
+
+function normalizePhone(phone) {
+  if (!phone) return "";
+
+  let value = String(phone).trim();
+
+  value = value.replace(/\+/g, "");
+  value = value.replace(/[^\d]/g, "");
+
+  // Tanzania local number
+  if (
+    value.startsWith("0") &&
+    value.length === 10
+  ) {
+    value = "255" + value.substring(1);
+  }
+
+  return value;
+}
+
+// =====================================================
+// EXTRACT INCOMING MESSAGE
 // =====================================================
 
 function extractIncomingMessage(message) {
@@ -202,32 +276,46 @@ function extractIncomingMessage(message) {
     return null;
   }
 
-  // Normal text message
+  // Text
   if (message.type === "text") {
     return {
       text: message.text?.body || "",
-      messageId: message.id || null
+      messageId: message.id || null,
+      buttonId: null
     };
   }
 
-  // Interactive button reply
+  // Interactive
   if (message.type === "interactive") {
-    if (message.interactive?.type === "button_reply") {
+
+    // Quick reply button
+    if (
+      message.interactive?.type ===
+      "button_reply"
+    ) {
       return {
         text:
           message.interactive.button_reply?.title ||
-          message.interactive.button_reply?.id ||
           "",
+        buttonId:
+          message.interactive.button_reply?.id ||
+          null,
         messageId: message.id || null
       };
     }
 
-    if (message.interactive?.type === "list_reply") {
+    // List reply
+    if (
+      message.interactive?.type ===
+      "list_reply"
+    ) {
       return {
         text:
           message.interactive.list_reply?.title ||
-          message.interactive.list_reply?.id ||
           "",
+        buttonId:
+          message.interactive.list_reply?.id ||
+          null,
         messageId: message.id || null
       };
     }
@@ -237,60 +325,45 @@ function extractIncomingMessage(message) {
 }
 
 // =====================================================
-// NORMALIZE PHONE NUMBER
+// ATTENDANCE STATUS
 // =====================================================
 
-function normalizePhone(phone) {
-  if (!phone) return "";
+function getAttendanceStatus(text, buttonId = null) {
 
-  let value = String(phone).trim();
+  const combined =
+    `${buttonId || ""} ${text || ""}`
+      .trim()
+      .toLowerCase();
 
-  // Remove +
-  value = value.replace(/\+/g, "");
+  // ===================================================
+  // CONFIRMED
+  // ===================================================
 
-  // Remove spaces, brackets, hyphens etc.
-  value = value.replace(/[^\d]/g, "");
-
-  // Tanzania local format: 07XXXXXXXX / 06XXXXXXXX
-  if (value.startsWith("0") && value.length === 10) {
-    value = "255" + value.substring(1);
-  }
-
-  return value;
-}
-
-// =====================================================
-// CONVERT WHATSAPP RESPONSE TO DATABASE STATUS
-// =====================================================
-
-function getAttendanceStatus(text) {
-  if (!text) return null;
-
-  const normalized = text
-    .trim()
-    .toLowerCase()
-    .replace(/\s+/g, " ");
-
-  // NITASHIRIKI
   if (
-    normalized === "nitashiriki" ||
-    normalized.includes("nitashiriki")
+    combined.includes("nitashiriki") ||
+    combined.includes("confirmed")
   ) {
     return "confirmed";
   }
 
-  // SITASHIRIKI
+  // ===================================================
+  // DECLINED
+  // ===================================================
+
   if (
-    normalized === "sitashiriki" ||
-    normalized.includes("sitashiriki")
+    combined.includes("sitashiriki") ||
+    combined.includes("declined")
   ) {
     return "declined";
   }
 
-  // SINA UHAKIKA
+  // ===================================================
+  // MAYBE
+  // ===================================================
+
   if (
-    normalized === "sina uhakika" ||
-    normalized.includes("sina uhakika")
+    combined.includes("sina uhakika") ||
+    combined.includes("maybe")
   ) {
     return "maybe";
   }
@@ -303,17 +376,21 @@ function getAttendanceStatus(text) {
 // =====================================================
 
 async function findGuest(phone) {
+
   if (!supabase) {
-    throw new Error("Supabase haija-configurewa");
+    throw new Error(
+      "Supabase haija-configurewa"
+    );
   }
 
-  const normalizedPhone = normalizePhone(phone);
+  const normalizedPhone =
+    normalizePhone(phone);
 
   console.log(
-    `🔎 Kutafuta guest mwenye namba: ${normalizedPhone}`
+    `🔎 Kutafuta guest: ${normalizedPhone}`
   );
 
-  // First try exact phone
+  // Exact event + phone
   let result = await supabase
     .from("guests")
     .select("*")
@@ -330,7 +407,7 @@ async function findGuest(phone) {
     return result.data;
   }
 
-  // Fallback: search by phone without event filter
+  // Fallback phone only
   result = await supabase
     .from("guests")
     .select("*")
@@ -354,25 +431,24 @@ async function saveAttendance(
   status,
   whatsappMessageId
 ) {
+
   const updateData = {
-    attendance_status: status
+    attendance_status: status,
+    scanned_at: new Date().toISOString()
   };
 
-  // Save WhatsApp message ID
   if (whatsappMessageId) {
     updateData.whatsapp_message_id =
       whatsappMessageId;
   }
 
-  // Save scan/update timestamp
-  updateData.scanned_at = new Date().toISOString();
-
-  const { data, error } = await supabase
-    .from("guests")
-    .update(updateData)
-    .eq("id", guest.id)
-    .select()
-    .single();
+  const { data, error } =
+    await supabase
+      .from("guests")
+      .update(updateData)
+      .eq("id", guest.id)
+      .select()
+      .single();
 
   if (error) {
     throw error;
@@ -382,186 +458,672 @@ async function saveAttendance(
 }
 
 // =====================================================
+// SEND WHATSAPP TEXT
+// =====================================================
+
+async function sendWhatsAppText(
+  recipient,
+  text
+) {
+
+  if (
+    !WHATSAPP_TOKEN ||
+    !WHATSAPP_PHONE_NUMBER_ID
+  ) {
+    throw new Error(
+      "WHATSAPP_TOKEN au WHATSAPP_PHONE_NUMBER_ID haipo"
+    );
+  }
+
+  const url =
+    `https://graph.facebook.com/` +
+    `${GRAPH_API_VERSION}/` +
+    `${WHATSAPP_PHONE_NUMBER_ID}/messages`;
+
+  const response = await fetch(url, {
+    method: "POST",
+
+    headers: {
+      "Authorization":
+        `Bearer ${WHATSAPP_TOKEN}`,
+
+      "Content-Type":
+        "application/json"
+    },
+
+    body: JSON.stringify({
+      messaging_product: "whatsapp",
+
+      to: normalizePhone(recipient),
+
+      type: "text",
+
+      text: {
+        preview_url: false,
+        body: text
+      }
+    })
+  });
+
+  const result =
+    await response.json();
+
+  if (!response.ok) {
+    console.error(
+      "❌ WhatsApp text error:",
+      result
+    );
+
+    throw new Error(
+      JSON.stringify(result)
+    );
+  }
+
+  console.log(
+    "✅ WhatsApp reply imetumwa"
+  );
+
+  return result;
+}
+
+// =====================================================
+// SEND INVITATION TEMPLATE
+// =====================================================
+
+async function sendInvitation(
+  recipient,
+  fullName,
+  guestCode
+) {
+
+  if (
+    !WHATSAPP_TOKEN ||
+    !WHATSAPP_PHONE_NUMBER_ID
+  ) {
+    throw new Error(
+      "WhatsApp credentials hazijakamilika"
+    );
+  }
+
+  if (!INVITE_IMAGE_URL) {
+    throw new Error(
+      "INVITE_IMAGE_URL haijawekwa"
+    );
+  }
+
+  const phone =
+    normalizePhone(recipient);
+
+  const url =
+    `https://graph.facebook.com/` +
+    `${GRAPH_API_VERSION}/` +
+    `${WHATSAPP_PHONE_NUMBER_ID}/messages`;
+
+  // ===================================================
+  // TEMPLATE
+  //
+  // {{1}} = jina
+  // {{2}} = code
+  // ===================================================
+
+  const payload = {
+
+    messaging_product: "whatsapp",
+
+    to: phone,
+
+    type: "template",
+
+    template: {
+
+      name: TEMPLATE_NAME,
+
+      language: {
+        code: TEMPLATE_LANGUAGE
+      },
+
+      components: [
+
+        // IMAGE HEADER
+        {
+          type: "header",
+
+          parameters: [
+            {
+              type: "image",
+
+              image: {
+                link: INVITE_IMAGE_URL
+              }
+            }
+          ]
+        },
+
+        // BODY
+        {
+          type: "body",
+
+          parameters: [
+            {
+              type: "text",
+              text: String(fullName)
+            },
+
+            {
+              type: "text",
+              text: String(guestCode)
+            }
+          ]
+        }
+
+        // Buttons hazihitaji parameters
+      ]
+    }
+  };
+
+  console.log(
+    `📨 Inatuma kadi kwa ${phone}`
+  );
+
+  console.log(
+    `👤 Jina: ${fullName}`
+  );
+
+  console.log(
+    `🎟️ Code: ${guestCode}`
+  );
+
+  const response =
+    await fetch(url, {
+
+      method: "POST",
+
+      headers: {
+
+        "Authorization":
+          `Bearer ${WHATSAPP_TOKEN}`,
+
+        "Content-Type":
+          "application/json"
+      },
+
+      body: JSON.stringify(payload)
+    });
+
+  const result =
+    await response.json();
+
+  if (!response.ok) {
+
+    console.error(
+      "❌ WhatsApp template error:",
+      result
+    );
+
+    throw new Error(
+      JSON.stringify(result)
+    );
+  }
+
+  console.log(
+    "✅ Kadi imetumwa kikamilifu"
+  );
+
+  return result;
+}
+
+// =====================================================
+// SEND ATTENDANCE RESPONSE
+// =====================================================
+
+async function sendAttendanceResponse(
+  phone,
+  status
+) {
+
+  let message = "";
+
+  // ===================================================
+  // CONFIRMED
+  // ===================================================
+
+  if (status === "confirmed") {
+
+    message =
+      "Asante kwa jibu lako. " +
+      "Karibu sana GeitaCard! " +
+      "Tunafurahi kuthibitisha kuwa utashiriki.";
+
+  }
+
+  // ===================================================
+  // DECLINED
+  // ===================================================
+
+  else if (status === "declined") {
+
+    message =
+      "Asante kwa taarifa yako. " +
+      "Tumejua kuwa hutashiriki. " +
+      "Karibu tena wakati mwingine. " +
+      "GeitaCard.";
+
+  }
+
+  // ===================================================
+  // MAYBE
+  // ===================================================
+
+  else if (status === "maybe") {
+
+    message =
+      "Asante kwa taarifa yako. " +
+      "Tafadhali tupatie jibu lako " +
+      "litakapokuwa tayari. " +
+      "Karibu sana GeitaCard.";
+
+  }
+
+  if (message) {
+
+    await sendWhatsAppText(
+      phone,
+      message
+    );
+  }
+}
+
+// =====================================================
+// SEND INVITATION API
+// =====================================================
+//
+// POST /send-invite
+//
+// JSON:
+// {
+//   "phone": "2557XXXXXXXX",
+//   "full_name": "Rajabu",
+//   "guest_code": "9751-SINGLE"
+// }
+//
+// =====================================================
+
+app.post(
+  "/send-invite",
+  async (req, res) => {
+
+    try {
+
+      const {
+        phone,
+        full_name,
+        guest_code
+      } = req.body;
+
+      if (!phone) {
+        return res.status(400).json({
+          ok: false,
+          error: "phone inahitajika"
+        });
+      }
+
+      if (!full_name) {
+        return res.status(400).json({
+          ok: false,
+          error: "full_name inahitajika"
+        });
+      }
+
+      if (!guest_code) {
+        return res.status(400).json({
+          ok: false,
+          error: "guest_code inahitajika"
+        });
+      }
+
+      const result =
+        await sendInvitation(
+          phone,
+          full_name,
+          guest_code
+        );
+
+      return res.json({
+        ok: true,
+        message:
+          "Invitation imetumwa",
+        whatsapp: result
+      });
+
+    } catch (error) {
+
+      console.error(
+        "❌ Send invite error:",
+        error
+      );
+
+      return res.status(500).json({
+        ok: false,
+        error: error.message
+      });
+    }
+  }
+);
+
+// =====================================================
 // WHATSAPP WEBHOOK RECEIVE
 // =====================================================
 
-app.post("/webhook", async (req, res) => {
-  // Respond immediately to Meta
-  res.sendStatus(200);
+app.post(
+  "/webhook",
+  async (req, res) => {
 
-  try {
-    console.log("");
-    console.log("==============================================");
-    console.log("📩 WhatsApp webhook received");
-    console.log("==============================================");
+    // Meta ipate 200 haraka
+    res.sendStatus(200);
 
-    const body = req.body;
+    try {
 
-    if (!body) {
-      console.log("⚠️ Empty webhook body");
-      return;
-    }
+      console.log("");
+      console.log(
+        "=============================================="
+      );
 
-    // Ignore non-WhatsApp webhook events
-    if (body.object !== "whatsapp_business_account") {
-      console.log("ℹ️ Sio WhatsApp Business event");
-      return;
-    }
+      console.log(
+        "📩 WhatsApp webhook received"
+      );
 
-    const entries = body.entry || [];
+      console.log(
+        "=============================================="
+      );
 
-    for (const entry of entries) {
-      const changes = entry.changes || [];
+      const body = req.body;
 
-      for (const change of changes) {
-        const value = change.value;
+      if (!body) {
+        console.log(
+          "⚠️ Empty webhook body"
+        );
+        return;
+      }
 
-        if (!value) {
-          continue;
-        }
+      if (
+        body.object !==
+        "whatsapp_business_account"
+      ) {
 
-        const messages = value.messages || [];
+        console.log(
+          "ℹ️ Sio WhatsApp Business event"
+        );
 
-        if (messages.length === 0) {
-          console.log(
-            "ℹ️ Webhook imepokelewa lakini hakuna message mpya."
-          );
-          continue;
-        }
+        return;
+      }
 
-        for (const message of messages) {
-          const senderPhone = normalizePhone(
-            message.from
-          );
+      const entries =
+        body.entry || [];
 
-          const incoming =
-            extractIncomingMessage(message);
+      for (const entry of entries) {
 
-          if (!incoming) {
-            console.log(
-              `ℹ️ Message type '${message.type}' haijashughulikiwa.`
-            );
+        const changes =
+          entry.changes || [];
+
+        for (const change of changes) {
+
+          const value =
+            change.value;
+
+          if (!value) {
             continue;
           }
 
-          const responseText =
-            incoming.text.trim();
-
-          console.log(
-            `📱 Response: ${senderPhone} -> ${responseText}`
-          );
-
-          // =================================================
-          // CONVERT RESPONSE
-          // =================================================
-
-          const attendanceStatus =
-            getAttendanceStatus(responseText);
-
-          if (!attendanceStatus) {
-            console.log(
-              "ℹ️ Ujumbe hauna response ya attendance."
-            );
-            continue;
-          }
-
-          console.log(
-            `✅ Attendance response: ${attendanceStatus}`
-          );
-
-          // =================================================
-          // FIND GUEST
-          // =================================================
-
-          const guest = await findGuest(
-            senderPhone
-          );
-
-          if (!guest) {
-            console.log(
-              `⚠️ Hakuna guest mwenye namba ${senderPhone}`
-            );
-            continue;
-          }
-
-          console.log(
-            `👤 Guest amepatikana: ${guest.full_name}`
-          );
-
-          // =================================================
-          // CHECK EVENT
-          // =================================================
+          const messages =
+            value.messages || [];
 
           if (
-            guest.event_key &&
-            guest.event_key !== EVENT_KEY
+            messages.length === 0
           ) {
+
             console.log(
-              `⚠️ Guest huyu ni wa ${guest.event_key},`
-              + ` sio ${EVENT_KEY}`
+              "ℹ️ Hakuna message mpya."
             );
 
             continue;
           }
 
-          // =================================================
-          // SAVE
-          // =================================================
+          for (const message of messages) {
 
-          const updatedGuest =
-            await saveAttendance(
-              guest,
-              attendanceStatus,
-              incoming.messageId
+            const senderPhone =
+              normalizePhone(
+                message.from
+              );
+
+            const incoming =
+              extractIncomingMessage(
+                message
+              );
+
+            if (!incoming) {
+
+              console.log(
+                `ℹ️ Message type '${message.type}' haijashughulikiwa.`
+              );
+
+              continue;
+            }
+
+            const responseText =
+              incoming.text.trim();
+
+            const buttonId =
+              incoming.buttonId;
+
+            console.log(
+              `📱 Response: ${senderPhone} -> ${responseText}`
             );
 
-          console.log(
-            `🎉 Attendance imehifadhiwa:`
-            + ` ${updatedGuest.full_name}`
-            + ` -> ${updatedGuest.attendance_status}`
-          );
+            if (buttonId) {
 
-          console.log(
-            "=============================================="
-          );
+              console.log(
+                `🔘 Button ID: ${buttonId}`
+              );
+            }
+
+            // =================================================
+            // GET STATUS
+            // =================================================
+
+            const attendanceStatus =
+              getAttendanceStatus(
+                responseText,
+                buttonId
+              );
+
+            if (!attendanceStatus) {
+
+              console.log(
+                "ℹ️ Ujumbe sio attendance response."
+              );
+
+              continue;
+            }
+
+            console.log(
+              `✅ Attendance response: ${attendanceStatus}`
+            );
+
+            // =================================================
+            // FIND GUEST
+            // =================================================
+
+            const guest =
+              await findGuest(
+                senderPhone
+              );
+
+            if (!guest) {
+
+              console.log(
+                `⚠️ Hakuna guest mwenye namba ${senderPhone}`
+              );
+
+              continue;
+            }
+
+            console.log(
+              `👤 Guest amepatikana: ${guest.full_name}`
+            );
+
+            // =================================================
+            // EVENT CHECK
+            // =================================================
+
+            if (
+              guest.event_key &&
+              guest.event_key !== EVENT_KEY
+            ) {
+
+              console.log(
+                `⚠️ Guest ni wa ${guest.event_key}, sio ${EVENT_KEY}`
+              );
+
+              continue;
+            }
+
+            // =================================================
+            // SAVE
+            // =================================================
+
+            const updatedGuest =
+              await saveAttendance(
+                guest,
+                attendanceStatus,
+                incoming.messageId
+              );
+
+            console.log(
+              `🎉 Attendance imehifadhiwa: ` +
+              `${updatedGuest.full_name} -> ` +
+              `${updatedGuest.attendance_status}`
+            );
+
+            // =================================================
+            // SEND AUTOMATIC RESPONSE
+            // =================================================
+
+            try {
+
+              await sendAttendanceResponse(
+                senderPhone,
+                attendanceStatus
+              );
+
+            } catch (replyError) {
+
+              console.error(
+                "❌ Imeshindwa kutuma response kwa guest:",
+                replyError
+              );
+            }
+
+            console.log(
+              "=============================================="
+            );
+          }
         }
       }
+
+    } catch (error) {
+
+      console.error("");
+      console.error(
+        "❌ Attendance update error:"
+      );
+
+      console.error(error);
+
+      console.error("");
     }
-  } catch (error) {
-    console.error("");
-    console.error(
-      "❌ Attendance update error:"
-    );
-    console.error(error);
-    console.error("");
   }
-});
+);
 
 // =====================================================
 // 404
 // =====================================================
 
-app.use((req, res) => {
-  res.status(404).json({
-    error: "Route not found"
-  });
-});
+app.use(
+  (req, res) => {
+
+    res.status(404).json({
+      error: "Route not found"
+    });
+
+  }
+);
 
 // =====================================================
 // START SERVER
 // =====================================================
 
-app.listen(PORT, () => {
-  console.log("==============================================");
-  console.log("🚀 GeitaCard Server iko LIVE");
-  console.log("==============================================");
-  console.log(`📌 EVENT: ${EVENT_KEY}`);
-  console.log(`🌐 PORT: ${PORT}`);
-  console.log(
-    `🗄️ Supabase: ${supabase ? "CONNECTED" : "NOT CONNECTED"}`
-  );
-  console.log(
-    `📱 WhatsApp: ${WHATSAPP_TOKEN ? "CONFIGURED" : "NOT CONFIGURED"}`
-  );
-  console.log("==============================================");
-});
+app.listen(
+  PORT,
+  () => {
+
+    console.log(
+      "=============================================="
+    );
+
+    console.log(
+      "🚀 GeitaCard Server iko LIVE"
+    );
+
+    console.log(
+      "=============================================="
+    );
+
+    console.log(
+      `📌 EVENT: ${EVENT_KEY}`
+    );
+
+    console.log(
+      `🌐 PORT: ${PORT}`
+    );
+
+    console.log(
+      `🗄️ Supabase: ${
+        supabase
+          ? "CONNECTED"
+          : "NOT CONNECTED"
+      }`
+    );
+
+    console.log(
+      `📱 WhatsApp: ${
+        WHATSAPP_TOKEN
+          ? "CONFIGURED"
+          : "NOT CONFIGURED"
+      }`
+    );
+
+    console.log(
+      `📞 Phone Number ID: ${
+        WHATSAPP_PHONE_NUMBER_ID
+          ? "CONFIGURED"
+          : "MISSING"
+      }`
+    );
+
+    console.log(
+      `🖼️ Invite Image: ${
+        INVITE_IMAGE_URL
+          ? "CONFIGURED"
+          : "MISSING"
+      }`
+    );
+
+    console.log(
+      `📋 Template: ${TEMPLATE_NAME}`
+    );
+
+    console.log(
+      "=============================================="
+    );
+  }
+);
