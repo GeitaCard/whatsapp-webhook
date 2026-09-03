@@ -2,6 +2,7 @@ const express = require("express");
 const { createClient } = require("@supabase/supabase-js");
 
 const app = express();
+
 app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
 
@@ -11,29 +12,38 @@ app.use(express.urlencoded({ extended: true }));
 
 const PORT = process.env.PORT || 10000;
 
-const SUPABASE_URL = process.env.SUPABASE_URL;
+const SUPABASE_URL =
+  process.env.SUPABASE_URL;
+
 const SUPABASE_SERVICE_ROLE_KEY =
   process.env.SUPABASE_SERVICE_ROLE_KEY;
 
-const WHATSAPP_TOKEN = process.env.WHATSAPP_TOKEN;
-const VERIFY_TOKEN = process.env.VERIFY_TOKEN;
+const WHATSAPP_TOKEN =
+  (process.env.WHATSAPP_TOKEN || "").trim();
 
-const PHONE_NUMBER_ID = process.env.PHONE_NUMBER_ID;
+const VERIFY_TOKEN =
+  (process.env.VERIFY_TOKEN || "").trim();
+
+const PHONE_NUMBER_ID =
+  (process.env.PHONE_NUMBER_ID || "").trim();
 
 const INVITE_IMAGE_URL =
-  process.env.INVITE_IMAGE_URL;
+  (process.env.INVITE_IMAGE_URL || "").trim();
 
 const TEMPLATE_NAME =
-  process.env.TEMPLATE_NAME || "kadi_ya_mwaliko";
+  (process.env.TEMPLATE_NAME || "kadi_ya_mwaliko").trim();
 
 const TEMPLATE_LANGUAGE =
-  process.env.TEMPLATE_LANGUAGE || "sw";
+  (process.env.TEMPLATE_LANGUAGE || "sw").trim();
 
 const EVENT_KEY =
-  process.env.DEFAULT_EVENT || "EVENT_A";
+  (process.env.DEFAULT_EVENT || "EVENT_A").trim();
 
-// Graph API version
-const GRAPH_API_VERSION = "v23.0";
+// =====================================================
+// META GRAPH API
+// =====================================================
+
+const GRAPH_API_VERSION = "v25.0";
 
 // =====================================================
 // SUPABASE
@@ -108,6 +118,10 @@ console.log(
   }`
 );
 
+console.log(
+  `📡 GRAPH_API_VERSION: ${GRAPH_API_VERSION}`
+);
+
 console.log("==============================================");
 
 // =====================================================
@@ -115,27 +129,43 @@ console.log("==============================================");
 // =====================================================
 
 app.get("/", async (req, res) => {
-  let databaseStatus = "NOT CONNECTED";
+
+  let databaseStatus =
+    "NOT CONNECTED";
 
   if (supabase) {
-    try {
-      const { error } = await supabase
-        .from("events")
-        .select("id")
-        .eq("event_key", EVENT_KEY)
-        .limit(1);
 
-      databaseStatus = error
-        ? "ERROR"
-        : "CONNECTED";
+    try {
+
+      const { error } =
+        await supabase
+          .from("events")
+          .select("id")
+          .eq(
+            "event_key",
+            EVENT_KEY
+          )
+          .limit(1);
+
+      databaseStatus =
+        error
+          ? "ERROR"
+          : "CONNECTED";
+
     } catch (err) {
+
       databaseStatus = "ERROR";
+
     }
+
   }
 
   res.send(`
+
 <!DOCTYPE html>
+
 <html>
+
 <head>
 
 <meta charset="UTF-8">
@@ -259,6 +289,10 @@ button:disabled {
   margin-top: 12px;
 }
 
+.debug-button {
+  background: #555;
+}
+
 </style>
 
 </head>
@@ -267,7 +301,6 @@ button:disabled {
 
 <div class="container">
 
-  <!-- STATUS -->
   <div class="card">
 
     <h1>🎟️ GeitaCard</h1>
@@ -308,12 +341,45 @@ button:disabled {
         ${TEMPLATE_LANGUAGE}
       </p>
 
+      <p>
+        <strong>Graph API:</strong>
+        ${GRAPH_API_VERSION}
+      </p>
+
     </div>
 
   </div>
 
 
+  <!-- DEBUG META -->
+
+  <div class="card">
+
+    <h2>🔎 WhatsApp Connection Test</h2>
+
+    <p class="info">
+      Hii ni test ya kuangalia kama Meta inaweza
+      kuona Phone Number ID inayotumiwa na Render.
+    </p>
+
+    <button
+      id="debugButton"
+      class="debug-button"
+      type="button"
+    >
+      🔎 CHECK WHATSAPP CONNECTION
+    </button>
+
+    <div
+      id="debugResult"
+      class="result"
+    ></div>
+
+  </div>
+
+
   <!-- TEST INVITATION -->
+
   <div class="card">
 
     <h2>📨 Tuma Test Invitation</h2>
@@ -387,15 +453,121 @@ button:disabled {
 
 <script>
 
+// =====================================================
+// DEBUG WHATSAPP
+// =====================================================
+
+const debugButton =
+  document.getElementById(
+    "debugButton"
+  );
+
+const debugResult =
+  document.getElementById(
+    "debugResult"
+  );
+
+debugButton.addEventListener(
+  "click",
+  async function() {
+
+    debugButton.disabled = true;
+
+    debugButton.textContent =
+      "⏳ Ina-check Meta...";
+
+    debugResult.className =
+      "result";
+
+    debugResult.style.display =
+      "block";
+
+    debugResult.textContent =
+      "⏳ Inauliza Meta kuhusu Phone Number ID...";
+
+    try {
+
+      const response =
+        await fetch(
+          "/debug-whatsapp"
+        );
+
+      const data =
+        await response.json();
+
+      if (!response.ok || !data.ok) {
+
+        throw new Error(
+          data.error ||
+          "WhatsApp connection test failed"
+        );
+
+      }
+
+      debugResult.className =
+        "result success";
+
+      debugResult.textContent =
+        "✅ META CONNECTION IMEFAULU!\\n\\n" +
+        "Phone Number ID: " +
+        data.phone_number_id +
+        "\\n" +
+        "API Version: " +
+        data.api_version +
+        "\\n" +
+        "Display Number: " +
+        (data.display_phone_number || "N/A") +
+        "\\n" +
+        "Verified Name: " +
+        (data.verified_name || "N/A") +
+        "\\n\\n" +
+        "Token ya Render inaweza ku-access Phone Number ID.";
+
+    }
+
+    catch (error) {
+
+      debugResult.className =
+        "result error";
+
+      debugResult.textContent =
+        "❌ META CONNECTION IMESHINDWA\\n\\n" +
+        error.message;
+
+    }
+
+    finally {
+
+      debugButton.disabled =
+        false;
+
+      debugButton.textContent =
+        "🔎 CHECK WHATSAPP CONNECTION";
+
+    }
+
+  }
+);
+
+
+// =====================================================
+// TEST INVITATION
+// =====================================================
+
 const form =
-  document.getElementById("testForm");
+  document.getElementById(
+    "testForm"
+  );
 
 const button =
-  document.getElementById("sendButton");
+  document.getElementById(
+    "sendButton"
+  );
 
 const result =
-  document.getElementById("result");
-
+  document.getElementById(
+    "result"
+  );
 
 form.addEventListener(
   "submit",
@@ -403,12 +575,18 @@ form.addEventListener(
 
     event.preventDefault();
 
-    result.className = "result";
-    result.style.display = "block";
+    result.className =
+      "result";
+
+    result.style.display =
+      "block";
+
     result.textContent =
       "⏳ Inatuma invitation...";
 
-    button.disabled = true;
+    button.disabled =
+      true;
+
     button.textContent =
       "⏳ Inatuma...";
 
@@ -430,13 +608,13 @@ form.addEventListener(
         .value
         .trim();
 
-
     try {
 
       const response =
         await fetch(
           "/send-invite",
           {
+
             method: "POST",
 
             headers: {
@@ -450,15 +628,17 @@ form.addEventListener(
                 full_name,
                 guest_code
               })
+
           }
         );
-
 
       const data =
         await response.json();
 
-
-      if (!response.ok || !data.ok) {
+      if (
+        !response.ok ||
+        !data.ok
+      ) {
 
         throw new Error(
           data.error ||
@@ -466,7 +646,6 @@ form.addEventListener(
         );
 
       }
-
 
       result.className =
         "result success";
@@ -499,7 +678,8 @@ form.addEventListener(
 
     finally {
 
-      button.disabled = false;
+      button.disabled =
+        false;
 
       button.textContent =
         "📤 TUMA TEST INVITATION";
@@ -513,43 +693,232 @@ form.addEventListener(
 
 </body>
 </html>
+
 `);
+
 });
 
 // =====================================================
 // HEALTH
 // =====================================================
 
-app.get("/health", (req, res) => {
+app.get(
+  "/health",
+  (req, res) => {
 
-  res.json({
+    res.json({
 
-    ok: true,
+      ok: true,
 
-    event: EVENT_KEY,
+      event:
+        EVENT_KEY,
 
-    supabase: !!supabase,
+      supabase:
+        !!supabase,
 
-    whatsapp: !!WHATSAPP_TOKEN,
+      whatsapp:
+        !!WHATSAPP_TOKEN,
 
-    phone_number_id:
-      !!PHONE_NUMBER_ID,
+      phone_number_id:
+        !!PHONE_NUMBER_ID,
 
-    invite_image:
-      !!INVITE_IMAGE_URL,
+      invite_image:
+        !!INVITE_IMAGE_URL,
 
-    template:
-      TEMPLATE_NAME,
+      template:
+        TEMPLATE_NAME,
 
-    language:
-      TEMPLATE_LANGUAGE,
+      language:
+        TEMPLATE_LANGUAGE,
 
-    time:
-      new Date().toISOString()
+      graph_api_version:
+        GRAPH_API_VERSION,
 
-  });
+      time:
+        new Date().toISOString()
 
-});
+    });
+
+  }
+);
+
+// =====================================================
+// DEBUG WHATSAPP / META CONNECTION
+// =====================================================
+
+app.get(
+  "/debug-whatsapp",
+  async (req, res) => {
+
+    try {
+
+      if (!WHATSAPP_TOKEN) {
+
+        return res
+          .status(500)
+          .json({
+
+            ok: false,
+
+            error:
+              "WHATSAPP_TOKEN haipo kwenye Render"
+
+          });
+
+      }
+
+      if (!PHONE_NUMBER_ID) {
+
+        return res
+          .status(500)
+          .json({
+
+            ok: false,
+
+            error:
+              "PHONE_NUMBER_ID haipo kwenye Render"
+
+          });
+
+      }
+
+      const url =
+        `https://graph.facebook.com/` +
+        `${GRAPH_API_VERSION}/` +
+        `${encodeURIComponent(
+          PHONE_NUMBER_ID
+        )}?fields=id,display_phone_number,verified_name`;
+
+      console.log(
+        "🔎 Checking Meta Phone Number ID:",
+        PHONE_NUMBER_ID
+      );
+
+      const response =
+        await fetch(
+          url,
+          {
+
+            method: "GET",
+
+            headers: {
+
+              "Authorization":
+                `Bearer ${WHATSAPP_TOKEN}`,
+
+              "Content-Type":
+                "application/json"
+
+            }
+
+          }
+        );
+
+      const data =
+        await response.json();
+
+      console.log(
+        "🔎 Meta debug HTTP status:",
+        response.status
+      );
+
+      if (!response.ok) {
+
+        console.error(
+          "❌ Meta debug error:",
+          JSON.stringify(
+            data,
+            null,
+            2
+          )
+        );
+
+        return res
+          .status(500)
+          .json({
+
+            ok: false,
+
+            error:
+              data?.error?.message ||
+              "Meta imekataa connection",
+
+            meta_error:
+              data?.error
+                ? {
+                    code:
+                      data.error.code,
+
+                    type:
+                      data.error.type,
+
+                    error_subcode:
+                      data.error
+                        .error_subcode
+                  }
+                : null,
+
+            phone_number_id:
+              PHONE_NUMBER_ID,
+
+            api_version:
+              GRAPH_API_VERSION
+
+          });
+
+      }
+
+      console.log(
+        "✅ Meta Phone Number ID imeonekana:",
+        data
+      );
+
+      return res.json({
+
+        ok: true,
+
+        phone_number_id:
+          data.id ||
+          PHONE_NUMBER_ID,
+
+        display_phone_number:
+          data.display_phone_number ||
+          null,
+
+        verified_name:
+          data.verified_name ||
+          null,
+
+        api_version:
+          GRAPH_API_VERSION
+
+      });
+
+    }
+
+    catch (error) {
+
+      console.error(
+        "❌ /debug-whatsapp error:",
+        error
+      );
+
+      return res
+        .status(500)
+        .json({
+
+          ok: false,
+
+          error:
+            error.message ||
+            "Debug request failed"
+
+        });
+
+    }
+
+  }
+);
 
 // =====================================================
 // NORMALIZE PHONE
@@ -563,11 +932,10 @@ function normalizePhone(phone) {
     String(phone).trim();
 
   value =
-    value.replace(/[^\d]/g, "");
-
-  // Tanzania:
-  // 07XXXXXXXX
-  // 06XXXXXXXX
+    value.replace(
+      /[^\d]/g,
+      ""
+    );
 
   if (
     value.startsWith("0") &&
@@ -605,7 +973,6 @@ async function findGuest(phone) {
     `🔎 Kutafuta guest: ${normalizedPhone}`
   );
 
-
   let result =
     await supabase
       .from("guests")
@@ -621,20 +988,17 @@ async function findGuest(phone) {
       .limit(1)
       .maybeSingle();
 
-
   if (result.error) {
 
     throw result.error;
 
   }
 
-
   if (result.data) {
 
     return result.data;
 
   }
-
 
   // Fallback
   result =
@@ -648,13 +1012,11 @@ async function findGuest(phone) {
       .limit(1)
       .maybeSingle();
 
-
   if (result.error) {
 
     throw result.error;
 
   }
-
 
   return result.data || null;
 
@@ -680,14 +1042,12 @@ async function saveAttendance(
 
   };
 
-
   if (whatsappMessageId) {
 
     updateData.whatsapp_message_id =
       whatsappMessageId;
 
   }
-
 
   const {
     data,
@@ -696,17 +1056,18 @@ async function saveAttendance(
     await supabase
       .from("guests")
       .update(updateData)
-      .eq("id", guest.id)
+      .eq(
+        "id",
+        guest.id
+      )
       .select()
       .single();
-
 
   if (error) {
 
     throw error;
 
   }
-
 
   return data;
 
@@ -724,11 +1085,14 @@ function getAttendanceStatus(text) {
     text
       .trim()
       .toLowerCase()
-      .replace(/\s+/g, " ");
-
+      .replace(
+        /\s+/g,
+        " "
+      );
 
   if (
-    normalized === "nitashiriki" ||
+    normalized ===
+      "nitashiriki" ||
     normalized.includes(
       "nitashiriki"
     )
@@ -738,9 +1102,9 @@ function getAttendanceStatus(text) {
 
   }
 
-
   if (
-    normalized === "sitashiriki" ||
+    normalized ===
+      "sitashiriki" ||
     normalized.includes(
       "sitashiriki"
     )
@@ -750,9 +1114,9 @@ function getAttendanceStatus(text) {
 
   }
 
-
   if (
-    normalized === "sina uhakika" ||
+    normalized ===
+      "sina uhakika" ||
     normalized.includes(
       "sina uhakika"
     )
@@ -761,7 +1125,6 @@ function getAttendanceStatus(text) {
     return "maybe";
 
   }
-
 
   return null;
 
@@ -776,7 +1139,8 @@ function getResponseMessage(
 ) {
 
   if (
-    status === "confirmed"
+    status ===
+    "confirmed"
   ) {
 
     return (
@@ -787,9 +1151,9 @@ function getResponseMessage(
 
   }
 
-
   if (
-    status === "declined"
+    status ===
+    "declined"
   ) {
 
     return (
@@ -800,9 +1164,9 @@ function getResponseMessage(
 
   }
 
-
   if (
-    status === "maybe"
+    status ===
+    "maybe"
   ) {
 
     return (
@@ -813,7 +1177,6 @@ function getResponseMessage(
     );
 
   }
-
 
   return null;
 
@@ -833,10 +1196,11 @@ function extractIncomingMessage(
 
   }
 
-
   // TEXT
+
   if (
-    message.type === "text"
+    message.type ===
+    "text"
   ) {
 
     return {
@@ -853,8 +1217,8 @@ function extractIncomingMessage(
 
   }
 
-
   // INTERACTIVE
+
   if (
     message.type ===
     "interactive"
@@ -890,7 +1254,6 @@ function extractIncomingMessage(
 
     }
 
-
     if (
       message.interactive?.type ===
       "list_reply"
@@ -923,10 +1286,11 @@ function extractIncomingMessage(
 
   }
 
-
   // TEMPLATE QUICK REPLY
+
   if (
-    message.type === "button"
+    message.type ===
+    "button"
   ) {
 
     return {
@@ -947,7 +1311,6 @@ function extractIncomingMessage(
     };
 
   }
-
 
   return null;
 
@@ -970,7 +1333,6 @@ async function sendWhatsAppText(
 
   }
 
-
   if (!PHONE_NUMBER_ID) {
 
     throw new Error(
@@ -979,12 +1341,10 @@ async function sendWhatsAppText(
 
   }
 
-
   const url =
     `https://graph.facebook.com/` +
     `${GRAPH_API_VERSION}/` +
     `${PHONE_NUMBER_ID}/messages`;
-
 
   const response =
     await fetch(
@@ -1027,16 +1387,18 @@ async function sendWhatsAppText(
       }
     );
 
-
   const data =
     await response.json();
-
 
   if (!response.ok) {
 
     console.error(
       "❌ WhatsApp text send error:",
-      data
+      JSON.stringify(
+        data,
+        null,
+        2
+      )
     );
 
     throw new Error(
@@ -1046,12 +1408,10 @@ async function sendWhatsAppText(
 
   }
 
-
   console.log(
     "📤 Reply sent successfully:",
     data
   );
-
 
   return data;
 
@@ -1075,7 +1435,6 @@ async function sendInvitation(
 
   }
 
-
   if (!PHONE_NUMBER_ID) {
 
     throw new Error(
@@ -1083,7 +1442,6 @@ async function sendInvitation(
     );
 
   }
-
 
   if (!INVITE_IMAGE_URL) {
 
@@ -1093,12 +1451,10 @@ async function sendInvitation(
 
   }
 
-
   const url =
     `https://graph.facebook.com/` +
     `${GRAPH_API_VERSION}/` +
     `${PHONE_NUMBER_ID}/messages`;
-
 
   /*
    * Template:
@@ -1106,7 +1462,6 @@ async function sendInvitation(
    * {{1}} = jina
    * {{2}} = code
    */
-
 
   const payload = {
 
@@ -1134,7 +1489,9 @@ async function sendInvitation(
       components: [
 
         // IMAGE HEADER
+
         {
+
           type:
             "header",
 
@@ -1158,9 +1515,10 @@ async function sendInvitation(
 
         },
 
-
         // BODY VARIABLES
+
         {
+
           type:
             "body",
 
@@ -1200,7 +1558,6 @@ async function sendInvitation(
 
   };
 
-
   console.log(
     "📤 Sending invitation:",
     JSON.stringify(
@@ -1209,7 +1566,6 @@ async function sendInvitation(
       2
     )
   );
-
 
   const response =
     await fetch(
@@ -1237,10 +1593,8 @@ async function sendInvitation(
       }
     );
 
-
   const data =
     await response.json();
-
 
   if (!response.ok) {
 
@@ -1260,12 +1614,10 @@ async function sendInvitation(
 
   }
 
-
   console.log(
     "✅ Invitation sent:",
     data
   );
-
 
   return data;
 
@@ -1287,7 +1639,6 @@ app.post(
         guest_code
       } = req.body;
 
-
       if (!phone) {
 
         return res
@@ -1302,7 +1653,6 @@ app.post(
           });
 
       }
-
 
       if (!full_name) {
 
@@ -1319,7 +1669,6 @@ app.post(
 
       }
 
-
       if (!guest_code) {
 
         return res
@@ -1335,12 +1684,10 @@ app.post(
 
       }
 
-
       const recipient =
         normalizePhone(
           phone
         );
-
 
       if (!recipient) {
 
@@ -1357,14 +1704,12 @@ app.post(
 
       }
 
-
       const result =
         await sendInvitation(
           recipient,
           full_name,
           guest_code
         );
-
 
       res.json({
 
@@ -1393,7 +1738,6 @@ app.post(
         "❌ /send-invite error:",
         error
       );
-
 
       res
         .status(500)
@@ -1432,11 +1776,9 @@ app.get(
         "hub.challenge"
       ];
 
-
     console.log(
       "🔐 WhatsApp webhook verification request"
     );
-
 
     if (
       mode === "subscribe" &&
@@ -1447,18 +1789,15 @@ app.get(
         "✅ Webhook verification successful"
       );
 
-
       return res
         .status(200)
         .send(challenge);
 
     }
 
-
     console.log(
       "❌ Webhook verification failed"
     );
-
 
     return res
       .sendStatus(403);
@@ -1475,8 +1814,8 @@ app.post(
   async (req, res) => {
 
     // Meta lazima ipate 200 haraka
-    res.sendStatus(200);
 
+    res.sendStatus(200);
 
     try {
 
@@ -1494,10 +1833,8 @@ app.post(
         "=============================================="
       );
 
-
       const body =
         req.body;
-
 
       if (!body) {
 
@@ -1508,7 +1845,6 @@ app.post(
         return;
 
       }
-
 
       if (
         body.object !==
@@ -1523,10 +1859,8 @@ app.post(
 
       }
 
-
       const entries =
         body.entry || [];
-
 
       for (
         const entry of entries
@@ -1535,7 +1869,6 @@ app.post(
         const changes =
           entry.changes || [];
 
-
         for (
           const change of changes
         ) {
@@ -1543,17 +1876,14 @@ app.post(
           const value =
             change.value;
 
-
           if (!value) {
 
             continue;
 
           }
 
-
           const messages =
             value.messages || [];
-
 
           if (
             messages.length === 0
@@ -1567,7 +1897,6 @@ app.post(
 
           }
 
-
           for (
             const message
             of messages
@@ -1578,12 +1907,10 @@ app.post(
                 message.from
               );
 
-
             const incoming =
               extractIncomingMessage(
                 message
               );
-
 
             if (!incoming) {
 
@@ -1595,25 +1922,17 @@ app.post(
 
             }
 
-
             const responseText =
               incoming.text.trim();
-
 
             console.log(
               `📱 Response: ${senderPhone} -> ${responseText}`
             );
 
-
-            // =================================================
-            // DETERMINE ATTENDANCE
-            // =================================================
-
             const attendanceStatus =
               getAttendanceStatus(
                 responseText
               );
-
 
             if (!attendanceStatus) {
 
@@ -1625,21 +1944,14 @@ app.post(
 
             }
 
-
             console.log(
               `✅ Attendance: ${attendanceStatus}`
             );
-
-
-            // =================================================
-            // FIND GUEST
-            // =================================================
 
             const guest =
               await findGuest(
                 senderPhone
               );
-
 
             if (!guest) {
 
@@ -1651,15 +1963,9 @@ app.post(
 
             }
 
-
             console.log(
               `👤 Guest: ${guest.full_name}`
             );
-
-
-            // =================================================
-            // EVENT CHECK
-            // =================================================
 
             if (
               guest.event_key &&
@@ -1675,11 +1981,6 @@ app.post(
 
             }
 
-
-            // =================================================
-            // SAVE
-            // =================================================
-
             const updatedGuest =
               await saveAttendance(
                 guest,
@@ -1687,23 +1988,16 @@ app.post(
                 incoming.messageId
               );
 
-
             console.log(
               `🎉 Attendance imehifadhiwa: ` +
               `${updatedGuest.full_name} -> ` +
               `${updatedGuest.attendance_status}`
             );
 
-
-            // =================================================
-            // SEND AUTOMATIC RESPONSE
-            // =================================================
-
             const reply =
               getResponseMessage(
                 attendanceStatus
               );
-
 
             if (reply) {
 
@@ -1726,7 +2020,6 @@ app.post(
               }
 
             }
-
 
             console.log(
               "=============================================="
@@ -1796,16 +2089,13 @@ app.listen(
       "=============================================="
     );
 
-
     console.log(
       `📌 EVENT: ${EVENT_KEY}`
     );
 
-
     console.log(
       `🌐 PORT: ${PORT}`
     );
-
 
     console.log(
       `🗄️ Supabase: ${
@@ -1815,7 +2105,6 @@ app.listen(
       }`
     );
 
-
     console.log(
       `📱 WhatsApp: ${
         WHATSAPP_TOKEN
@@ -1823,7 +2112,6 @@ app.listen(
           : "NOT CONFIGURED"
       }`
     );
-
 
     console.log(
       `📞 Phone Number ID: ${
@@ -1833,7 +2121,6 @@ app.listen(
       }`
     );
 
-
     console.log(
       `🖼️ Invite Image: ${
         INVITE_IMAGE_URL
@@ -1842,16 +2129,17 @@ app.listen(
       }`
     );
 
-
     console.log(
       `📄 Template: ${TEMPLATE_NAME}`
     );
-
 
     console.log(
       `🌍 Language: ${TEMPLATE_LANGUAGE}`
     );
 
+    console.log(
+      `📡 Graph API: ${GRAPH_API_VERSION}`
+    );
 
     console.log(
       "=============================================="
