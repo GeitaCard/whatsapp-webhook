@@ -3,6 +3,7 @@ const { createClient } = require("@supabase/supabase-js");
 
 const app = express();
 app.use(express.json());
+app.use(express.urlencoded({ extended: true }));
 
 // =====================================================
 // ENVIRONMENT
@@ -110,7 +111,7 @@ console.log(
 console.log("==============================================");
 
 // =====================================================
-// HOME
+// HOME + TEST SEND FORM
 // =====================================================
 
 app.get("/", async (req, res) => {
@@ -136,76 +137,379 @@ app.get("/", async (req, res) => {
 <!DOCTYPE html>
 <html>
 <head>
+
 <meta charset="UTF-8">
-<meta name="viewport"
-content="width=device-width, initial-scale=1.0">
+
+<meta
+  name="viewport"
+  content="width=device-width, initial-scale=1.0"
+>
 
 <title>GeitaCard</title>
 
 <style>
+
+* {
+  box-sizing: border-box;
+}
+
 body {
+  margin: 0;
+  padding: 20px;
   font-family: Arial, sans-serif;
-  background:#f4f6fb;
-  padding:25px;
+  background: #f4f6fb;
+  color: #222;
+}
+
+.container {
+  max-width: 650px;
+  margin: auto;
 }
 
 .card {
-  max-width:650px;
-  margin:auto;
-  background:white;
-  padding:25px;
-  border-radius:15px;
-  box-shadow:0 3px 15px rgba(0,0,0,.08);
+  background: white;
+  padding: 22px;
+  border-radius: 16px;
+  margin-bottom: 18px;
+  box-shadow: 0 3px 15px rgba(0,0,0,.08);
+}
+
+h1 {
+  margin-top: 0;
+}
+
+h2 {
+  margin-top: 0;
+  font-size: 21px;
+}
+
+.status {
+  background: #e8f8ef;
+  border-radius: 10px;
+  padding: 12px;
+  margin-bottom: 15px;
 }
 
 .ok {
-  color:#198754;
-  font-weight:bold;
+  color: #198754;
+  font-weight: bold;
 }
+
+.info {
+  color: #555;
+  font-size: 14px;
+}
+
+label {
+  display: block;
+  font-weight: bold;
+  margin-top: 14px;
+  margin-bottom: 6px;
+}
+
+input {
+  width: 100%;
+  padding: 14px;
+  border: 1px solid #ddd;
+  border-radius: 10px;
+  font-size: 16px;
+}
+
+button {
+  width: 100%;
+  margin-top: 20px;
+  padding: 15px;
+  border: 0;
+  border-radius: 10px;
+  background: #198754;
+  color: white;
+  font-size: 17px;
+  font-weight: bold;
+  cursor: pointer;
+}
+
+button:disabled {
+  opacity: .6;
+}
+
+.result {
+  display: none;
+  margin-top: 18px;
+  padding: 14px;
+  border-radius: 10px;
+  white-space: pre-wrap;
+  word-break: break-word;
+}
+
+.success {
+  display: block;
+  background: #e8f8ef;
+  color: #146c43;
+}
+
+.error {
+  display: block;
+  background: #fdeaea;
+  color: #a61b1b;
+}
+
+.small {
+  font-size: 13px;
+  color: #777;
+  margin-top: 12px;
+}
+
 </style>
+
 </head>
 
 <body>
 
-<div class="card">
+<div class="container">
 
-<h1>🎟️ GeitaCard</h1>
+  <!-- STATUS -->
+  <div class="card">
 
-<p class="ok">
-🟢 Server ACTIVE
-</p>
+    <h1>🎟️ GeitaCard</h1>
 
-<p>
-<strong>Event:</strong>
-${EVENT_KEY}
-</p>
+    <div class="status">
 
-<p>
-<strong>Database:</strong>
-${databaseStatus}
-</p>
+      <div class="ok">
+        🟢 Server ACTIVE
+      </div>
 
-<p>
-<strong>WhatsApp:</strong>
-${
-  WHATSAPP_TOKEN &&
-  PHONE_NUMBER_ID
-    ? "CONFIGURED"
-    : "NOT CONFIGURED"
-}
-</p>
+      <p>
+        <strong>Event:</strong>
+        ${EVENT_KEY}
+      </p>
 
-<p>
-<strong>Template:</strong>
-${TEMPLATE_NAME}
-</p>
+      <p>
+        <strong>Database:</strong>
+        ${databaseStatus}
+      </p>
 
-<p>
-<strong>Language:</strong>
-${TEMPLATE_LANGUAGE}
-</p>
+      <p>
+        <strong>WhatsApp:</strong>
+        ${
+          WHATSAPP_TOKEN &&
+          PHONE_NUMBER_ID
+            ? "CONFIGURED"
+            : "NOT CONFIGURED"
+        }
+      </p>
+
+      <p>
+        <strong>Template:</strong>
+        ${TEMPLATE_NAME}
+      </p>
+
+      <p>
+        <strong>Language:</strong>
+        ${TEMPLATE_LANGUAGE}
+      </p>
+
+    </div>
+
+  </div>
+
+
+  <!-- TEST INVITATION -->
+  <div class="card">
+
+    <h2>📨 Tuma Test Invitation</h2>
+
+    <p class="info">
+      Tumia sehemu hii kutuma kadi kwa mtu mmoja
+      kwanza kabla ya kuanza kutuma kwa waalikwa wengi.
+    </p>
+
+    <form id="testForm">
+
+      <label>
+        Namba ya WhatsApp
+      </label>
+
+      <input
+        id="phone"
+        name="phone"
+        type="tel"
+        placeholder="Mfano: 0740267204"
+        required
+      >
+
+      <label>
+        Jina la Mualikwa
+      </label>
+
+      <input
+        id="full_name"
+        name="full_name"
+        type="text"
+        placeholder="Mfano: Test Guest"
+        required
+      >
+
+      <label>
+        Code ya Mualikwa
+      </label>
+
+      <input
+        id="guest_code"
+        name="guest_code"
+        type="text"
+        placeholder="Mfano: 9750-KAMATI"
+        required
+      >
+
+      <button
+        id="sendButton"
+        type="submit"
+      >
+        📤 TUMA TEST INVITATION
+      </button>
+
+    </form>
+
+    <div
+      id="result"
+      class="result"
+    ></div>
+
+    <div class="small">
+      ⚠️ Kwa sasa tumia mtu mmoja tu wa majaribio.
+      Usitumie bulk sending bado.
+    </div>
+
+  </div>
 
 </div>
+
+
+<script>
+
+const form =
+  document.getElementById("testForm");
+
+const button =
+  document.getElementById("sendButton");
+
+const result =
+  document.getElementById("result");
+
+
+form.addEventListener(
+  "submit",
+  async function(event) {
+
+    event.preventDefault();
+
+    result.className = "result";
+    result.style.display = "block";
+    result.textContent =
+      "⏳ Inatuma invitation...";
+
+    button.disabled = true;
+    button.textContent =
+      "⏳ Inatuma...";
+
+    const phone =
+      document
+        .getElementById("phone")
+        .value
+        .trim();
+
+    const full_name =
+      document
+        .getElementById("full_name")
+        .value
+        .trim();
+
+    const guest_code =
+      document
+        .getElementById("guest_code")
+        .value
+        .trim();
+
+
+    try {
+
+      const response =
+        await fetch(
+          "/send-invite",
+          {
+            method: "POST",
+
+            headers: {
+              "Content-Type":
+                "application/json"
+            },
+
+            body:
+              JSON.stringify({
+                phone,
+                full_name,
+                guest_code
+              })
+          }
+        );
+
+
+      const data =
+        await response.json();
+
+
+      if (!response.ok || !data.ok) {
+
+        throw new Error(
+          data.error ||
+          "Invitation sending failed"
+        );
+
+      }
+
+
+      result.className =
+        "result success";
+
+      result.textContent =
+        "✅ INVITATION IMETUMWA!\\n\\n" +
+        "Namba: " +
+        data.phone +
+        "\\n" +
+        "Jina: " +
+        data.full_name +
+        "\\n" +
+        "Code: " +
+        data.guest_code +
+        "\\n\\n" +
+        "📱 Angalia WhatsApp sasa.";
+
+    }
+
+    catch (error) {
+
+      result.className =
+        "result error";
+
+      result.textContent =
+        "❌ KUTUMA KUMESHINDIKANA\\n\\n" +
+        error.message;
+
+    }
+
+    finally {
+
+      button.disabled = false;
+
+      button.textContent =
+        "📤 TUMA TEST INVITATION";
+
+    }
+
+  }
+);
+
+</script>
 
 </body>
 </html>
@@ -217,17 +521,34 @@ ${TEMPLATE_LANGUAGE}
 // =====================================================
 
 app.get("/health", (req, res) => {
+
   res.json({
+
     ok: true,
+
     event: EVENT_KEY,
+
     supabase: !!supabase,
+
     whatsapp: !!WHATSAPP_TOKEN,
-    phone_number_id: !!PHONE_NUMBER_ID,
-    invite_image: !!INVITE_IMAGE_URL,
-    template: TEMPLATE_NAME,
-    language: TEMPLATE_LANGUAGE,
-    time: new Date().toISOString()
+
+    phone_number_id:
+      !!PHONE_NUMBER_ID,
+
+    invite_image:
+      !!INVITE_IMAGE_URL,
+
+    template:
+      TEMPLATE_NAME,
+
+    language:
+      TEMPLATE_LANGUAGE,
+
+    time:
+      new Date().toISOString()
+
   });
+
 });
 
 // =====================================================
@@ -235,21 +556,32 @@ app.get("/health", (req, res) => {
 // =====================================================
 
 function normalizePhone(phone) {
+
   if (!phone) return "";
 
-  let value = String(phone).trim();
+  let value =
+    String(phone).trim();
 
-  value = value.replace(/[^\d]/g, "");
+  value =
+    value.replace(/[^\d]/g, "");
 
-  // Tanzania: 07XXXXXXXX / 06XXXXXXXX
+  // Tanzania:
+  // 07XXXXXXXX
+  // 06XXXXXXXX
+
   if (
     value.startsWith("0") &&
     value.length === 10
   ) {
-    value = "255" + value.substring(1);
+
+    value =
+      "255" +
+      value.substring(1);
+
   }
 
   return value;
+
 }
 
 // =====================================================
@@ -257,10 +589,13 @@ function normalizePhone(phone) {
 // =====================================================
 
 async function findGuest(phone) {
+
   if (!supabase) {
+
     throw new Error(
       "Supabase haija-configurewa"
     );
+
   }
 
   const normalizedPhone =
@@ -270,35 +605,59 @@ async function findGuest(phone) {
     `🔎 Kutafuta guest: ${normalizedPhone}`
   );
 
-  let result = await supabase
-    .from("guests")
-    .select("*")
-    .eq("phone", normalizedPhone)
-    .eq("event_key", EVENT_KEY)
-    .limit(1)
-    .maybeSingle();
+
+  let result =
+    await supabase
+      .from("guests")
+      .select("*")
+      .eq(
+        "phone",
+        normalizedPhone
+      )
+      .eq(
+        "event_key",
+        EVENT_KEY
+      )
+      .limit(1)
+      .maybeSingle();
+
 
   if (result.error) {
+
     throw result.error;
+
   }
+
 
   if (result.data) {
+
     return result.data;
+
   }
 
-  // Fallback bila event filter
-  result = await supabase
-    .from("guests")
-    .select("*")
-    .eq("phone", normalizedPhone)
-    .limit(1)
-    .maybeSingle();
+
+  // Fallback
+  result =
+    await supabase
+      .from("guests")
+      .select("*")
+      .eq(
+        "phone",
+        normalizedPhone
+      )
+      .limit(1)
+      .maybeSingle();
+
 
   if (result.error) {
+
     throw result.error;
+
   }
 
+
   return result.data || null;
+
 }
 
 // =====================================================
@@ -310,18 +669,30 @@ async function saveAttendance(
   status,
   whatsappMessageId
 ) {
+
   const updateData = {
-    attendance_status: status,
+
+    attendance_status:
+      status,
+
     scanned_at:
       new Date().toISOString()
+
   };
 
+
   if (whatsappMessageId) {
+
     updateData.whatsapp_message_id =
       whatsappMessageId;
+
   }
 
-  const { data, error } =
+
+  const {
+    data,
+    error
+  } =
     await supabase
       .from("guests")
       .update(updateData)
@@ -329,11 +700,16 @@ async function saveAttendance(
       .select()
       .single();
 
+
   if (error) {
+
     throw error;
+
   }
 
+
   return data;
+
 }
 
 // =====================================================
@@ -341,93 +717,148 @@ async function saveAttendance(
 // =====================================================
 
 function getAttendanceStatus(text) {
+
   if (!text) return null;
 
-  const normalized = text
-    .trim()
-    .toLowerCase()
-    .replace(/\s+/g, " ");
+  const normalized =
+    text
+      .trim()
+      .toLowerCase()
+      .replace(/\s+/g, " ");
+
 
   if (
     normalized === "nitashiriki" ||
-    normalized.includes("nitashiriki")
+    normalized.includes(
+      "nitashiriki"
+    )
   ) {
+
     return "confirmed";
+
   }
+
 
   if (
     normalized === "sitashiriki" ||
-    normalized.includes("sitashiriki")
+    normalized.includes(
+      "sitashiriki"
+    )
   ) {
+
     return "declined";
+
   }
+
 
   if (
     normalized === "sina uhakika" ||
-    normalized.includes("sina uhakika")
+    normalized.includes(
+      "sina uhakika"
+    )
   ) {
+
     return "maybe";
+
   }
 
+
   return null;
+
 }
 
 // =====================================================
 // RESPONSE MESSAGE
 // =====================================================
 
-function getResponseMessage(status) {
+function getResponseMessage(
+  status
+) {
 
-  if (status === "confirmed") {
+  if (
+    status === "confirmed"
+  ) {
+
     return (
       "Asante kwa jibu lako. " +
       "Karibu sana GeitaCard! " +
       "Tunafurahi kuthibitisha kuwa utashiriki."
     );
+
   }
 
-  if (status === "declined") {
+
+  if (
+    status === "declined"
+  ) {
+
     return (
       "Asante kwa taarifa yako. " +
       "Tumejua kuwa hutashiriki. " +
       "Karibu tena wakati mwingine. GeitaCard."
     );
+
   }
 
-  if (status === "maybe") {
+
+  if (
+    status === "maybe"
+  ) {
+
     return (
       "Asante kwa taarifa yako. " +
       "Tafadhali tupatie jibu lako " +
       "litakapokuwa tayari. " +
       "Karibu sana GeitaCard."
     );
+
   }
 
+
   return null;
+
 }
 
 // =====================================================
 // EXTRACT WHATSAPP MESSAGE
 // =====================================================
 
-function extractIncomingMessage(message) {
+function extractIncomingMessage(
+  message
+) {
 
   if (!message) {
+
     return null;
+
   }
+
 
   // TEXT
-  if (message.type === "text") {
+  if (
+    message.type === "text"
+  ) {
+
     return {
+
       text:
-        message.text?.body || "",
+        message.text?.body ||
+        "",
+
       messageId:
-        message.id || null
+        message.id ||
+        null
+
     };
+
   }
 
+
   // INTERACTIVE
-  if (message.type === "interactive") {
+  if (
+    message.type ===
+    "interactive"
+  ) {
 
     if (
       message.interactive?.type ===
@@ -435,22 +866,30 @@ function extractIncomingMessage(message) {
     ) {
 
       return {
+
         text:
-          message.interactive
+          message
+            .interactive
             .button_reply?.title ||
-          message.interactive
+          message
+            .interactive
             .button_reply?.id ||
           "",
 
         buttonId:
-          message.interactive
+          message
+            .interactive
             .button_reply?.id ||
           null,
 
         messageId:
-          message.id || null
+          message.id ||
+          null
+
       };
+
     }
+
 
     if (
       message.interactive?.type ===
@@ -458,27 +897,40 @@ function extractIncomingMessage(message) {
     ) {
 
       return {
+
         text:
-          message.interactive
+          message
+            .interactive
             .list_reply?.title ||
-          message.interactive
+          message
+            .interactive
             .list_reply?.id ||
           "",
 
         buttonId:
-          message.interactive
+          message
+            .interactive
             .list_reply?.id ||
           null,
 
         messageId:
-          message.id || null
+          message.id ||
+          null
+
       };
+
     }
+
   }
 
+
   // TEMPLATE QUICK REPLY
-  if (message.type === "button") {
+  if (
+    message.type === "button"
+  ) {
+
     return {
+
       text:
         message.button?.text ||
         message.button?.payload ||
@@ -489,11 +941,16 @@ function extractIncomingMessage(message) {
         null,
 
       messageId:
-        message.id || null
+        message.id ||
+        null
+
     };
+
   }
 
+
   return null;
+
 }
 
 // =====================================================
@@ -506,50 +963,77 @@ async function sendWhatsAppText(
 ) {
 
   if (!WHATSAPP_TOKEN) {
+
     throw new Error(
       "WHATSAPP_TOKEN haipo"
     );
+
   }
 
+
   if (!PHONE_NUMBER_ID) {
+
     throw new Error(
       "PHONE_NUMBER_ID haipo"
     );
+
   }
+
 
   const url =
     `https://graph.facebook.com/` +
     `${GRAPH_API_VERSION}/` +
     `${PHONE_NUMBER_ID}/messages`;
 
-  const response = await fetch(url, {
-    method: "POST",
 
-    headers: {
-      "Authorization":
-        `Bearer ${WHATSAPP_TOKEN}`,
+  const response =
+    await fetch(
+      url,
+      {
 
-      "Content-Type":
-        "application/json"
-    },
+        method: "POST",
 
-    body: JSON.stringify({
-      messaging_product: "whatsapp",
+        headers: {
 
-      to: recipient,
+          "Authorization":
+            `Bearer ${WHATSAPP_TOKEN}`,
 
-      type: "text",
+          "Content-Type":
+            "application/json"
 
-      text: {
-        body: text
+        },
+
+        body:
+          JSON.stringify({
+
+            messaging_product:
+              "whatsapp",
+
+            to:
+              recipient,
+
+            type:
+              "text",
+
+            text: {
+
+              body:
+                text
+
+            }
+
+          })
+
       }
-    })
-  });
+    );
+
 
   const data =
     await response.json();
 
+
   if (!response.ok) {
+
     console.error(
       "❌ WhatsApp text send error:",
       data
@@ -559,14 +1043,18 @@ async function sendWhatsAppText(
       data?.error?.message ||
       "WhatsApp text message failed"
     );
+
   }
+
 
   console.log(
     "📤 Reply sent successfully:",
     data
   );
 
+
   return data;
+
 }
 
 // =====================================================
@@ -580,88 +1068,138 @@ async function sendInvitation(
 ) {
 
   if (!WHATSAPP_TOKEN) {
+
     throw new Error(
       "WHATSAPP_TOKEN haipo"
     );
+
   }
 
+
   if (!PHONE_NUMBER_ID) {
+
     throw new Error(
       "PHONE_NUMBER_ID haipo"
     );
+
   }
 
+
   if (!INVITE_IMAGE_URL) {
+
     throw new Error(
       "INVITE_IMAGE_URL haipo"
     );
+
   }
+
 
   const url =
     `https://graph.facebook.com/` +
     `${GRAPH_API_VERSION}/` +
     `${PHONE_NUMBER_ID}/messages`;
 
+
   /*
-   * Template yako ina:
+   * Template:
    *
    * {{1}} = jina
    * {{2}} = code
    */
 
+
   const payload = {
-    messaging_product: "whatsapp",
 
-    to: recipient,
+    messaging_product:
+      "whatsapp",
 
-    type: "template",
+    to:
+      recipient,
+
+    type:
+      "template",
 
     template: {
-      name: TEMPLATE_NAME,
+
+      name:
+        TEMPLATE_NAME,
 
       language: {
-        code: TEMPLATE_LANGUAGE
+
+        code:
+          TEMPLATE_LANGUAGE
+
       },
 
       components: [
 
         // IMAGE HEADER
         {
-          type: "header",
+          type:
+            "header",
 
           parameters: [
+
             {
-              type: "image",
+
+              type:
+                "image",
 
               image: {
+
                 link:
                   INVITE_IMAGE_URL
+
               }
+
             }
+
           ]
+
         },
+
 
         // BODY VARIABLES
         {
-          type: "body",
+          type:
+            "body",
 
           parameters: [
+
             {
-              type: "text",
+
+              type:
+                "text",
+
               text:
-                String(guestName)
+                String(
+                  guestName
+                )
+
             },
 
             {
-              type: "text",
+
+              type:
+                "text",
+
               text:
-                String(guestCode)
+                String(
+                  guestCode
+                )
+
             }
+
           ]
+
         }
+
       ]
+
     }
+
   };
+
 
   console.log(
     "📤 Sending invitation:",
@@ -672,25 +1210,37 @@ async function sendInvitation(
     )
   );
 
+
   const response =
-    await fetch(url, {
+    await fetch(
+      url,
+      {
 
-      method: "POST",
+        method:
+          "POST",
 
-      headers: {
-        "Authorization":
-          `Bearer ${WHATSAPP_TOKEN}`,
+        headers: {
 
-        "Content-Type":
-          "application/json"
-      },
+          "Authorization":
+            `Bearer ${WHATSAPP_TOKEN}`,
 
-      body:
-        JSON.stringify(payload)
-    });
+          "Content-Type":
+            "application/json"
+
+        },
+
+        body:
+          JSON.stringify(
+            payload
+          )
+
+      }
+    );
+
 
   const data =
     await response.json();
+
 
   if (!response.ok) {
 
@@ -707,14 +1257,18 @@ async function sendInvitation(
       data?.error?.message ||
       "Invitation sending failed"
     );
+
   }
+
 
   console.log(
     "✅ Invitation sent:",
     data
   );
 
+
   return data;
+
 }
 
 // =====================================================
@@ -733,32 +1287,76 @@ app.post(
         guest_code
       } = req.body;
 
+
       if (!phone) {
-        return res.status(400).json({
-          ok: false,
-          error:
-            "phone inahitajika"
-        });
+
+        return res
+          .status(400)
+          .json({
+
+            ok: false,
+
+            error:
+              "phone inahitajika"
+
+          });
+
       }
+
 
       if (!full_name) {
-        return res.status(400).json({
-          ok: false,
-          error:
-            "full_name inahitajika"
-        });
+
+        return res
+          .status(400)
+          .json({
+
+            ok: false,
+
+            error:
+              "full_name inahitajika"
+
+          });
+
       }
+
 
       if (!guest_code) {
-        return res.status(400).json({
-          ok: false,
-          error:
-            "guest_code inahitajika"
-        });
+
+        return res
+          .status(400)
+          .json({
+
+            ok: false,
+
+            error:
+              "guest_code inahitajika"
+
+          });
+
       }
 
+
       const recipient =
-        normalizePhone(phone);
+        normalizePhone(
+          phone
+        );
+
+
+      if (!recipient) {
+
+        return res
+          .status(400)
+          .json({
+
+            ok: false,
+
+            error:
+              "Namba ya WhatsApp sio sahihi"
+
+          });
+
+      }
+
 
       const result =
         await sendInvitation(
@@ -767,34 +1365,49 @@ app.post(
           guest_code
         );
 
+
       res.json({
+
         ok: true,
 
         message:
           "Invitation imetumwa",
 
-        phone: recipient,
+        phone:
+          recipient,
 
         full_name,
 
         guest_code,
 
-        whatsapp: result
+        whatsapp:
+          result
+
       });
 
-    } catch (error) {
+    }
+
+    catch (error) {
 
       console.error(
         "❌ /send-invite error:",
         error
       );
 
-      res.status(500).json({
-        ok: false,
-        error:
-          error.message
-      });
+
+      res
+        .status(500)
+        .json({
+
+          ok: false,
+
+          error:
+            error.message
+
+        });
+
     }
+
   }
 );
 
@@ -819,9 +1432,11 @@ app.get(
         "hub.challenge"
       ];
 
+
     console.log(
       "🔐 WhatsApp webhook verification request"
     );
+
 
     if (
       mode === "subscribe" &&
@@ -832,17 +1447,22 @@ app.get(
         "✅ Webhook verification successful"
       );
 
+
       return res
         .status(200)
         .send(challenge);
+
     }
+
 
     console.log(
       "❌ Webhook verification failed"
     );
 
+
     return res
       .sendStatus(403);
+
   }
 );
 
@@ -857,9 +1477,11 @@ app.post(
     // Meta lazima ipate 200 haraka
     res.sendStatus(200);
 
+
     try {
 
       console.log("");
+
       console.log(
         "=============================================="
       );
@@ -872,15 +1494,21 @@ app.post(
         "=============================================="
       );
 
-      const body = req.body;
+
+      const body =
+        req.body;
+
 
       if (!body) {
+
         console.log(
           "⚠️ Empty webhook body"
         );
 
         return;
+
       }
+
 
       if (
         body.object !==
@@ -892,10 +1520,13 @@ app.post(
         );
 
         return;
+
       }
+
 
       const entries =
         body.entry || [];
+
 
       for (
         const entry of entries
@@ -904,6 +1535,7 @@ app.post(
         const changes =
           entry.changes || [];
 
+
         for (
           const change of changes
         ) {
@@ -911,12 +1543,17 @@ app.post(
           const value =
             change.value;
 
+
           if (!value) {
+
             continue;
+
           }
+
 
           const messages =
             value.messages || [];
+
 
           if (
             messages.length === 0
@@ -927,7 +1564,9 @@ app.post(
             );
 
             continue;
+
           }
+
 
           for (
             const message
@@ -939,10 +1578,12 @@ app.post(
                 message.from
               );
 
+
             const incoming =
               extractIncomingMessage(
                 message
               );
+
 
             if (!incoming) {
 
@@ -951,14 +1592,18 @@ app.post(
               );
 
               continue;
+
             }
+
 
             const responseText =
               incoming.text.trim();
 
+
             console.log(
               `📱 Response: ${senderPhone} -> ${responseText}`
             );
+
 
             // =================================================
             // DETERMINE ATTENDANCE
@@ -969,6 +1614,7 @@ app.post(
                 responseText
               );
 
+
             if (!attendanceStatus) {
 
               console.log(
@@ -976,11 +1622,14 @@ app.post(
               );
 
               continue;
+
             }
+
 
             console.log(
               `✅ Attendance: ${attendanceStatus}`
             );
+
 
             // =================================================
             // FIND GUEST
@@ -991,6 +1640,7 @@ app.post(
                 senderPhone
               );
 
+
             if (!guest) {
 
               console.log(
@@ -998,11 +1648,14 @@ app.post(
               );
 
               continue;
+
             }
+
 
             console.log(
               `👤 Guest: ${guest.full_name}`
             );
+
 
             // =================================================
             // EVENT CHECK
@@ -1010,7 +1663,8 @@ app.post(
 
             if (
               guest.event_key &&
-              guest.event_key !== EVENT_KEY
+              guest.event_key !==
+                EVENT_KEY
             ) {
 
               console.log(
@@ -1018,7 +1672,9 @@ app.post(
               );
 
               continue;
+
             }
+
 
             // =================================================
             // SAVE
@@ -1031,11 +1687,13 @@ app.post(
                 incoming.messageId
               );
 
+
             console.log(
               `🎉 Attendance imehifadhiwa: ` +
               `${updatedGuest.full_name} -> ` +
               `${updatedGuest.attendance_status}`
             );
+
 
             // =================================================
             // SEND AUTOMATIC RESPONSE
@@ -1046,6 +1704,7 @@ app.post(
                 attendanceStatus
               );
 
+
             if (reply) {
 
               try {
@@ -1055,25 +1714,36 @@ app.post(
                   reply
                 );
 
-              } catch (sendError) {
+              }
+
+              catch (sendError) {
 
                 console.error(
                   "❌ Reply imeshindikana:",
                   sendError
                 );
+
               }
+
             }
+
 
             console.log(
               "=============================================="
             );
+
           }
+
         }
+
       }
 
-    } catch (error) {
+    }
+
+    catch (error) {
 
       console.error("");
+
       console.error(
         "❌ Attendance update error:"
       );
@@ -1081,7 +1751,9 @@ app.post(
       console.error(error);
 
       console.error("");
+
     }
+
   }
 );
 
@@ -1092,10 +1764,15 @@ app.post(
 app.use(
   (req, res) => {
 
-    res.status(404).json({
-      error:
-        "Route not found"
-    });
+    res
+      .status(404)
+      .json({
+
+        error:
+          "Route not found"
+
+      });
+
   }
 );
 
@@ -1119,13 +1796,16 @@ app.listen(
       "=============================================="
     );
 
+
     console.log(
       `📌 EVENT: ${EVENT_KEY}`
     );
 
+
     console.log(
       `🌐 PORT: ${PORT}`
     );
+
 
     console.log(
       `🗄️ Supabase: ${
@@ -1135,6 +1815,7 @@ app.listen(
       }`
     );
 
+
     console.log(
       `📱 WhatsApp: ${
         WHATSAPP_TOKEN
@@ -1142,6 +1823,7 @@ app.listen(
           : "NOT CONFIGURED"
       }`
     );
+
 
     console.log(
       `📞 Phone Number ID: ${
@@ -1151,6 +1833,7 @@ app.listen(
       }`
     );
 
+
     console.log(
       `🖼️ Invite Image: ${
         INVITE_IMAGE_URL
@@ -1159,16 +1842,20 @@ app.listen(
       }`
     );
 
+
     console.log(
       `📄 Template: ${TEMPLATE_NAME}`
     );
+
 
     console.log(
       `🌍 Language: ${TEMPLATE_LANGUAGE}`
     );
 
+
     console.log(
       "=============================================="
     );
+
   }
 );
